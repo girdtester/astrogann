@@ -4,12 +4,11 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 1 — Project setup (next to start)
-- **Last finished phase:** Phase 0 — Read and plan (2026-10-06)
+- **Current phase:** Phase 2 — Database (next to start)
+- **Last finished phase:** Phase 1 — Project setup (2026-10-06)
 
 ## Next steps
-1. Phase 1: `composer create-project laravel/laravel:^12.0 backend`, configure `.env`, install Breeze (Blade) +
-   Sanctum (`php artisan install:api`), boot + DB check, commit.
+1. Phase 2: migrations for all tables in docs/DATABASE.md, enums, models, factories, seeders; `migrate:fresh --seed`.
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +17,11 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 1
+- Laravel 12.69.3 in `backend/`, `.env` configured (MySQL astrogann, database queue/session/cache, log mail,
+  Asia/Kolkata), Breeze Blade + Sanctum installed, default migrations run on MariaDB, 25 Breeze tests pass,
+  `php artisan serve` returns 200 on /login. `public/build` committed (D-30).
 
 ### 2026-10-06 — Phase 0
 - Environment: PHP 8.2.12 (C:\xampp\php), Composer 2.4.4, MariaDB 10.4.32 (DB `astrogann` exists, root/no

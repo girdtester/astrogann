@@ -161,3 +161,14 @@ All are official Flutter/Firebase/Dart-team packages.
 **D-34 (2026-10-06) — Further additive columns.** `users.phone` (nullable, trader contact shown to Super Admin),
 `subscription_payments.subscription_id` (nullable FK, links a payment to the period it paid for) and
 `subscription_payments.recorded_by` (nullable FK users, the Super Admin who recorded it). Additive only.
+
+## Phase 1 — 2026-10-06
+
+**D-35 (2026-10-06) — Installed versions.** Laravel 12.69.3, Breeze (Blade stack, PHPUnit), Sanctum via
+`php artisan install:api`. `config/app.php` timezone now reads `APP_TIMEZONE`.
+
+**D-36 (2026-10-06) — Tests run on SQLite in-memory** (Laravel default in `phpunit.xml`) so `php artisan test` never
+touches the real `astrogann` database. Code must stay portable (no MySQL-only SQL in app code).
+
+**D-37 (2026-10-06) — `php artisan db:show` fails on XAMPP MariaDB** (`performance_schema.session_status` missing).
+Harmless; use `php artisan tinker` / `migrate:status` to check the connection instead.

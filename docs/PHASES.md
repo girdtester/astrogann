@@ -13,11 +13,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] git init + commit
 
 ### Phase 1 — Project setup
-- [ ] Laravel 12 in `backend/`
-- [ ] `.env`: DB astrogann/root/empty, QUEUE_CONNECTION=database, SESSION_DRIVER=database, MAIL_MAILER=log, APP_TIMEZONE=Asia/Kolkata
-- [ ] Breeze (Blade) + Sanctum installed
-- [ ] App boots, DB connects, default migrations run
-- [ ] `.gitignore` sensible (keep `public/build` committed — D-30)
+- [x] Laravel 12 in `backend/`
+- [x] `.env`: DB astrogann/root/empty, QUEUE_CONNECTION=database, SESSION_DRIVER=database, MAIL_MAILER=log, APP_TIMEZONE=Asia/Kolkata
+- [x] Breeze (Blade) + Sanctum installed
+- [x] App boots, DB connects, default migrations run
+- [x] `.gitignore` sensible (keep `public/build` committed — D-30)
 
 ### Phase 2 — Database
 - [ ] Migrations for every table in DATABASE.md
