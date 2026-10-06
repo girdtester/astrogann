@@ -43,10 +43,10 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] (owner request, D-42) Dynamic roles & permissions: Roles screen, extra per-user permissions, anti-escalation
 
 ### Phase 5 — Admin module
-- [ ] View categories
-- [ ] Add entry with validation, random filename, uploads .htaccess
-- [ ] Own entries only
-- [ ] Policies + tests for forbidden actions
+- [x] View categories
+- [x] Add entry with validation, random filename, uploads .htaccess
+- [x] Own entries only
+- [x] Policies + tests for forbidden actions
 
 ### Phase 6 — User module (web)
 - [ ] Tabs from active categories (sort_order)
@@ -105,11 +105,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.2 SA | Reports / logs | /superadmin/logs | | n/a | web done |
 | 3.2 SA | System settings | /superadmin/settings | | n/a | web done |
 | D-42 | Roles & permissions | /superadmin/roles, staff edit form | | n/a | web done |
-| 3.2 A | Login | | | n/a | |
-| 3.2 A | View categories | | | n/a | |
-| 3.2 A | Add entry | | | n/a | |
-| 3.2 A | View own entries | | | n/a | |
-| 3.2 A | No edit/delete/user/subscription/category mgmt | | | n/a | |
+| 3.2 A | Login | /login → /admin | | n/a | web done |
+| 3.2 A | View categories | /admin/categories | | n/a | web done |
+| 3.2 A | Add entry | /admin/entries/create | | n/a | web done |
+| 3.2 A | View own entries | /admin/entries | | n/a | web done |
+| 3.2 A | No edit/delete/user/subscription/category mgmt | EntryPolicy + can: middleware, AdminModuleTest | | n/a | web done (default role perms, D-42) |
 | 3.2 U | Login web/mobile | | | | |
 | 3.2 U | View active categories | | | | |
 | 3.2 U | Latest 7 if active | | | | |

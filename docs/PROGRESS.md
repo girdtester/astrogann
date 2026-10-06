@@ -4,12 +4,12 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 5 — Admin module (next to start)
-- **Last finished phase:** Phase 4 — Super Admin module + dynamic roles & permissions (2026-10-06)
+- **Current phase:** Phase 6 — User module (web) (next to start)
+- **Last finished phase:** Phase 5 — Admin module (2026-10-06)
 
 ## Next steps
-1. Phase 5: staff dashboard (/admin), categories view, add entry (EntryService::create, validation, random name),
-   own entries list, EntryPolicy + tests that edit/delete are impossible.
+1. Phase 6: user tabs from active categories, 7/3 entries via EntryService::visibleFor, Show More with contact
+   settings, subscription status page, notifications list + unread count (NotificationService).
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +18,13 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 5
+- Staff dashboard (/admin) listing the screens the account's permissions allow; read-only categories; add entry
+  with image preview; own entries with filters; `EntryPolicy`; `StoreEntryRequest` (D-45, D-46).
+- AdminModuleTest (upload, validation incl. disguised PHP/GIF/PDF/oversize, own-only, immutability, no management
+  access, staff without permission, trader blocked) — 67 tests pass. Live upload via curl as admin: 302, file
+  stored under a random name and served (200 image/png); /superadmin/users → 403.
 
 ### 2026-10-06 — Phase 4 (+ owner request: dynamic roles & permissions)
 - Owner asked mid-phase for manageable roles/permissions, so D-42 was implemented before finishing Phase 4: `roles`,

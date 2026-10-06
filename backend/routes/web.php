@@ -60,6 +60,11 @@ Route::middleware('auth')->group(function () {
     // Staff (Admin) area (spec 3.2 Admin — data entry). Pages guarded by permission.
     Route::prefix('admin')->name('admin.')->middleware('role:staff,superadmin')->group(function () {
         Route::get('/', [Admin\DashboardController::class, 'index'])->middleware('role:staff')->name('dashboard');
+        Route::get('categories', [Admin\CategoryController::class, 'index'])->middleware('can:'.P::CATEGORIES_VIEW)->name('categories.index');
+        Route::get('entries/create', [Admin\EntryController::class, 'create'])->middleware('can:'.P::ENTRIES_CREATE)->name('entries.create');
+        Route::post('entries', [Admin\EntryController::class, 'store'])->middleware(['can:'.P::ENTRIES_CREATE, 'throttle:30,1'])->name('entries.store');
+        Route::get('entries', [Admin\EntryController::class, 'index'])->middleware('can:'.P::ENTRIES_VIEW_OWN)->name('entries.index');
+        // No edit / update / delete routes: entries are immutable (DECISIONS D-19).
     });
 
     // User / Trader area (spec 3.2, 3.9).

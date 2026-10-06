@@ -216,3 +216,16 @@ payments can only be deactivated; empty accounts can be deleted. Same for catego
 
 **D-44 (2026-10-06) — Profile email locked;** account email is changed by staff holding `staff.manage` /
 `users.manage`.
+
+## Phase 5 — 2026-10-06
+
+**D-45 (2026-10-06) — Entry date window.** `entry_date` must be within the last 365 days and at most 7 days ahead
+(stops typos like 2062); `entry_time` is `HH:MM` 24h (`HH:MM:SS` from clients is trimmed). Adjust in
+`StoreEntryRequest` if needed.
+
+**D-46 (2026-10-06) — Upload checks:** `file|image|mimes:jpg,jpeg,png,webp|mimetypes:image/jpeg,image/png,image/webp|
+max:ENTRY_IMAGE_MAX_KB|dimensions:max 8000x8000`; stored extension comes from the sniffed MIME type; random
+40-char name; the file is removed again if the DB insert fails. Web upload route throttled to 30/min per user.
+
+**D-47 (2026-10-06) — `EntryPolicy`.** create = `entries.create`; view = `entries.view_all` or (own and
+`entries.view_own`); update/delete = always false. No edit/delete routes exist for entries anywhere.

@@ -44,6 +44,8 @@ Anti-escalation rules: see DECISIONS D-42. Original text kept below for history.
 
 ## 4. Uploads
 
+Implemented Phase 5 (2026-10-06): `StoreEntryRequest`, `EntryService::create`, `public/uploads/.htaccess` (D-46).
+
 - Validation: `required|image|mimes:jpg,jpeg,png,webp|max:${ENTRY_IMAGE_MAX_KB}` (default 5120) plus
   `dimensions:max_width=8000,max_height=8000`.
 - Stored at `public/uploads/entries/<Str::random(40)>.<guessed-ext>` (extension from the sniffed MIME, never the
