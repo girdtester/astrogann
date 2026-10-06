@@ -21,6 +21,12 @@ class SessionService
 {
     public const WEB_SESSION_KEY = 'user_session_id';
 
+    public const ENDED_LOGOUT = 'logout';
+
+    public const ENDED_REPLACED = 'replaced';
+
+    public const ENDED_DEACTIVATED = 'deactivated';
+
     public function __construct(private readonly ActivityLogService $logs) {}
 
     public function enforcesSingleSession(User $user): bool
@@ -99,7 +105,7 @@ class SessionService
     public function end(User $user, Request $request): void
     {
         $session = $this->activeSessionFor($user, $request);
-        $session?->update(['is_active' => false, 'fcm_token' => null]);
+        $session?->update(['is_active' => false, 'fcm_token' => null, 'ended_reason' => self::ENDED_LOGOUT]);
 
         $token = $user->currentAccessToken();
         if ($token instanceof PersonalAccessToken) {
@@ -109,19 +115,32 @@ class SessionService
         $this->logs->log('auth.logout', $session, null, $user);
     }
 
+    /**
+     * Why the session behind a revoked API token ended. Sanctum tokens look like "{id}|{secret}";
+     * the token row is deleted on logout/replacement, so the id is matched against user_sessions.token_id.
+     */
+    public function endedReasonForBearer(?string $bearer): ?string
+    {
+        if (! $bearer || ! preg_match('/^(\d+)\|/', $bearer, $m)) {
+            return null;
+        }
+
+        return UserSession::query()->where('token_id', (int) $m[1])->where('is_active', false)->value('ended_reason');
+    }
+
     /** Ends every session of the user, e.g. when the account is deactivated. */
     public function endAll(User $user): void
     {
-        $this->endOtherSessions($user, null, force: true);
+        $this->endOtherSessions($user, null, force: true, reason: self::ENDED_DEACTIVATED);
     }
 
-    private function endOtherSessions(User $user, ?string $keepWebSessionId, bool $force = false): void
+    private function endOtherSessions(User $user, ?string $keepWebSessionId, bool $force = false, string $reason = self::ENDED_REPLACED): void
     {
         if (! $force && ! $this->enforcesSingleSession($user)) {
             return;
         }
 
-        $user->userSessions()->where('is_active', true)->update(['is_active' => false, 'fcm_token' => null]);
+        $user->userSessions()->where('is_active', true)->update(['is_active' => false, 'fcm_token' => null, 'ended_reason' => $reason]);
         $user->tokens()->delete();
 
         if (config('session.driver') === 'database') {

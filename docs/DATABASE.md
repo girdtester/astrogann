@@ -87,6 +87,7 @@ Indexes: `created_by`, composite `(user_id, status, end_date)`, `(status, end_da
 | device_type | varchar(10) | `web/mobile` |
 | fcm_token | varchar(512) null | |
 | is_active | boolean | |
+| ended_reason | varchar(20) null | `logout` / `replaced` / `deactivated` (D-52, added 2026-10-06) |
 | token_id | bigint null | Sanctum `personal_access_tokens.id` for API logins |
 | ip_address | varchar(45) null | |
 | user_agent | varchar(512) null | |

@@ -242,3 +242,25 @@ mailto:) with the `show_more_text` setting; on the subscription page it is open 
 
 **D-51 (2026-10-06) — Notifications page:** opening a notification marks it read and jumps to its category tab;
 "Mark all as read" button; unread count badge on the "Notifications" nav link (every page load).
+
+## Phase 7 — 2026-10-06
+
+**D-52 (2026-10-06) — `user_sessions.ended_reason` (logout / replaced / deactivated).** A new login still revokes
+every old token (spec 3.8), so a revoked token would normally only produce "unauthenticated". The API exception
+renderer reads the token id from the bearer string (`{id}|{secret}`), finds the ended session and answers
+`401 session_replaced` or `403 account_inactive`, so the app can show the right message. New migration
+`2026_10_06_130000_add_ended_reason_to_user_sessions`.
+
+**D-53 (2026-10-06) — API additions beyond spec 3.6** (paths of the spec unchanged): `GET /api/auth/me`,
+`POST /api/notifications/{id}/read`, `POST /api/notifications/read-all`, `GET /api/admin/users`,
+`PATCH /api/admin/users/{id}`, `GET /api/admin/admins`, `PATCH /api/admin/admins/{id}` (the "manage" part of
+"create / manage"). Admin endpoints are guarded by permissions (D-42), not by the role name.
+
+**D-54 (2026-10-06) — Rate limits:** `api-public` 30/min per IP (login, settings); login additionally 5 failed
+attempts/min per email+IP; authenticated `api` 60/min per user.
+
+**D-55 (2026-10-06) — Staff calling `GET /api/categories/{id}/entries` get the active limit** (they are not
+subscribers). Traders follow the subscription rule.
+
+**D-56 (2026-10-06) — `ForceJsonResponse` on the api group** + `ApiExceptionRenderer`: every `/api/*` error is the
+envelope with `errors.code` (table in docs/API.md §1).

@@ -19,10 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Every authenticated web request must belong to the user's single active session.
         $middleware->web(append: [\App\Http\Middleware\EnsureActiveSession::class]);
+        $middleware->api(prepend: [\App\Http\Middleware\ForceJsonResponse::class]);
 
         // Guests hitting a protected page go to the login page; logged-in users hitting /login go home.
         $middleware->redirectUsersTo(fn ($request) => route($request->user()->homeRoute()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // /api/* errors use the JSON envelope (docs/API.md).
+        $exceptions->render(new \App\Exceptions\ApiExceptionRenderer);
     })->create();

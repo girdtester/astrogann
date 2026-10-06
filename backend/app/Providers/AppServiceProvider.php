@@ -6,7 +6,10 @@ use App\Models\User;
 use App\Services\SettingsService;
 use App\Support\Navigation;
 use App\Support\Permissions;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -30,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('superadmin', fn (User $user) => $user->isSuperAdmin());
         Gate::define('staff', fn (User $user) => $user->isStaff());
         Gate::define('trader', fn (User $user) => $user->isTrader());
+
+        // API rate limits (docs/SECURITY.md §3).
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
+        RateLimiter::for('api-public', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
 
         Password::defaults(fn () => app()->isProduction()
             ? Password::min(8)->letters()->numbers()

@@ -56,10 +56,10 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] Notifications list + unread count
 
 ### Phase 7 — REST API
-- [ ] All endpoints, Sanctum, envelope, Resources, Form Requests, rate limits
-- [ ] Single session shared with web
-- [ ] Feature tests per endpoint and role
-- [ ] docs/API.md complete + `docs/api.http` / Postman collection
+- [x] All endpoints, Sanctum, envelope, Resources, Form Requests, rate limits
+- [x] Single session shared with web
+- [x] Feature tests per endpoint and role
+- [x] docs/API.md complete + `docs/api.http` / Postman collection
 
 ### Phase 8 — Queues, notifications, email, scheduler
 - [ ] EntryCreated event → queued job → DB notifications (chunked) + PushService (log / fcm)
@@ -95,26 +95,26 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 
 | Spec | Bullet | Web | API | Mobile | Status |
 |---|---|---|---|---|---|
-| 3.2 SA | Login / dashboard | /superadmin | | n/a | web done |
-| 3.2 SA | Create / manage admins | /superadmin/admins (+ roles, extra perms) | | n/a | web done |
-| 3.2 SA | Create / manage users | /superadmin/users | | n/a | web done |
-| 3.2 SA | Activate / deactivate users | /superadmin/users/{id}/status | | n/a | web done |
-| 3.2 SA | Subscriptions activate/extend/expire | /superadmin/subscriptions/{user} | | n/a | web done |
+| 3.2 SA | Login / dashboard | /superadmin | POST /api/auth/login | n/a | done |
+| 3.2 SA | Create / manage admins | /superadmin/admins (+ roles, extra perms) | GET/POST /api/admin/admins, PATCH /{id} | n/a | done |
+| 3.2 SA | Create / manage users | /superadmin/users | GET/POST /api/admin/users, PATCH /{id} | n/a | done |
+| 3.2 SA | Activate / deactivate users | /superadmin/users/{id}/status | PATCH /api/admin/users/{id} status | n/a | done |
+| 3.2 SA | Subscriptions activate/extend/expire | /superadmin/subscriptions/{user} | POST /api/admin/subscription | n/a | done |
 | 3.2 SA | Manage categories | /superadmin/categories | | n/a | web done |
 | 3.2 SA | View all entries | /superadmin/entries | | n/a | web done |
 | 3.2 SA | Reports / logs | /superadmin/logs | | n/a | web done |
 | 3.2 SA | System settings | /superadmin/settings | | n/a | web done |
 | D-42 | Roles & permissions | /superadmin/roles, staff edit form | | n/a | web done |
-| 3.2 A | Login | /login → /admin | | n/a | web done |
-| 3.2 A | View categories | /admin/categories | | n/a | web done |
-| 3.2 A | Add entry | /admin/entries/create | | n/a | web done |
+| 3.2 A | Login | /login → /admin | POST /api/auth/login | n/a | done |
+| 3.2 A | View categories | /admin/categories | GET /api/categories | n/a | done |
+| 3.2 A | Add entry | /admin/entries/create | POST /api/entries | n/a | done |
 | 3.2 A | View own entries | /admin/entries | | n/a | web done |
 | 3.2 A | No edit/delete/user/subscription/category mgmt | EntryPolicy + can: middleware, AdminModuleTest | | n/a | web done (default role perms, D-42) |
-| 3.2 U | Login web/mobile | /login → /user | | | web done |
-| 3.2 U | View active categories | /user tabs | | | web done |
-| 3.2 U | Latest 7 if active | /user (EntryService::visibleFor) | | | web done |
-| 3.2 U | Latest 3 if expired | /user | | | web done |
-| 3.2 U | Show More (contact admin) | /user, /user/subscription | | | web done |
+| 3.2 U | Login web/mobile | /login → /user | POST /api/auth/login | | web+API done |
+| 3.2 U | View active categories | /user tabs | GET /api/categories | | web+API done |
+| 3.2 U | Latest 7 if active | /user (EntryService::visibleFor) | GET /api/categories/{id}/entries | | web+API done |
+| 3.2 U | Latest 3 if expired | /user | GET /api/categories/{id}/entries | | web+API done |
+| 3.2 U | Show More (contact admin) | /user, /user/subscription | entries.show_more, GET /api/settings | | web+API done |
 | 3.2 U | Push for new entries | | | | |
 | 3.2 U | Email 3 days before expiry | | | | |
 | 3.2 U | Single login | | | | |
@@ -122,4 +122,4 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.4 | Subscription check per request, daily jobs | | | | |
 | 3.7 | Notification flow | | | | |
 | 3.8 | Single session | | | | |
-| 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | | | web done |
+| 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | GET /api/categories, GET /api/settings | | web+API done |

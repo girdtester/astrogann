@@ -1,0 +1,144 @@
+### AstroGann API collection — VS Code "REST Client" or JetBrains HTTP Client.
+### Local seed accounts only (docs/TEST_ACCOUNTS.md). Run the login requests first; the tokens are captured.
+
+@base = http://localhost:8000/api
+
+### Public app config
+GET {{base}}/settings
+
+### Login as the active trader (mobile)
+# @name loginUser
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "user.active@astrogann.test", "password": "password", "device_type": "mobile", "fcm_token": null }
+
+###
+@userToken = {{loginUser.response.body.data.token}}
+
+### Current account
+GET {{base}}/auth/me
+Authorization: Bearer {{userToken}}
+
+### Categories (tabs)
+GET {{base}}/categories
+Authorization: Bearer {{userToken}}
+
+### Entries of category 1 (7 or 3 by subscription)
+GET {{base}}/categories/1/entries
+Authorization: Bearer {{userToken}}
+
+### Subscription
+GET {{base}}/subscription
+Authorization: Bearer {{userToken}}
+
+### Notifications
+GET {{base}}/notifications?page=1
+Authorization: Bearer {{userToken}}
+
+### Mark all notifications read
+POST {{base}}/notifications/read-all
+Authorization: Bearer {{userToken}}
+
+### Update FCM token
+POST {{base}}/update-fcm-token
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "fcm_token": "device-token-from-firebase" }
+
+### Logout
+POST {{base}}/auth/logout
+Authorization: Bearer {{userToken}}
+
+### ---------------------------------------------------------------- Admin
+
+# @name loginAdmin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@astrogann.test", "password": "password", "device_type": "web" }
+
+###
+@adminToken = {{loginAdmin.response.body.data.token}}
+
+### Add entry (multipart)
+POST {{base}}/entries
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=AstroBoundary
+
+--AstroBoundary
+Content-Disposition: form-data; name="category_id"
+
+1
+--AstroBoundary
+Content-Disposition: form-data; name="entry_date"
+
+2026-10-06
+--AstroBoundary
+Content-Disposition: form-data; name="entry_time"
+
+15:30
+--AstroBoundary
+Content-Disposition: form-data; name="image"; filename="chart.png"
+Content-Type: image/png
+
+< ../backend/public/uploads/entries/seed-nifty50-1.png
+--AstroBoundary--
+
+### ---------------------------------------------------------------- Super Admin
+
+# @name loginSuper
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "superadmin@astrogann.test", "password": "password", "device_type": "web" }
+
+###
+@superToken = {{loginSuper.response.body.data.token}}
+
+### List users
+GET {{base}}/admin/users?q=trader
+Authorization: Bearer {{superToken}}
+
+### Create user
+POST {{base}}/admin/users
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "name": "New Trader", "email": "new.trader@astrogann.test", "phone": "+91 90000 00009", "password": "password1", "password_confirmation": "password1" }
+
+### Deactivate user 3
+PATCH {{base}}/admin/users/3
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "status": "inactive" }
+
+### Create admin with an extra permission
+POST {{base}}/admin/admins
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "name": "Second Admin", "email": "admin2@astrogann.test", "password": "password1", "password_confirmation": "password1", "permissions": ["logs.view"] }
+
+### Activate subscription with payment
+POST {{base}}/admin/subscription
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "user_id": 4, "action": "activate", "end_date": "2026-11-06", "payment": { "amount": 1999, "transaction_ref": "UPI-001" } }
+
+### Extend
+POST {{base}}/admin/subscription
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "user_id": 4, "action": "extend", "end_date": "2026-12-06" }
+
+### Expire
+POST {{base}}/admin/subscription
+Authorization: Bearer {{superToken}}
+Content-Type: application/json
+
+{ "user_id": 4, "action": "expire" }

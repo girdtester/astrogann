@@ -4,6 +4,8 @@ Status: **design (Phase 0)**; web parts of §1–§3 implemented in Phase 3 (202
 
 ## 1. Single-session design (D-23)
 
+API part implemented Phase 7 (2026-10-06); revoked tokens answer `session_replaced` / `account_inactive` via `user_sessions.ended_reason` (D-52).
+
 - Table `user_sessions` holds at most one `is_active = true` row per user.
 - Login (web or API) → `SessionService::start()`:
   1. set `is_active = false` on all the user's `user_sessions` rows;
@@ -35,6 +37,8 @@ Anti-escalation rules: see DECISIONS D-42. Original text kept below for history.
 - Tests assert 403 for every cross-role access, not just hidden buttons.
 
 ## 3. Rate limits
+
+Implemented 2026-10-06 (D-54): `api-public` 30/min/IP, API login 5 failures/min per email+IP, `api` 60/min/user.
 
 - Web login: 5 attempts/min per email+IP (Breeze `LoginRequest` throttle). Failed logins are logged
   (`auth.failed`). Forgot/reset password: 6/min. "Remember me" removed (D-38).

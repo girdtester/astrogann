@@ -15,7 +15,7 @@ class UserSession extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'device_type', 'fcm_token', 'is_active', 'token_id', 'ip_address', 'user_agent', 'last_seen_at'];
+    protected $fillable = ['user_id', 'device_type', 'fcm_token', 'is_active', 'ended_reason', 'token_id', 'ip_address', 'user_agent', 'last_seen_at'];
 
     protected function casts(): array
     {

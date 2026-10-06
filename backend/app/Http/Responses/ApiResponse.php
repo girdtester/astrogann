@@ -25,6 +25,24 @@ class ApiResponse
         ], $status);
     }
 
+    /**
+     * Paginated list: data = { items: [...], meta: {...}, ...extra }.
+     *
+     * @param  class-string<JsonResource>  $resource
+     */
+    public static function paginated(\Illuminate\Contracts\Pagination\LengthAwarePaginator $page, string $resource, array $extra = [], string $message = 'OK'): JsonResponse
+    {
+        return self::success([
+            'items' => $resource::collection($page->getCollection())->resolve(request()),
+            'meta' => [
+                'current_page' => $page->currentPage(),
+                'last_page' => $page->lastPage(),
+                'per_page' => $page->perPage(),
+                'total' => $page->total(),
+            ],
+        ] + $extra, $message);
+    }
+
     /** @param array<string, mixed>|null $errors */
     public static function error(string $message, int $status = 400, ?array $errors = null): JsonResponse
     {

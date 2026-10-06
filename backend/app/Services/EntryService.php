@@ -24,6 +24,7 @@ class EntryService
     public function __construct(
         private readonly SubscriptionService $subscriptions,
         private readonly ActivityLogService $logs,
+        private readonly SettingsService $settings,
     ) {}
 
     /** Store the image under a random name in public/uploads/entries and create the entry. */
@@ -69,8 +70,9 @@ class EntryService
      */
     public function visibleFor(User $user, Category $category): array
     {
-        $active = $this->subscriptions->isActiveFor($user, $category);
-        $limit = $this->subscriptions->entryLimitFor($user, $category);
+        // Staff are not subscribers: they see what an active subscriber sees.
+        $active = ! $user->isTrader() || $this->subscriptions->isActiveFor($user, $category);
+        $limit = $active ? $this->settings->entriesLimitActive() : $this->settings->entriesLimitExpired();
 
         $entries = $category->entries()->latestFirst()->limit($limit)->get();
 
