@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Enums\RoleKind;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -12,14 +13,14 @@ use Illuminate\Support\Facades\Route;
  */
 class Navigation
 {
-    /** @return list<array{label: string, route: string, active: string}> */
+    /** @return list<array{label: string, route: string, active: string, badge: ?int}> */
     public static function for(User $user): array
     {
         if ($user->kind() === RoleKind::User) {
             $links = [
                 ['Entries', 'user.dashboard', 'user.dashboard', null],
                 ['Subscription', 'user.subscription', 'user.subscription', null],
-                ['Notifications', 'user.notifications.index', 'user.notifications.*', null],
+                ['Notifications', 'user.notifications.index', 'user.notifications.*', null, app(NotificationService::class)->unreadCount($user)],
             ];
         } else {
             $links = [
@@ -31,7 +32,9 @@ class Navigation
                     ? ['Categories', 'superadmin.categories.index', 'superadmin.categories.*', Permissions::CATEGORIES_MANAGE]
                     : ['Categories', 'admin.categories.index', 'admin.categories.*', Permissions::CATEGORIES_VIEW],
                 ['Add Entry', 'admin.entries.create', 'admin.entries.create', Permissions::ENTRIES_CREATE],
-                ['My Entries', 'admin.entries.index', 'admin.entries.index', Permissions::ENTRIES_VIEW_OWN],
+                ...($user->hasPermission(Permissions::ENTRIES_VIEW_ALL) ? [] : [
+                    ['My Entries', 'admin.entries.index', 'admin.entries.index', Permissions::ENTRIES_VIEW_OWN],
+                ]),
                 ['All Entries', 'superadmin.entries.index', 'superadmin.entries.*', Permissions::ENTRIES_VIEW_ALL],
                 ['Reports / Logs', 'superadmin.logs.index', 'superadmin.logs.*', Permissions::LOGS_VIEW],
                 ['Roles', 'superadmin.roles.index', 'superadmin.roles.*', Permissions::ROLES_MANAGE],
@@ -43,7 +46,7 @@ class Navigation
             && ($l[3] === null || $user->hasPermission($l[3])));
 
         return array_values(array_map(
-            fn (array $l) => ['label' => $l[0], 'route' => $l[1], 'active' => $l[2]],
+            fn (array $l) => ['label' => $l[0], 'route' => $l[1], 'active' => $l[2], 'badge' => $l[4] ?? null],
             $visible,
         ));
     }

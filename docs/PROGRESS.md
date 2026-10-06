@@ -4,12 +4,13 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 6 — User module (web) (next to start)
-- **Last finished phase:** Phase 5 — Admin module (2026-10-06)
+- **Current phase:** Phase 7 — REST API (next to start)
+- **Last finished phase:** Phase 6 — User module (web) (2026-10-06)
 
 ## Next steps
-1. Phase 6: user tabs from active categories, 7/3 entries via EntryService::visibleFor, Show More with contact
-   settings, subscription status page, notifications list + unread count (NotificationService).
+1. Phase 7: all endpoints of docs/API.md with Sanctum + `session.single`, envelope, API Resources, Form Requests
+   (reuse StoreEntryRequest, AccountRequest, SubscriptionActionRequest), rate limits, exception rendering as
+   envelope, feature tests per endpoint/role, docs/API.md examples + docs/api.http.
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +19,15 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 6
+- User/Trader web: tab screen (`/user`), latest 7/3 entries with image/date/time and lightbox, notice text,
+  subscription strip, Show More with contact details; `/user/subscription`; `/user/notifications` with unread
+  badge, mark read / mark all. `NotificationService`. Login page shows the app name instead of the Laravel logo;
+  navigation tightened.
+- UserModuleTest (tabs order/hidden, 7 vs 3 newest-first, no-subscription, limits from settings, rename/reorder,
+  renewal, notifications isolation) — 78 tests pass. Checked in Chrome: expired user (3 entries + Show More
+  contacts), Super Admin dashboard, roles and subscription screens.
 
 ### 2026-10-06 — Phase 5
 - Staff dashboard (/admin) listing the screens the account's permissions allow; read-only categories; add entry

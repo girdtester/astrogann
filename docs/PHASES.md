@@ -49,11 +49,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] Policies + tests for forbidden actions
 
 ### Phase 6 — User module (web)
-- [ ] Tabs from active categories (sort_order)
-- [ ] 7/3 entries limited in the query, image/date/time
-- [ ] Show More with contact details from settings
-- [ ] Subscription status + expiry date
-- [ ] Notifications list + unread count
+- [x] Tabs from active categories (sort_order)
+- [x] 7/3 entries limited in the query, image/date/time
+- [x] Show More with contact details from settings
+- [x] Subscription status + expiry date
+- [x] Notifications list + unread count
 
 ### Phase 7 — REST API
 - [ ] All endpoints, Sanctum, envelope, Resources, Form Requests, rate limits
@@ -110,11 +110,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.2 A | Add entry | /admin/entries/create | | n/a | web done |
 | 3.2 A | View own entries | /admin/entries | | n/a | web done |
 | 3.2 A | No edit/delete/user/subscription/category mgmt | EntryPolicy + can: middleware, AdminModuleTest | | n/a | web done (default role perms, D-42) |
-| 3.2 U | Login web/mobile | | | | |
-| 3.2 U | View active categories | | | | |
-| 3.2 U | Latest 7 if active | | | | |
-| 3.2 U | Latest 3 if expired | | | | |
-| 3.2 U | Show More (contact admin) | | | | |
+| 3.2 U | Login web/mobile | /login → /user | | | web done |
+| 3.2 U | View active categories | /user tabs | | | web done |
+| 3.2 U | Latest 7 if active | /user (EntryService::visibleFor) | | | web done |
+| 3.2 U | Latest 3 if expired | /user | | | web done |
+| 3.2 U | Show More (contact admin) | /user, /user/subscription | | | web done |
 | 3.2 U | Push for new entries | | | | |
 | 3.2 U | Email 3 days before expiry | | | | |
 | 3.2 U | Single login | | | | |
@@ -122,4 +122,4 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.4 | Subscription check per request, daily jobs | | | | |
 | 3.7 | Notification flow | | | | |
 | 3.8 | Single session | | | | |
-| 3.9 | Dynamic tabs + settings | | | | |
+| 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | | | web done |

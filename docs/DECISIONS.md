@@ -229,3 +229,16 @@ max:ENTRY_IMAGE_MAX_KB|dimensions:max 8000x8000`; stored extension comes from th
 
 **D-47 (2026-10-06) — `EntryPolicy`.** create = `entries.create`; view = `entries.view_all` or (own and
 `entries.view_own`); update/delete = always false. No edit/delete routes exist for entries anywhere.
+
+## Phase 6 — 2026-10-06
+
+**D-48 (2026-10-06) — Web tabs are plain links** (`/user?category={id}`), server-rendered; no JavaScript needed and
+the selected tab is bookmarkable. Tabs = `CategoryService::activeTabs()` (status active, `sort_order`, then name).
+
+**D-49 (2026-10-06) — A user with no subscription at all is treated like an expired one** (3 entries + Show More).
+
+**D-50 (2026-10-06) — "Show More" is a button that reveals the contact options** (tel:, WhatsApp `wa.me/<digits>`,
+mailto:) with the `show_more_text` setting; on the subscription page it is open by default when not active.
+
+**D-51 (2026-10-06) — Notifications page:** opening a notification marks it read and jumps to its category tab;
+"Mark all as read" button; unread count badge on the "Notifications" nav link (every page load).

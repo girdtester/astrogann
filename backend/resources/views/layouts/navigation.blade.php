@@ -11,10 +11,10 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-5 sm:-my-px sm:ms-8 sm:flex">
                     @foreach ($navLinks as $link)
                         <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
-                            {{ __($link['label']) }}
+                            {{ __($link['label']) }}@if ($link['badge'])<span class="ms-1 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">{{ $link['badge'] }}</span>@endif
                         </x-nav-link>
                     @endforeach
                 </div>
@@ -25,7 +25,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }} <span class="text-xs text-gray-400">({{ Auth::user()->role->name }})</span></div>
+                            <div class="whitespace-nowrap">{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -71,7 +71,7 @@
         <div class="pt-2 pb-3 space-y-1">
             @foreach ($navLinks as $link)
                 <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['active'])">
-                    {{ __($link['label']) }}
+                    {{ __($link['label']) }}@if ($link['badge'])<span class="ms-1 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">{{ $link['badge'] }}</span>@endif
                 </x-responsive-nav-link>
             @endforeach
         </div>

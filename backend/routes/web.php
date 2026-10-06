@@ -70,6 +70,10 @@ Route::middleware('auth')->group(function () {
     // User / Trader area (spec 3.2, 3.9).
     Route::prefix('user')->name('user.')->middleware('role:user')->group(function () {
         Route::get('/', [User\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('subscription', [User\AccountController::class, 'subscription'])->name('subscription');
+        Route::get('notifications', [User\AccountController::class, 'notifications'])->name('notifications.index');
+        Route::post('notifications/read-all', [User\AccountController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::post('notifications/{id}/read', [User\AccountController::class, 'markRead'])->whereNumber('id')->name('notifications.read');
     });
 });
 
