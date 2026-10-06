@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+
+import '../app_scope.dart';
+import '../theme/app_theme.dart';
+import '../widgets/brand.dart';
+import 'entries_screen.dart';
+import 'notifications_screen.dart';
+import 'subscription_screen.dart';
+
+/// Signed-in shell: Entries · Subscription · Notifications (badge), logout in the app bar.
+class HomeShell extends StatefulWidget {
+  const HomeShell({super.key});
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  int _index = 0;
+
+  /// Set by the notifications screen to jump to a category tab.
+  final ValueNotifier<int?> _openCategory = ValueNotifier(null);
+
+  @override
+  void dispose() {
+    _openCategory.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmLogout() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text('You will need to log in again to see the entries.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(96, 40)),
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true && mounted) await AppScope.of(context).auth.logout();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = AppScope.of(context);
+    final appName = scope.settings.settings?.appName ?? 'ASTRO GANN';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: BrandTitle(appName: appName),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Center(
+              child: Text(scope.auth.user?.name ?? '', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            ),
+          ),
+          IconButton(key: const Key('logout'), tooltip: 'Log out', icon: const Icon(Icons.logout_rounded), onPressed: _confirmLogout),
+        ],
+      ),
+      // Phone-like reading width on tablets / desktop browsers.
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: IndexedStack(index: _index, children: [
+            EntriesScreen(openCategory: _openCategory),
+            const SubscriptionScreen(),
+            NotificationsScreen(onOpenCategory: (id) {
+              _openCategory.value = id;
+              setState(() => _index = 0);
+            }),
+          ]),
+        ),
+      ),
+      bottomNavigationBar: ListenableBuilder(
+        listenable: scope.notifications,
+        builder: (context, _) {
+          final unread = scope.notifications.unread;
+          return NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: (i) {
+              setState(() => _index = i);
+              if (i == 2) scope.notifications.refresh(silent: true);
+              if (i == 1) scope.auth.refreshSubscription().catchError((_) {});
+            },
+            destinations: [
+              const NavigationDestination(icon: Icon(Icons.grid_view_outlined), selectedIcon: Icon(Icons.grid_view_rounded), label: 'Entries'),
+              const NavigationDestination(
+                  icon: Icon(Icons.workspace_premium_outlined), selectedIcon: Icon(Icons.workspace_premium), label: 'Subscription'),
+              NavigationDestination(
+                icon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.notifications_outlined)),
+                selectedIcon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.notifications)),
+                label: 'Notifications',
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}

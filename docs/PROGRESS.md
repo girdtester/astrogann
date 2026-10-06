@@ -4,13 +4,13 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 10 — Mobile setup — **WAITING for the owner's go-ahead** (D-67)
-- **Last finished phase:** Phase 9 — Security and QA (2026-10-06). Web + API are complete.
+- **Current phase:** all phases (0–13) complete — maintenance / owner feedback
+- **Last finished phase:** Phase 13 — Final report (2026-10-06)
 
 ## Next steps
-1. Ask the owner the mobile questions (see the Phase 9 report in the chat / below) and wait for the answer.
-2. Then Phase 10: `flutter doctor`, create `mobile/` (Android + iOS + web), run with `flutter run -d chrome`
-   against http://localhost:8000, local-only CORS, docs/MOBILE.md.
+1. Owner: test web (http://localhost:8000) and app (`cd mobile && flutter run -d chrome --web-port 5555`).
+2. Owner supplies: GoDaddy cPanel/domain, live SMTP mailbox, Firebase files → then go live (docs/DEPLOYMENT.md,
+   docs/MOBILE.md §5–7).
 
 ## Open items for the owner
 - Production: GoDaddy cPanel access/domain, SMTP mailbox (or Gmail App Password), Firebase project files.
@@ -23,6 +23,15 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phases 10–13 completed
+- Flutter screens: splash, login (staff refused, server messages), home shell (bottom nav + unread badge, logout),
+  entries tabs from API (pull to refresh, image/date/time cards, zoom viewer, subscription strip, Show More with
+  Call/WhatsApp/Email), subscription, notifications (mark read/all, paging, open category). Loading/empty/error
+  everywhere. `flutter analyze` clean, 5 widget tests pass. Checked in Chrome (localhost:5555) against the real
+  backend: login, tabs, badge, images with readable date/time, image viewer; expired-user API data verified.
+- docs/MOBILE.md (run, one-place API URL, structure, Firebase steps, Android/iOS builds). Final traceability table
+  in docs/PHASES.md. Push on devices waits for the owner's Firebase files (D-82).
 
 ### 2026-10-06 — Phase 10 started (INCOMPLETE — resume here) + subscription e-mails
 - Done: Flutter project `mobile/` created (app id com.astrogann.app, name, icons), packages http/shared_preferences/

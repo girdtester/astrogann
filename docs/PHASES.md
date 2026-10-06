@@ -75,24 +75,24 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] DEPLOYMENT.md final (GoDaddy, public_html variant, cron, mail, FCM, first Super Admin)
 
 ### Phase 10 — Mobile setup
-- [ ] flutter doctor; app in `mobile/` (android, ios, web)
-- [ ] Config file for base URL, API client, token storage, models, theme
-- [ ] Local CORS for Flutter web origin
-- [ ] docs/MOBILE.md
+- [x] flutter doctor; app in `mobile/` (android, ios, web)
+- [x] Config file for base URL, API client, token storage, models, theme
+- [x] Local CORS for Flutter web origin
+- [x] docs/MOBILE.md
 
 ### Phase 11 — Mobile features
-- [ ] Login (device_type=mobile, fcm token), settings, dynamic tabs, entries, pull to refresh, Show More,
+- [x] Login (device_type=mobile, fcm token), settings, dynamic tabs, entries, pull to refresh, Show More,
       subscription, notifications, logout, session_replaced handling, loading/empty/error states
 
 ### Phase 12 — Mobile push and build
-- [ ] PushService (Firebase) optional when config files missing; skipped on web
-- [ ] Widget tests (login, entries); Chrome walk-through
-- [ ] Build docs (Android debug/release, iOS)
+- [x] PushService interface; NoPushService until Firebase files exist; skipped on web; exact steps in MOBILE.md §5 (D-82)
+- [x] Widget tests (login, entries, Show More, staff refused, session replaced); Chrome walk-through
+- [x] Build docs (Android debug/release, iOS)
 
 ### Phase 13 — Final report
-- [ ] Traceability table complete, defaults list, not-done list, what the owner must supply
+- [x] Traceability table complete, defaults list, not-done list, what the owner must supply (below + chat report)
 
-## Traceability (spec bullet → web / API / mobile) — filled in as phases complete
+## Traceability (spec bullet → web / API / mobile) — working table, **superseded 2026-10-06 by the final table at the end of this file**
 
 | Spec | Bullet | Web | API | Mobile | Status |
 |---|---|---|---|---|---|
@@ -124,3 +124,42 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.7 | Notification flow | EntryCreated → jobs → user_notifications + push; /user/notifications | GET /api/notifications | | backend done |
 | 3.8 | Single session | SessionService::startWeb, EnsureActiveSession, SingleSessionTest | SessionService::startApi, ApiTest | | web+API done |
 | 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | GET /api/categories, GET /api/settings | | web+API done |
+
+
+## Final traceability — Phase 13 (2026-10-06)
+
+| Spec | Requirement | Web | API | Mobile | Status |
+|---|---|---|---|---|---|
+| 3.1 | Web + Android + iOS clients over HTTPS | Blade app | REST `/api/*` | Flutter app (android/ios/web) | done |
+| 3.1 | Auth, single session, business/subscription logic, notifications, e-mail, dynamic categories | Services in `app/Services` | same services | — | done |
+| 3.1 | Files in Laravel public folder (not S3); SMTP (not SES); FCM | `public/uploads/entries` | — | — | done (FCM needs owner's files) |
+| 3.2 SA | Login / dashboard | /login → /superadmin | POST /api/auth/login | n/a (staff refused) | done |
+| 3.2 SA | Create / manage admins | Accounts ▾ Admins/Staff (+ roles, extra permissions) | /api/admin/admins | n/a | done |
+| 3.2 SA | Create / manage users | Accounts ▾ Users | /api/admin/users | n/a | done |
+| 3.2 SA | Activate / deactivate users | Users → Activate/Deactivate | PATCH /api/admin/users/{id} | n/a | done |
+| 3.2 SA | Subscriptions activate / extend / expire | Subscriptions → Manage (+ payments, e-mails) | POST /api/admin/subscription | n/a | done |
+| 3.2 SA | Manage categories | Entries ▾ Categories | — | n/a | done |
+| 3.2 SA | View all entries | Entries ▾ All Entries (filters, sort, edit/delete) | POST/DELETE /api/entries/{id} | n/a | done |
+| 3.2 SA | Reports / logs | Reports / Logs | — | n/a | done |
+| 3.2 SA | System settings | Settings | GET /api/settings (public part) | reads settings | done |
+| 3.2 A | Login, view categories, add entry, view own entries | /admin, Categories, Add Entry, My Entries | /api/auth/login, /api/categories, POST /api/entries | n/a | done |
+| 3.2 A | No edit/delete/user/subscription/category management | default Admin role permissions (D-42, D-71) | can: + policies | n/a | done (configurable) |
+| 3.2 U | Login (web / mobile) | /login → /user | POST /api/auth/login | Login screen | done |
+| 3.2 U | View active categories | tabs `?tab=<code>` | GET /api/categories | tab bar from API | done |
+| 3.2 U | Latest 7 entries if active | /user | GET /api/categories/{id}/entries | Entries tab | done |
+| 3.2 U | Latest 3 entries if expired | /user | same | Entries tab | done |
+| 3.2 U | "Show More" (contact admin) | Show More panel | `show_more` + settings | Show More card (Call/WhatsApp/Email) | done |
+| 3.2 U | Push notifications for new entries | live badge/toast (web) | jobs → FcmPushService | PushService (Firebase files pending) | backend done; device push needs owner's Firebase files |
+| 3.2 U | E-mail 3 days before expiry | — | `astrogann:send-expiry-reminders` (SMTP) | — | done |
+| 3.2 U | Single login (one device) | EnsureActiveSession | session_replaced | auto-logout with reason | done |
+| 3.3 | End-to-end flow 1–8 | EndToEndFlowTest | EndToEndFlowTest | widget tests + Chrome | done |
+| 3.4 | Subscription check per request; 7/3; renew restores; expiry mail; daily expire | EntryService, commands | same | same API | done |
+| 3.5 | Database tables + indexes | migrations (+ roles/permissions, settings, logs) | — | — | done |
+| 3.6 | API endpoints, envelope, Resources, Form Requests | — | 21 routes, docs/API.md, docs/api.http | ApiClient | done |
+| 3.7 | Notification flow (DB + push + web at next view) | unread badge, toast, list | GET /api/notifications | Notifications tab + badge | done |
+| 3.8 | Single session web OR mobile; staff flag | SessionService | SessionService | handles session_replaced | done |
+| 3.9 | Tab layout, everything dynamic, settings endpoint | /user | /api/settings, /api/categories | tabs/texts/limits from API | done |
+| Owner | Dynamic roles & permissions | Roles & Permissions | permission-guarded | — | done (D-42) |
+| Owner | Branding, light theme, grouped menu, buttons, readable dates, pickers | all screens | `display` fields | same colours/strings | done (D-61…D-79) |
+| Owner | Scale to lakhs, sorting/filters | all lists | — | — | done (docs/PERFORMANCE.md) |
+| Owner | Subscription change e-mails | — | SubscriptionChangedMail | notification type `subscription` | done (D-81) |

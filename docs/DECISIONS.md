@@ -396,3 +396,14 @@ otherwise only `CORS_ALLOWED_ORIGINS`.
 `SubscriptionChangedMail` + an in-app notification of type `subscription`. Local SMTP uses the owner's test Gmail
 account (in git-ignored `.env` only; login verified). Queued mails need the queue running: production cron, locally
 `php artisan schedule:work` (or `php artisan queue:work`).
+
+## Phases 11–13 (2026-10-06)
+
+**D-82 (2026-10-06) — Firebase deferred.** No Firebase files were supplied, so the app ships with `NoPushService`
+(app fully usable; in-app notifications + badge still work). Adding `firebase_core`/`firebase_messaging` without the
+config files would break Android builds (google-services plugin), so the packages are NOT added yet; the exact steps
+and the ready-made `FirebasePushService` are in docs/MOBILE.md §5.
+
+**D-83 (2026-10-06) — Mobile state without extra packages:** `ChangeNotifier` controllers shared through an
+`InheritedWidget` (`AppScope`). Content width capped at 760 px so the app also looks right in a desktop browser.
+Images use `WebHtmlElementStrategy.prefer` on web (no CORS needed for static image files).
