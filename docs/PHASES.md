@@ -1,0 +1,123 @@
+# AstroGann — Phases and traceability
+
+Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/test, fix, update docs, commit
+"Phase N — name", short report, continue.
+
+## Phase checklists
+
+### Phase 0 — Read and plan
+- [x] Read `docs/architecture.png` (7 panels) and the brief
+- [x] Check PHP (8.2.12), Composer (2.4.4), MySQL (MariaDB 10.4.32, DB `astrogann` exists), Flutter (3.35.5)
+- [x] Create CLAUDE.md, AGENTS.md, docs/SPEC, PHASES, PROGRESS, DECISIONS, DATABASE, API, SECURITY, TEST_ACCOUNTS, DEPLOYMENT
+- [x] List open questions with defaults (DECISIONS D-17…D-20)
+- [x] git init + commit
+
+### Phase 1 — Project setup
+- [ ] Laravel 12 in `backend/`
+- [ ] `.env`: DB astrogann/root/empty, QUEUE_CONNECTION=database, SESSION_DRIVER=database, MAIL_MAILER=log, APP_TIMEZONE=Asia/Kolkata
+- [ ] Breeze (Blade) + Sanctum installed
+- [ ] App boots, DB connects, default migrations run
+- [ ] `.gitignore` sensible (keep `public/build` committed — D-30)
+
+### Phase 2 — Database
+- [ ] Migrations for every table in DATABASE.md
+- [ ] Models, relations, casts, enums
+- [ ] Factories + seeders (4 accounts, categories, ≥10 entries/category with placeholder images, settings)
+- [ ] `migrate:fresh --seed` clean
+
+### Phase 3 — Web auth, roles, single session
+- [ ] One login page; redirect by role to /superadmin, /admin, /user
+- [ ] Role middleware + Gates; inactive users blocked; registration disabled; login throttling
+- [ ] SessionService + EnsureActiveSession (web)
+- [ ] Feature tests: each seed account sees only its own area, 403 elsewhere; single-session replacement
+
+### Phase 4 — Super Admin module
+- [ ] Dashboard counts
+- [ ] Admins CRUD (no hard delete of admins with entries — deactivate instead)
+- [ ] Users CRUD + activate/deactivate
+- [ ] Categories CRUD + status + sort_order
+- [ ] Subscriptions activate/extend/expire + payment record
+- [ ] All entries with filters
+- [ ] Reports/logs (activity_logs)
+- [ ] Settings screen (limits, reminder days, contact details, texts)
+
+### Phase 5 — Admin module
+- [ ] View categories
+- [ ] Add entry with validation, random filename, uploads .htaccess
+- [ ] Own entries only
+- [ ] Policies + tests for forbidden actions
+
+### Phase 6 — User module (web)
+- [ ] Tabs from active categories (sort_order)
+- [ ] 7/3 entries limited in the query, image/date/time
+- [ ] Show More with contact details from settings
+- [ ] Subscription status + expiry date
+- [ ] Notifications list + unread count
+
+### Phase 7 — REST API
+- [ ] All endpoints, Sanctum, envelope, Resources, Form Requests, rate limits
+- [ ] Single session shared with web
+- [ ] Feature tests per endpoint and role
+- [ ] docs/API.md complete + `docs/api.http` / Postman collection
+
+### Phase 8 — Queues, notifications, email, scheduler
+- [ ] EntryCreated event → queued job → DB notifications (chunked) + PushService (log / fcm)
+- [ ] Expiry reminder Mailable (queued), never twice
+- [ ] Daily expire job
+- [ ] Scheduler: queue:work --stop-when-empty each minute; daily jobs
+- [ ] Failed-job handling; DEPLOYMENT.md cron
+
+### Phase 9 — Security and QA
+- [ ] SECURITY.md review ticked
+- [ ] Full test run
+- [ ] 3.3 flow walk-through; 3.2 bullets ticked below
+
+### Phase 10 — Mobile setup
+- [ ] flutter doctor; app in `mobile/` (android, ios, web)
+- [ ] Config file for base URL, API client, token storage, models, theme
+- [ ] Local CORS for Flutter web origin
+- [ ] docs/MOBILE.md
+
+### Phase 11 — Mobile features
+- [ ] Login (device_type=mobile, fcm token), settings, dynamic tabs, entries, pull to refresh, Show More,
+      subscription, notifications, logout, session_replaced handling, loading/empty/error states
+
+### Phase 12 — Mobile push and build
+- [ ] PushService (Firebase) optional when config files missing; skipped on web
+- [ ] Widget tests (login, entries); Chrome walk-through
+- [ ] Build docs (Android debug/release, iOS)
+
+### Phase 13 — Final report
+- [ ] Traceability table complete, defaults list, not-done list, what the owner must supply
+
+## Traceability (spec bullet → web / API / mobile) — filled in as phases complete
+
+| Spec | Bullet | Web | API | Mobile | Status |
+|---|---|---|---|---|---|
+| 3.2 SA | Login / dashboard | | | n/a | |
+| 3.2 SA | Create / manage admins | | | n/a | |
+| 3.2 SA | Create / manage users | | | n/a | |
+| 3.2 SA | Activate / deactivate users | | | n/a | |
+| 3.2 SA | Subscriptions activate/extend/expire | | | n/a | |
+| 3.2 SA | Manage categories | | | n/a | |
+| 3.2 SA | View all entries | | | n/a | |
+| 3.2 SA | Reports / logs | | | n/a | |
+| 3.2 SA | System settings | | | n/a | |
+| 3.2 A | Login | | | n/a | |
+| 3.2 A | View categories | | | n/a | |
+| 3.2 A | Add entry | | | n/a | |
+| 3.2 A | View own entries | | | n/a | |
+| 3.2 A | No edit/delete/user/subscription/category mgmt | | | n/a | |
+| 3.2 U | Login web/mobile | | | | |
+| 3.2 U | View active categories | | | | |
+| 3.2 U | Latest 7 if active | | | | |
+| 3.2 U | Latest 3 if expired | | | | |
+| 3.2 U | Show More (contact admin) | | | | |
+| 3.2 U | Push for new entries | | | | |
+| 3.2 U | Email 3 days before expiry | | | | |
+| 3.2 U | Single login | | | | |
+| 3.3 | End-to-end flow 1–8 | | | | |
+| 3.4 | Subscription check per request, daily jobs | | | | |
+| 3.7 | Notification flow | | | | |
+| 3.8 | Single session | | | | |
+| 3.9 | Dynamic tabs + settings | | | | |

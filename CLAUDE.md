@@ -1,0 +1,62 @@
+# AstroGann — agent guide
+
+**Before any work: read this file, then `docs/PROGRESS.md`, then the docs relevant to the task.** Resume from the
+first unfinished phase in `docs/PHASES.md`. Never restart finished phases.
+
+## Project
+Subscription platform: admins post image entries under market categories (Nifty 50, NSE, …); subscribed
+users/traders view the latest entries on web and on the Flutter app (Android/iOS). Three roles in one `users` table:
+`superadmin`, `admin`, `user`. Full spec: `docs/SPEC.md`.
+
+## Layout
+- `backend/` — Laravel 12 (web via Blade/Breeze + REST API via Sanctum)
+- `mobile/` — Flutter app (user role only), Phases 10–12
+- `docs/` — all project documentation (shared)
+
+## Stack
+PHP 8.2 (XAMPP `C:\xampp\php\php.exe`), Laravel 12, MariaDB/MySQL (DB `astrogann`, root, empty password,
+127.0.0.1:3306), Breeze (Blade), Sanctum, database queue/session/cache, SMTP mail (log locally), FCM HTTP v1 push
+behind `PushService`. Production: GoDaddy shared hosting (no S3/Redis/Supervisor/SSH) — see `docs/DEPLOYMENT.md`.
+Laravel first-party packages only unless the owner approves.
+
+## How to run (from `backend/`)
+- Serve: `php artisan serve` → http://localhost:8000
+- Queue (local): `php artisan queue:work` (production: scheduler runs `queue:work --stop-when-empty`)
+- Scheduler (local): `php artisan schedule:work`
+- Tests: `php artisan test`
+- Reset local DB (local only, destroys data): `php artisan migrate:fresh --seed`
+- Assets: `npm install && npm run build` (commit `public/build`)
+- Mobile (from `mobile/`): `flutter run -d chrome` against http://localhost:8000
+
+## Conventions
+- Business logic in `app/Services/*Service.php` (SubscriptionService, EntryService, SessionService,
+  SettingsService, NotificationService, ActivityLogService, PushService). Web and API controllers are thin and call
+  the same services. No duplicated logic.
+- Roles via `role` column + `role:` middleware + Gates/Policies. No permission package.
+- Validation in Form Requests; API output via API Resources; API envelope `{success, message, data, errors}`.
+- Enums in `app/Enums`. Explicit `$fillable` on every model.
+- Nothing user-visible is hard-coded: categories, limits (7/3), reminder days, contact info, texts come from DB
+  (`settings` via `SettingsService`).
+- Entries are immutable (no edit/delete for anyone).
+- Uploads to `public/uploads/entries/` via disk `uploads`; store relative path only.
+- Timezone Asia/Kolkata.
+
+## Doc rules
+- Update `docs/PROGRESS.md` and the relevant doc **in the same change** as the code.
+- Never delete doc content; mark it superseded with a date.
+- Every decision/assumption → `docs/DECISIONS.md` (dated, numbered).
+- Never run destructive DB commands (migrate:fresh, drops) once real data exists without telling the owner first.
+- Commit at the end of each phase with the phase name.
+
+## Docs index
+- [docs/SPEC.md](docs/SPEC.md) — full specification
+- [docs/PHASES.md](docs/PHASES.md) — phases, checklists, traceability
+- [docs/PROGRESS.md](docs/PROGRESS.md) — current state, next steps, known issues
+- [docs/DECISIONS.md](docs/DECISIONS.md) — decision log
+- [docs/DATABASE.md](docs/DATABASE.md) — schema
+- [docs/API.md](docs/API.md) — REST contract (mobile)
+- [docs/SECURITY.md](docs/SECURITY.md) — single session, roles, limits, uploads
+- [docs/TEST_ACCOUNTS.md](docs/TEST_ACCOUNTS.md) — local seed accounts
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — GoDaddy deployment
+- [docs/MOBILE.md](docs/MOBILE.md) — Flutter app (from Phase 10)
+- [docs/architecture.png](docs/architecture.png) — source architecture image
