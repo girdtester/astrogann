@@ -60,6 +60,8 @@ Base URL: `{APP_URL}/api` — local `http://localhost:8000/api`.
 | 15 | GET / POST | /api/admin/admins | permission `staff.manage` | List / create staff (admins) |
 | 16 | PATCH | /api/admin/admins/{id} | permission `staff.manage` | Update staff (incl. `status`, `role_id`, `permissions`) |
 | 17 | POST | /api/admin/subscription | permission `subscriptions.manage` | activate / extend / expire |
+| 18 | POST | /api/entries/{id} | `entries.edit` + reach (D-71) | Edit entry (multipart; `image` optional) |
+| 19 | DELETE | /api/entries/{id} | `entries.delete` + reach (D-71) | Delete entry and its image |
 
 Rows 1–2, 4–8, 11, 13–17 are the spec's endpoints (3.6) with their exact paths. Rows 3, 9, 10 are additions for the
 app; row 12 comes from the architecture image (DECISIONS D-09). Super Admin has every permission; the other roles
@@ -141,6 +143,11 @@ Fields: `category_id` (active category), `entry_date` (`YYYY-MM-DD`, within the 
 `entry_time` (`HH:MM`), `image` (jpg/jpeg/png/webp, ≤ `ENTRY_IMAGE_MAX_KB`, default 5 MB).
 201 `data` = one entry object (as in 2.6). 403 without `entries.create`. 422 on validation errors.
 Creating an entry queues the notifications/push to subscribed users (Phase 8).
+
+### 2.7b POST /api/entries/{id} and DELETE /api/entries/{id} (added 2026-10-06, D-71)
+Edit uses **POST** (PHP cannot read multipart bodies on PATCH): same fields as 2.7, `image` optional (keeps the
+current one). 200 → entry object. Delete → 200 `data = null`; the image file is removed. 403 without
+`entries.edit` / `entries.delete`, or if the entry is not the caller's and the caller lacks `entries.view_all`.
 
 ### 2.8 GET /api/notifications
 ```json

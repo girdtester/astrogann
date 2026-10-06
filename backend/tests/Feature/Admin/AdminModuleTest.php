@@ -99,21 +99,35 @@ class AdminModuleTest extends TestCase
             ->assertDontSee('02 Feb 2026');
     }
 
-    public function test_entries_cannot_be_edited_or_deleted_by_anyone(): void
+    public function test_default_admin_cannot_edit_or_delete_entries(): void
     {
-        $entry = Entry::factory()->create(['admin_id' => $this->admin->id]);
-        $sa = User::factory()->superAdmin()->create();
+        $entry = Entry::factory()->create(['admin_id' => $this->admin->id, 'category_id' => $this->category->id]);
 
-        foreach ([$this->admin, $sa] as $user) {
-            $this->assertFalse($user->can('update', $entry));
-            $this->assertFalse($user->can('delete', $entry));
-        }
-
-        foreach (['put', 'patch', 'delete'] as $method) {
-            $this->assertContains($this->{$method}('/admin/entries/'.$entry->id)->status(), [404, 405]); // no such route
-        }
-        $this->get('/admin/entries/'.$entry->id.'/edit')->assertNotFound();
+        $this->assertFalse($this->admin->can('update', $entry));
+        $this->assertFalse($this->admin->can('delete', $entry));
+        $this->get(route('admin.entries.edit', $entry))->assertForbidden();
+        $this->put(route('admin.entries.update', $entry), $this->payload())->assertForbidden();
+        $this->delete(route('admin.entries.destroy', $entry))->assertForbidden();
+        $this->get(route('admin.entries.index'))->assertDontSee(route('admin.entries.edit', $entry));
         $this->assertNotNull($entry->fresh());
+    }
+
+    public function test_admin_granted_edit_and_delete_works_on_own_entries_only(): void
+    {
+        $this->admin->directPermissions()->sync(\App\Models\Permission::whereIn('key', ['entries.edit', 'entries.delete'])->pluck('id'));
+        $this->admin->flushPermissionCache();
+        $own = Entry::factory()->create(['admin_id' => $this->admin->id, 'category_id' => $this->category->id]);
+        $other = Entry::factory()->create(['category_id' => $this->category->id]);
+
+        $this->put(route('admin.entries.update', $own), $this->payload(['entry_time' => '11:45', 'image' => null]))
+            ->assertRedirect(route('admin.entries.index'));
+        $this->assertSame('11:45', $own->fresh()->timeLabel());
+
+        $this->put(route('admin.entries.update', $other), $this->payload())->assertForbidden();
+        $this->delete(route('admin.entries.destroy', $other))->assertForbidden();
+        $this->delete(route('admin.entries.destroy', $own))->assertRedirect();
+        $this->assertNull($own->fresh());
+        $this->assertNotNull($other->fresh());
     }
 
     public function test_admin_has_no_management_access(): void

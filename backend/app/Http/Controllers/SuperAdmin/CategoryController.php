@@ -19,6 +19,7 @@ class CategoryController extends Controller
     {
         return view('superadmin.categories.index', [
             'categories' => Category::query()->withCount('entries')->ordered()->get(),
+            'canForceDelete' => request()->user()->can(\App\Support\Permissions::RECORDS_FORCE_DELETE),
         ]);
     }
 

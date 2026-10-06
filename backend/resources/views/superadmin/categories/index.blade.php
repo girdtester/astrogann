@@ -24,8 +24,9 @@
                                     @csrf @method('PATCH')
                                     <button class="{{ $category->isActive() ? 'text-yellow-600' : 'text-green-700' }} hover:underline">{{ $category->isActive() ? 'Deactivate' : 'Activate' }}</button>
                                 </form>
-                                @if ($category->entries_count === 0)
-                                    <form method="POST" action="{{ route('superadmin.categories.destroy', $category) }}" class="inline" onsubmit="return confirm('Delete {{ $category->name }}?')">
+                                @if ($category->entries_count === 0 || $canForceDelete)
+                                    <form method="POST" action="{{ route('superadmin.categories.destroy', $category) }}" class="inline"
+                                          onsubmit="return confirm({{ \Illuminate\Support\Js::from($category->entries_count ? 'Delete '.$category->name.' AND its '.$category->entries_count.' entries with their images? This cannot be undone.' : 'Delete '.$category->name.'?') }})">
                                         @csrf @method('DELETE')
                                         <button class="text-yellow-600 hover:underline">Delete</button>
                                     </form>

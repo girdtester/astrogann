@@ -20,6 +20,10 @@ etc.) and subscribed users/traders view the latest entries on web and, later, on
 
 ## 2. Roles and permissions (image panel 2)
 
+> 2026-10-06 (D-71/D-72): entries are no longer immutable — Super Admin (and roles granted `entries.edit` /
+> `entries.delete` / `records.force_delete`) can edit and delete. The "Admin: no edit / no delete" rule is the
+> default of the Admin role.
+>
 > 2026-10-06 (D-42): roles and permissions are now dynamic. The lists below are the **defaults** of the three
 > system roles; the Super Admin can create staff roles, change the Admin role's permissions and give extra
 > permissions to individual staff accounts. Entries remain immutable for everyone.

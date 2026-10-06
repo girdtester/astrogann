@@ -76,7 +76,8 @@ abstract class AccountController extends Controller
         return view('superadmin.accounts.form', $this->viewData($request, [
             'account' => $account,
             'canManage' => $this->accounts->canManage($account, $request->user()),
-            'canDelete' => $this->accounts->canDelete($account),
+            'canDelete' => $this->accounts->canDelete($account, $request->user()),
+            'hasHistory' => $this->accounts->hasHistory($account),
         ]));
     }
 
@@ -150,6 +151,7 @@ abstract class AccountController extends Controller
             'grantable' => $actor->permissionKeys(),
             'canManage' => $data['canManage'] ?? true,
             'canDelete' => $data['canDelete'] ?? false,
+            'hasHistory' => $data['hasHistory'] ?? false,
         ];
     }
 }

@@ -323,3 +323,29 @@ production Super Admin (non-interactive, cron-friendly; prints a random password
 
 **D-67 (2026-10-06) — Owner instruction:** after the web part is complete, stop and ask before starting the mobile
 app (Phase 10).
+
+## Owner change requests — 2026-10-06 (after Phase 9)
+
+**D-69 (2026-10-06) — Light theme.** Owner: "all olive background → white is better for visibility". Supersedes the
+dark part of D-61: white cards on a very light grey page, olive green primary, light-blue info/links, yellow
+attention; still **no red** (red/rose/pink/orange palettes remapped to yellow). Normal Tailwind palette semantics.
+
+**D-70 (2026-10-06) — Grouped top menu.** Owner: the top bar must fit the screen without horizontal scrolling. Menu
+= Dashboard · Accounts ▾ (Admins/Staff, Users/Traders, Roles & Permissions) · Subscriptions · Entries ▾ (Add Entry,
+All/My Entries, Categories) · Reports/Logs · Settings. Each item still only appears with its permission; a group
+with one visible item becomes a plain link. Desktop dropdowns from 1024 px; below that a hamburger with grouped
+sections. Built in `App\Support\Navigation::menu()`.
+
+**D-71 (2026-10-06) — Entries are editable/deletable (supersedes D-19 and D-47).** Owner: "Super Admin can do
+everything like edit and delete, but we restrict as well". New permissions `entries.edit` and `entries.delete`
+(Super Admin has them; the default Admin role does not; grant them per role or per account). Reach: all entries with
+`entries.view_all`, otherwise only own. Edit = category/date/time/replace image (old file removed, no new
+notification); delete removes the image file. Web: `/admin/entries/{id}/edit|update|destroy`; API:
+`POST /api/entries/{id}` (edit, multipart) and `DELETE /api/entries/{id}`. Logged as `entry.updated` /
+`entry.deleted`.
+
+**D-72 (2026-10-06) — Deleting records with history (refines D-43).** New permission `records.force_delete`
+(Super Admin has it): users with subscriptions/payments can be deleted (their subscriptions, payments, sessions and
+notifications go with them); staff with entries can be deleted (entries are re-assigned to the person deleting);
+categories with entries can be deleted (entries and image files are deleted). Without this permission the old rule
+stays (deactivate instead). Super Admin accounts are never deletable in the app.

@@ -31,9 +31,81 @@ class EntryService
     /** Store the image under a random name in public/uploads/entries and create the entry. */
     public function create(User $admin, array $data, UploadedFile $image): Entry
     {
-        $category = Category::query()->active()->find($data['category_id'])
-            ?? throw new InvalidArgumentException('Choose an active category.');
+        $category = $this->activeCategory($data['category_id']);
+        $path = $this->storeImage($image);
 
+        try {
+            $entry = DB::transaction(fn () => Entry::create([
+                'category_id' => $category->id,
+                'admin_id' => $admin->id,
+                'image_path' => $path,
+                'entry_date' => $data['entry_date'],
+                'entry_time' => $this->time($data['entry_time']),
+            ]));
+        } catch (Throwable $e) {
+            $this->deleteImage($path);
+            throw $e;
+        }
+
+        EntryCreated::dispatch($entry->setRelation('category', $category));
+
+        $this->logs->log('entry.created', $entry, "Entry added to {$category->name} ({$entry->entry_date->toDateString()} {$entry->timeLabel()})", $admin);
+
+        return $entry->setRelation('category', $category);
+    }
+
+    /**
+     * Edit an entry (DECISIONS D-71). A new image replaces the old file; no new notification is sent.
+     */
+    public function update(Entry $entry, array $data, ?UploadedFile $image, User $by): Entry
+    {
+        $category = $this->activeCategory($data['category_id']);
+        $oldPath = $entry->image_path;
+        $newPath = $image ? $this->storeImage($image) : null;
+
+        try {
+            $entry->update([
+                'category_id' => $category->id,
+                'entry_date' => $data['entry_date'],
+                'entry_time' => $this->time($data['entry_time']),
+                'image_path' => $newPath ?? $oldPath,
+            ]);
+        } catch (Throwable $e) {
+            if ($newPath) {
+                $this->deleteImage($newPath);
+            }
+            throw $e;
+        }
+
+        if ($newPath) {
+            $this->deleteImage($oldPath);
+        }
+
+        $this->logs->log('entry.updated', $entry,
+            "Entry #{$entry->id} edited ({$category->name} {$entry->entry_date->toDateString()} {$entry->timeLabel()}".($newPath ? ', new image' : '').')', $by);
+
+        return $entry->setRelation('category', $category);
+    }
+
+    /** Delete an entry and its image file (DECISIONS D-71). */
+    public function delete(Entry $entry, User $by): void
+    {
+        $description = "Entry #{$entry->id} deleted ({$entry->category?->name} {$entry->entry_date->toDateString()} {$entry->timeLabel()}, added by {$entry->admin?->email})";
+        $path = $entry->image_path;
+
+        $entry->delete();
+        $this->deleteImage($path);
+        $this->logs->log('entry.deleted', null, $description, $by);
+    }
+
+    private function activeCategory(int|string $id): Category
+    {
+        return Category::query()->active()->find($id) ?? throw new InvalidArgumentException('Choose an active category.');
+    }
+
+    /** Store under a random name; extension from the sniffed MIME type, never the client file name. */
+    private function storeImage(UploadedFile $image): string
+    {
         $ext = match ($image->getMimeType()) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
@@ -43,26 +115,21 @@ class EntryService
         $dir = config('astrogann.entry_upload_dir');
         $name = Str::random(40).'.'.$ext;
         Storage::disk('uploads')->putFileAs($dir, $image, $name);
-        $path = 'uploads/'.$dir.'/'.$name;
 
-        try {
-            $entry = DB::transaction(fn () => Entry::create([
-                'category_id' => $category->id,
-                'admin_id' => $admin->id,
-                'image_path' => $path,
-                'entry_date' => $data['entry_date'],
-                'entry_time' => strlen($data['entry_time']) === 5 ? $data['entry_time'].':00' : $data['entry_time'],
-            ]));
-        } catch (Throwable $e) {
-            Storage::disk('uploads')->delete($dir.'/'.$name);
-            throw $e;
+        return 'uploads/'.$dir.'/'.$name;
+    }
+
+    /** Remove an image file given its stored path ("uploads/entries/x.png"); only inside the uploads disk. */
+    public function deleteImage(?string $path): void
+    {
+        if ($path && str_starts_with($path, 'uploads/') && ! str_contains($path, '..')) {
+            Storage::disk('uploads')->delete(substr($path, strlen('uploads/')));
         }
+    }
 
-        EntryCreated::dispatch($entry->setRelation('category', $category));
-
-        $this->logs->log('entry.created', $entry, "Entry added to {$category->name} ({$entry->entry_date->toDateString()} {$entry->timeLabel()})", $admin);
-
-        return $entry->setRelation('category', $category);
+    private function time(string $time): string
+    {
+        return strlen($time) === 5 ? $time.':00' : $time;
     }
 
     /**

@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEntryRequest;
+use App\Http\Requests\Admin\UpdateEntryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\EntryResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Category;
+use App\Models\Entry;
 use App\Services\CategoryService;
 use App\Services\EntryService;
 use App\Services\SettingsService;
@@ -92,6 +94,26 @@ class ContentController extends Controller
         }
 
         return ApiResponse::success((new EntryResource($entry))->resolve($request), 'Entry added.', 201);
+    }
+
+    /** POST /api/entries/{id} — edit (multipart; image optional). */
+    public function updateEntry(UpdateEntryRequest $request, Entry $entry): JsonResponse
+    {
+        try {
+            $entry = $this->entries->update($entry, $request->validated(), $request->file('image'), $request->user());
+        } catch (InvalidArgumentException $e) {
+            return ApiResponse::error($e->getMessage(), 422, ['code' => 'invalid']);
+        }
+
+        return ApiResponse::success((new EntryResource($entry))->resolve($request), 'Entry updated.');
+    }
+
+    /** DELETE /api/entries/{id} */
+    public function destroyEntry(Request $request, Entry $entry): JsonResponse
+    {
+        $this->entries->delete($entry, $request->user());
+
+        return ApiResponse::success(null, 'Entry deleted.');
     }
 
     /** GET /api/subscription — the user's subscription details. */

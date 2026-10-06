@@ -3,7 +3,7 @@
 <div x-data="{ open: {{ ($open ?? false) ? 'true' : 'false' }} }" class="rounded-lg border border-yellow-300 bg-yellow-50 p-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-yellow-900">{{ $contact['text'] }}</p>
-        <button type="button" @click="open = ! open" class="rounded-md bg-yellow-600 px-4 py-2 text-sm font-semibold text-gray-50 hover:bg-yellow-700">
+        <button type="button" @click="open = ! open" class="rounded-md bg-yellow-400 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-yellow-300">
             Show More
         </button>
     </div>

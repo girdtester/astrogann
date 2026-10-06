@@ -61,7 +61,10 @@
         @if ($editing)
             <x-card title="Delete account">
                 @if ($canDelete)
-                    <form method="POST" action="{{ route($routePrefix.'.destroy', $account) }}" onsubmit="return confirm('Delete this account permanently?')">
+                    @if ($hasHistory)
+                        <p class="mb-3 text-sm text-yellow-800">This account has history. Deleting it also deletes its subscriptions, payments and notifications{{ $isTraders ? '' : '; its entries are moved to your account' }}. This cannot be undone.</p>
+                    @endif
+                    <form method="POST" action="{{ route($routePrefix.'.destroy', $account) }}" onsubmit="return confirm('Delete this account permanently? This cannot be undone.')">
                         @csrf @method('DELETE')
                         <x-danger-button>Delete</x-danger-button>
                     </form>

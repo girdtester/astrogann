@@ -60,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.navigation', function ($view) {
             $user = auth()->user();
-            $view->with('navLinks', $user ? Navigation::for($user) : []);
+            $view->with('navMenu', $user ? Navigation::menu($user) : []);
         });
     }
 }

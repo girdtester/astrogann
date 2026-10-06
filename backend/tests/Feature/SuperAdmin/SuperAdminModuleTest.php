@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\SettingsService;
 use Database\Seeders\SettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SuperAdminModuleTest extends TestCase
@@ -75,15 +76,33 @@ class SuperAdminModuleTest extends TestCase
         $this->assertSame(0, $trader->tokens()->count());
     }
 
-    public function test_account_with_history_cannot_be_deleted(): void
+    public function test_super_admin_can_delete_accounts_with_history(): void
     {
         $trader = User::factory()->create();
         Subscription::factory()->create(['user_id' => $trader->id]);
+        $this->delete(route('superadmin.users.destroy', $trader))->assertRedirect(route('superadmin.users.index'));
+        $this->assertNull($trader->fresh());
+        $this->assertSame(0, Subscription::where('user_id', $trader->id)->count());
 
+        // Staff with entries: entries move to the Super Admin.
+        $admin = User::factory()->admin()->create();
+        $entry = Entry::factory()->create(['admin_id' => $admin->id]);
+        $this->delete(route('superadmin.admins.destroy', $admin))->assertRedirect(route('superadmin.admins.index'));
+        $this->assertNull($admin->fresh());
+        $this->assertSame($this->sa->id, $entry->fresh()->admin_id);
+    }
+
+    public function test_staff_without_force_delete_cannot_delete_accounts_with_history(): void
+    {
+        $manager = User::factory()->staffWith('users.manage')->create();
+        $trader = User::factory()->create();
+        Subscription::factory()->create(['user_id' => $trader->id]);
+        $empty = User::factory()->create();
+
+        $this->flushSession();
+        $this->signIn($manager);
         $this->delete(route('superadmin.users.destroy', $trader))->assertSessionHas('error');
         $this->assertNotNull($trader->fresh());
-
-        $empty = User::factory()->create();
         $this->delete(route('superadmin.users.destroy', $empty))->assertRedirect(route('superadmin.users.index'));
         $this->assertNull($empty->fresh());
     }
@@ -109,11 +128,23 @@ class SuperAdminModuleTest extends TestCase
         $this->assertNull($cat->fresh());
     }
 
-    public function test_category_with_entries_cannot_be_deleted(): void
+    public function test_super_admin_can_delete_category_with_entries_but_others_cannot(): void
     {
-        $entry = Entry::factory()->create();
-        $this->delete(route('superadmin.categories.destroy', $entry->category))->assertSessionHas('error');
-        $this->assertNotNull($entry->category->fresh());
+        Storage::fake('uploads');
+        Storage::disk('uploads')->put('entries/a.png', 'x');
+        $entry = Entry::factory()->create(['image_path' => 'uploads/entries/a.png']);
+        $category = $entry->category;
+
+        $manager = User::factory()->staffWith('categories.manage')->create();
+        $this->flushSession();
+        $this->signIn($manager)->delete(route('superadmin.categories.destroy', $category))->assertSessionHas('error');
+        $this->assertNotNull($category->fresh());
+
+        $this->flushSession();
+        $this->signIn($this->sa)->delete(route('superadmin.categories.destroy', $category))->assertRedirect();
+        $this->assertNull($category->fresh());
+        $this->assertNull($entry->fresh());
+        Storage::disk('uploads')->assertMissing('entries/a.png');
     }
 
     public function test_subscription_activate_extend_expire_with_payment(): void
@@ -161,12 +192,31 @@ class SuperAdminModuleTest extends TestCase
         $this->assertSame('AstroGann Pro', $settings->get('app_name'));
     }
 
-    public function test_entries_are_read_only_for_super_admin(): void
+    public function test_super_admin_can_edit_and_delete_any_entry(): void
     {
-        $entry = Entry::factory()->create();
+        Storage::fake('uploads');
+        Storage::disk('uploads')->put('entries/old.png', 'x');
+        $entry = Entry::factory()->create(['image_path' => 'uploads/entries/old.png']);
+        $other = Category::factory()->create(['name' => 'Moved Here']);
 
-        $this->get(route('superadmin.entries.index'))->assertOk()->assertDontSee('Delete');
-        $this->put('/superadmin/entries/'.$entry->id)->assertNotFound(); // no such route exists
-        $this->delete('/superadmin/entries/'.$entry->id)->assertNotFound();
+        $this->get(route('superadmin.entries.index'))->assertOk()
+            ->assertSee(route('admin.entries.edit', $entry))->assertSee('Delete');
+        $this->get(route('admin.entries.edit', $entry))->assertOk();
+
+        $this->put(route('admin.entries.update', $entry), [
+            'category_id' => $other->id, 'entry_date' => today()->toDateString(), 'entry_time' => '14:10',
+            'image' => \Illuminate\Http\UploadedFile::fake()->image('new.png'),
+        ])->assertRedirect(route('superadmin.entries.index'));
+        $entry->refresh();
+        $this->assertSame($other->id, $entry->category_id);
+        $this->assertSame('14:10', $entry->timeLabel());
+        Storage::disk('uploads')->assertMissing('entries/old.png');
+        Storage::disk('uploads')->assertExists(substr($entry->image_path, strlen('uploads/')));
+        $this->assertDatabaseHas('activity_logs', ['action' => 'entry.updated']);
+
+        $this->delete(route('admin.entries.destroy', $entry))->assertRedirect(route('superadmin.entries.index'));
+        $this->assertNull($entry->fresh());
+        Storage::disk('uploads')->assertMissing(substr($entry->image_path, strlen('uploads/')));
+        $this->assertDatabaseHas('activity_logs', ['action' => 'entry.deleted']);
     }
 }

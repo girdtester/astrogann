@@ -6,6 +6,8 @@ use App\Enums\ActiveStatus;
 use App\Enums\RoleKind;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Permissions;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -108,25 +110,43 @@ class AccountService
             && $this->permissions->canGrant($by, $user->permissionKeys());
     }
 
-    /** Accounts with history (entries, subscriptions, payments) are deactivated, never deleted. */
-    public function canDelete(User $user): bool
+    public function hasHistory(User $user): bool
     {
-        return ! $user->isSuperAdmin()
-            && ! $user->entries()->exists()
-            && ! $user->subscriptions()->exists()
-            && ! $user->payments()->exists();
+        return $user->entries()->exists() || $user->subscriptions()->exists() || $user->payments()->exists();
+    }
+
+    /**
+     * Accounts without history can be deleted by anyone who manages them. Accounts with history (entries,
+     * subscriptions, payments) need the records.force_delete permission (DECISIONS D-72) — Super Admin has it.
+     */
+    public function canDelete(User $user, ?User $by = null): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return false;
+        }
+
+        return ! $this->hasHistory($user) || ($by?->hasPermission(Permissions::RECORDS_FORCE_DELETE) ?? false);
     }
 
     public function delete(User $user, User $by): void
     {
         $this->assertCanManage($user, $by);
-        if (! $this->canDelete($user)) {
-            throw new InvalidArgumentException('This account has history (entries, subscriptions or payments). Deactivate it instead.');
+        if (! $this->canDelete($user, $by)) {
+            throw new InvalidArgumentException('This account has history (entries, subscriptions or payments). Deactivate it instead, or ask the Super Admin.');
         }
 
-        $this->sessions->endAll($user);
-        $this->logs->log("{$user->kind()->value}.deleted", null, "Deleted {$user->role->name} {$user->email}", $by);
-        $user->delete();
+        $history = $this->hasHistory($user);
+        DB::transaction(function () use ($user, $by) {
+            // Entries must keep an owner: they move to the person deleting the account.
+            $moved = $user->entries()->update(['admin_id' => $by->id]);
+            $this->sessions->endAll($user);
+            $user->delete(); // subscriptions, payments, sessions, notifications cascade (FKs)
+
+            if ($moved) {
+                $this->logs->log('entry.reassigned', null, "{$moved} entr".($moved === 1 ? 'y' : 'ies')." of {$user->email} moved to {$by->email}", $by);
+            }
+        });
+        $this->logs->log("{$user->kind()->value}.deleted", null, "Deleted {$user->role->name} {$user->email}".($history ? ' (with history)' : ''), $by);
     }
 
     private function resolveRole(RoleKind $kind, ?int $roleId, User $by): Role

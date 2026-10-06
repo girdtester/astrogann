@@ -21,6 +21,9 @@ Route::middleware(['auth:sanctum', 'session.single', 'throttle:api'])->group(fun
     Route::get('categories/{category}/entries', [Api\ContentController::class, 'entries'])->whereNumber('category');
 
     Route::post('entries', [Api\ContentController::class, 'storeEntry'])->middleware('can:'.P::ENTRIES_CREATE);
+    // Edit uses POST (multipart uploads do not work with PATCH in PHP); delete uses DELETE (DECISIONS D-71).
+    Route::post('entries/{entry}', [Api\ContentController::class, 'updateEntry'])->whereNumber('entry')->middleware('can:update,entry');
+    Route::delete('entries/{entry}', [Api\ContentController::class, 'destroyEntry'])->whereNumber('entry')->middleware('can:delete,entry');
 
     Route::get('notifications', [Api\NotificationController::class, 'index']);
     Route::post('notifications/read-all', [Api\NotificationController::class, 'markAllRead']);

@@ -27,6 +27,12 @@ final class Permissions
 
     public const ENTRIES_VIEW_ALL = 'entries.view_all';
 
+    public const ENTRIES_EDIT = 'entries.edit';
+
+    public const ENTRIES_DELETE = 'entries.delete';
+
+    public const RECORDS_FORCE_DELETE = 'records.force_delete';
+
     public const LOGS_VIEW = 'logs.view';
 
     public const SETTINGS_MANAGE = 'settings.manage';
@@ -48,11 +54,17 @@ final class Permissions
             self::CATEGORIES_MANAGE => ['group' => 'Categories', 'label' => 'Manage categories',
                 'description' => 'Create, rename, reorder, activate/deactivate categories (changes user tabs).'],
             self::ENTRIES_CREATE => ['group' => 'Entries', 'label' => 'Add entries',
-                'description' => 'Add new entries (category, date, time, image). Entries can never be edited or deleted.'],
+                'description' => 'Add new entries (category, date, time, image).'],
             self::ENTRIES_VIEW_OWN => ['group' => 'Entries', 'label' => 'View own entries',
                 'description' => 'See the entries this account added.'],
             self::ENTRIES_VIEW_ALL => ['group' => 'Entries', 'label' => 'View all entries',
                 'description' => 'See and filter every entry from every admin.'],
+            self::ENTRIES_EDIT => ['group' => 'Entries', 'label' => 'Edit entries',
+                'description' => 'Change category, date, time or image of entries this account can see.'],
+            self::ENTRIES_DELETE => ['group' => 'Entries', 'label' => 'Delete entries',
+                'description' => 'Delete entries this account can see (the image file is removed too).'],
+            self::RECORDS_FORCE_DELETE => ['group' => 'System', 'label' => 'Delete records with history',
+                'description' => 'Delete users with subscriptions/payments, staff with entries (entries move to you) and categories with entries (their entries are deleted).'],
             self::LOGS_VIEW => ['group' => 'Reports', 'label' => 'View reports / logs',
                 'description' => 'See the activity log and dashboard counts.'],
             self::SETTINGS_MANAGE => ['group' => 'System', 'label' => 'System settings',

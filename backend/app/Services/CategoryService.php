@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Category;
+use App\Models\Entry;
 use App\Models\User;
+use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 
@@ -44,13 +46,30 @@ class CategoryService
         return $category;
     }
 
-    /** Only categories without entries can be deleted; otherwise deactivate them (entries are immutable). */
+    public function canDelete(Category $category, User $by): bool
+    {
+        return ! $category->entries()->exists() || $by->hasPermission(Permissions::RECORDS_FORCE_DELETE);
+    }
+
+    /**
+     * Empty categories can be deleted with categories.manage. A category with entries needs
+     * records.force_delete (DECISIONS D-72): its entries and their images are deleted too.
+     */
     public function delete(Category $category, User $by): void
     {
-        if ($category->entries()->exists()) {
-            throw new InvalidArgumentException('This category has entries. Deactivate it instead of deleting.');
+        if (! $this->canDelete($category, $by)) {
+            throw new InvalidArgumentException('This category has entries. Deactivate it instead, or ask the Super Admin.');
         }
-        $this->logs->log('category.deleted', null, "Deleted category {$category->name}", $by);
+
+        $count = 0;
+        $category->entries()->select(['id', 'image_path'])->chunkById(200, function ($entries) use (&$count) {
+            foreach ($entries as $entry) {
+                app(EntryService::class)->deleteImage($entry->image_path);
+            }
+            $count += Entry::whereIn('id', $entries->pluck('id'))->delete();
+        });
+
+        $this->logs->log('category.deleted', null, "Deleted category {$category->name}".($count ? " and its {$count} entries" : ''), $by);
         $category->delete();
     }
 }

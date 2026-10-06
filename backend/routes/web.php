@@ -64,7 +64,10 @@ Route::middleware('auth')->group(function () {
         Route::get('entries/create', [Admin\EntryController::class, 'create'])->middleware('can:'.P::ENTRIES_CREATE)->name('entries.create');
         Route::post('entries', [Admin\EntryController::class, 'store'])->middleware(['can:'.P::ENTRIES_CREATE, 'throttle:30,1'])->name('entries.store');
         Route::get('entries', [Admin\EntryController::class, 'index'])->middleware('can:'.P::ENTRIES_VIEW_OWN)->name('entries.index');
-        // No edit / update / delete routes: entries are immutable (DECISIONS D-19).
+        // Edit / delete need entries.edit / entries.delete + visibility of the entry (EntryPolicy, DECISIONS D-71).
+        Route::get('entries/{entry}/edit', [Admin\EntryController::class, 'edit'])->middleware('can:update,entry')->name('entries.edit');
+        Route::put('entries/{entry}', [Admin\EntryController::class, 'update'])->middleware('can:update,entry')->name('entries.update');
+        Route::delete('entries/{entry}', [Admin\EntryController::class, 'destroy'])->middleware('can:delete,entry')->name('entries.destroy');
     });
 
     // User / Trader area (spec 3.2, 3.9).

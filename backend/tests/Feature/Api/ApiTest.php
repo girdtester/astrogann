@@ -296,4 +296,20 @@ class ApiTest extends TestCase
         $this->postJson('/api/admin/subscription', ['user_id' => $u->id, 'action' => 'activate', 'end_date' => today()->addDays(5)->toDateString()])->assertOk();
         $this->getJson('/api/admin/users')->assertForbidden();
     }
+
+    public function test_entry_edit_and_delete_via_api_respect_permissions(): void
+    {
+        Storage::fake('uploads');
+        $entry = Entry::where('category_id', $this->nifty->id)->first();
+        $edit = ['category_id' => $this->nifty->id, 'entry_date' => today()->toDateString(), 'entry_time' => '12:00'];
+
+        $this->apiSignIn($this->admin)->postJson("/api/entries/{$entry->id}", $edit)->assertForbidden();
+        $this->deleteJson("/api/entries/{$entry->id}")->assertForbidden();
+
+        $this->app['auth']->forgetGuards();
+        $this->apiSignIn(User::factory()->superAdmin()->create());
+        $this->postJson("/api/entries/{$entry->id}", $edit)->assertOk()->assertJsonPath('data.entry_time', '12:00');
+        $this->deleteJson("/api/entries/{$entry->id}")->assertOk();
+        $this->assertNull($entry->fresh());
+    }
 }

@@ -74,6 +74,11 @@ Implemented Phase 5 (2026-10-06): `StoreEntryRequest`, `EntryService::create`, `
 - On `session_replaced` the app clears the token and shows the reason on the login screen.
 
 
+## 6b. Edit / delete (2026-10-06, D-71/D-72)
+`EntryPolicy` update/delete = permission (`entries.edit` / `entries.delete`) AND reach (all with `entries.view_all`,
+else own). Routes use `can:update,entry` / `can:delete,entry`; the request classes re-check. Deleting records with
+history needs `records.force_delete`. All edits/deletes are activity-logged.
+
 ## 7. Phase 9 review — 2026-10-06
 
 | Area | Result | Evidence |

@@ -7,16 +7,16 @@
     <title>@yield('code') · ASTRO GANN</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-32.png') }}">
     <style>
-        html { color-scheme: dark; }
+        
         body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-               background: #0f130e; color: #dfe4dc; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+               background: #f9fafb; color: #1f2937; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
         .box { text-align: center; padding: 2rem; }
         img { width: 96px; height: 96px; }
-        .code { font-size: 3rem; font-weight: 700; color: #e6c638; margin: 1rem 0 .25rem; }
-        .msg { color: #aab3a5; margin-bottom: 1.5rem; }
-        a { display: inline-block; padding: .6rem 1.2rem; border-radius: .4rem; background: #9db552; color: #0b0e0a;
+        .code { font-size: 3rem; font-weight: 700; color: #6b7c2e; margin: 1rem 0 .25rem; }
+        .msg { color: #4b5563; margin-bottom: 1.5rem; }
+        a { display: inline-block; padding: .6rem 1.2rem; border-radius: .4rem; background: #6b7c2e; color: #ffffff;
             text-decoration: none; font-weight: 600; }
-        a:hover { background: #b3c86c; }
+        a:hover { background: #556227; }
     </style>
 </head>
 <body>

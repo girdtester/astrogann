@@ -39,7 +39,9 @@ Laravel first-party packages only unless the owner approves.
 - Enums in `app/Enums`. Explicit `$fillable` on every model.
 - Nothing user-visible is hard-coded: categories, limits (7/3), reminder days, contact info, texts come from DB
   (`settings` via `SettingsService`).
-- Entries are immutable (no edit/delete for anyone).
+- ~~Entries are immutable~~ (superseded 2026-10-06, D-71): edit/delete via `entries.edit` / `entries.delete`
+  permissions (EntryPolicy); deleting records with history needs `records.force_delete` (D-72).
+- UI: light theme, olive/light-blue/yellow, **never red** (D-69); grouped top menu (D-70).
 - Uploads to `public/uploads/entries/` via disk `uploads`; store relative path only.
 - Timezone Asia/Kolkata.
 

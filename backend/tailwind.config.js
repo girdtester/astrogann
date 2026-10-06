@@ -2,29 +2,24 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 
 /*
- * ASTRO GANN dark theme (owner brief 2026-10-06, DECISIONS D-61):
- * olive green (primary), light blue (info), yellow (warning/attention) on a dark background. NO RED anywhere.
+ * ASTRO GANN light theme (owner request 2026-10-06, DECISIONS D-69 — supersedes the dark theme of D-61):
+ * white / very light background for readability, olive green (primary), light blue (info/links) and
+ * yellow (warning/attention) as accents. NO RED anywhere.
  *
- * Palettes are "dark-semantic": low numbers (50–200) are dark tints for backgrounds/borders, high numbers
- * (600–900) are bright tones for text and buttons. That way the existing Breeze/Tailwind class names
- * (bg-*-50, text-*-800, bg-white → bg-surface …) render correctly on the dark background.
+ * Normal Tailwind semantics: low numbers (50–200) = light tints for backgrounds/borders, high numbers
+ * (600–900) = strong tones for text and buttons.
  */
 const olive = {
-    50: '#161c0d', 100: '#1e2612', 200: '#2f3b1a', 300: '#485a26', 400: '#6a8035',
-    500: '#879e42', 600: '#9db552', 700: '#b3c86c', 800: '#cbd98f', 900: '#e2ebb8', 950: '#f1f6dc',
+    50: '#f6f8ee', 100: '#ebf0d8', 200: '#d6e0b0', 300: '#bccb80', 400: '#9fb156',
+    500: '#83963a', 600: '#6b7c2e', 700: '#556227', 800: '#454f23', 900: '#3a4321', 950: '#1e240f',
 };
 const lightBlue = {
-    50: '#0c1a22', 100: '#10242f', 200: '#1a3a4c', 300: '#275674', 400: '#3f7fa6',
-    500: '#5ea6d0', 600: '#7cc3ea', 700: '#9fd3f1', 800: '#c3e4f7', 900: '#e1f2fb', 950: '#f0f9fd',
+    50: '#f0f8fd', 100: '#e0f0fa', 200: '#bae1f5', 300: '#86cbee', 400: '#4fb1e3',
+    500: '#2996d0', 600: '#1b78b0', 700: '#18608f', 800: '#195176', 900: '#1a4462', 950: '#112c41',
 };
 const yellow = {
-    50: '#221d08', 100: '#2e270b', 200: '#4a3f12', 300: '#6e5d18', 400: '#a08a22',
-    500: '#cdb02c', 600: '#e6c638', 700: '#f0d65c', 800: '#f6e38d', 900: '#fbf0bf', 950: '#fdf8e0',
-};
-// Neutral scale inverted for the dark theme: gray-100 = page background, gray-900 = main text.
-const gray = {
-    50: '#0b0e0a', 100: '#0f130e', 200: '#252c22', 300: '#3a4535', 400: '#5d6957',
-    500: '#8d9887', 600: '#aab3a5', 700: '#c6cdc2', 800: '#dfe4dc', 900: '#eff2ed', 950: '#f8faf7',
+    50: '#fefbe8', 100: '#fef6c3', 200: '#feea8a', 300: '#fdd847', 400: '#facc15',
+    500: '#eab308', 600: '#ca8a04', 700: '#a16207', 800: '#854d0e', 900: '#713f12', 950: '#422006',
 };
 
 /** @type {import('tailwindcss').Config} */
@@ -40,9 +35,8 @@ export default {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                surface: { DEFAULT: '#161c15', raised: '#1d251b' },
+                surface: { DEFAULT: '#ffffff', raised: '#ffffff' },
                 olive,
-                gray,
                 indigo: olive,   // Breeze's accent colour → olive
                 green: olive,
                 blue: lightBlue,
@@ -50,6 +44,9 @@ export default {
                 yellow,
                 amber: yellow,
                 red: yellow,     // safety net: any leftover "red" class renders yellow
+                rose: yellow,
+                pink: yellow,
+                orange: yellow,
             },
         },
     },

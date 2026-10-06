@@ -4,15 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreEntryRequest;
+use App\Http\Requests\Admin\UpdateEntryRequest;
 use App\Models\Category;
+use App\Models\Entry;
 use App\Services\EntryService;
+use App\Support\Permissions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
 /**
- * Admin data entry (spec 3.2): add entries and view own entries. No edit / delete routes exist.
+ * Data entry (spec 3.2): add entries, view own entries, and — with entries.edit / entries.delete — edit or delete
+ * them (DECISIONS D-71). Authorisation: EntryPolicy (route middleware + Form Request).
  */
 class EntryController extends Controller
 {
@@ -52,5 +56,39 @@ class EntryController extends Controller
         $back = $request->user()->can('entries.view_own') ? route('admin.entries.index') : route('admin.entries.create');
 
         return redirect($back)->with('success', "Entry added to {$entry->category->name}. Subscribed users will be notified.");
+    }
+
+    public function edit(Entry $entry): View
+    {
+        return view('admin.entries.edit', [
+            'entry' => $entry->load('category'),
+            'categories' => Category::query()->active()->ordered()->get(),
+            'maxKb' => config('astrogann.entry_image_max_kb'),
+        ]);
+    }
+
+    public function update(UpdateEntryRequest $request, Entry $entry): RedirectResponse
+    {
+        try {
+            $this->entries->update($entry, $request->validated(), $request->file('image'), $request->user());
+        } catch (InvalidArgumentException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return redirect($this->listUrl($request))->with('success', "Entry #{$entry->id} updated.");
+    }
+
+    public function destroy(Request $request, Entry $entry): RedirectResponse
+    {
+        $this->entries->delete($entry, $request->user());
+
+        return redirect($this->listUrl($request))->with('success', 'Entry deleted.');
+    }
+
+    private function listUrl(Request $request): string
+    {
+        return $request->user()->can(Permissions::ENTRIES_VIEW_ALL)
+            ? route('superadmin.entries.index')
+            : route('admin.entries.index');
     }
 }

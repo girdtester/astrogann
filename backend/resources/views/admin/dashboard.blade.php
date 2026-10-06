@@ -9,7 +9,7 @@
                 <div class="text-xs uppercase tracking-wide text-gray-500">My entries total</div>
                 <div class="mt-1 text-2xl font-bold">{{ $myEntriesTotal }}</div>
             </div>
-            <a href="{{ route('admin.entries.create') }}" class="bg-indigo-600 text-gray-50 rounded-lg p-4 flex items-center justify-center font-semibold hover:bg-indigo-700 md:col-span-2">+ Add new entry</a>
+            <a href="{{ route('admin.entries.create') }}" class="bg-indigo-600 text-white rounded-lg p-4 flex items-center justify-center font-semibold hover:bg-indigo-700 md:col-span-2">+ Add new entry</a>
         </div>
     @endcan
 

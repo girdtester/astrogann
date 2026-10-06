@@ -24,6 +24,13 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Owner change requests (after Phase 9)
+- Light theme (D-69), grouped top menu with dropdowns + grouped mobile menu (D-70), entry edit/delete with
+  `entries.edit` / `entries.delete` on web and API (D-71), deleting records with history with
+  `records.force_delete` (D-72). Permission catalogue synced locally (`db:seed --class=AccessSeeder`).
+- Tests rewritten for the new rules + API edit/delete test — 122 tests pass. Checked in Chrome: light theme,
+  Accounts dropdown, All Entries with Edit/Delete.
+
 ### 2026-10-06 — Phase 9
 - Security review (SECURITY.md §7): SecurityHeaders middleware, password change/reset logging, route-guard audit
   test, CSRF/headers checked live, `.public_path` hook for public_html hosting, `astrogann:create-superadmin`.
