@@ -1,6 +1,6 @@
 # AstroGann — Security design
 
-Status: **design (Phase 0)** — reviewed and ticked in Phase 9.
+Status: **design (Phase 0)**; web parts of §1–§3 implemented in Phase 3 (2026-10-06) — reviewed and ticked in Phase 9.
 
 ## 1. Single-session design (D-23)
 
@@ -25,13 +25,14 @@ Status: **design (Phase 0)** — reviewed and ticked in Phase 9.
   `/api/admin/*` → superadmin, `POST /api/entries` → admin.
 - Gates/Policies for model actions: `EntryPolicy` (create: admin; view: admin owns it / superadmin any; update and
   delete: always false), `CategoryPolicy`, `UserPolicy`, `SubscriptionPolicy`.
-- Inactive users (`status = inactive`) cannot log in; middleware `EnsureUserIsActive` also logs out an already
-  logged-in user who gets deactivated.
+- Inactive users (`status = inactive`) cannot log in; ~~middleware `EnsureUserIsActive`~~ (superseded 2026-10-06,
+  D-40: the check lives in `EnsureActiveSession`) also logs out an already logged-in user who gets deactivated.
 - Tests assert 403 for every cross-role access, not just hidden buttons.
 
 ## 3. Rate limits
 
-- Web login: 5 attempts/min per email+IP (Breeze `LoginRequest` throttle).
+- Web login: 5 attempts/min per email+IP (Breeze `LoginRequest` throttle). Failed logins are logged
+  (`auth.failed`). Forgot/reset password: 6/min. "Remember me" removed (D-38).
 - API login: named limiter `api-login`, 5/min per email+IP.
 - Authenticated API: `api` limiter 60/min per user id (fallback IP).
 - Upload endpoint shares the authenticated limit.

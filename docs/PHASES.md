@@ -26,10 +26,10 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] `migrate:fresh --seed` clean
 
 ### Phase 3 — Web auth, roles, single session
-- [ ] One login page; redirect by role to /superadmin, /admin, /user
-- [ ] Role middleware + Gates; inactive users blocked; registration disabled; login throttling
-- [ ] SessionService + EnsureActiveSession (web)
-- [ ] Feature tests: each seed account sees only its own area, 403 elsewhere; single-session replacement
+- [x] One login page; redirect by role to /superadmin, /admin, /user
+- [x] Role middleware + Gates; inactive users blocked; registration disabled; login throttling
+- [x] SessionService + EnsureActiveSession (web)
+- [x] Feature tests: each seed account sees only its own area, 403 elsewhere; single-session replacement
 
 ### Phase 4 — Super Admin module
 - [ ] Dashboard counts

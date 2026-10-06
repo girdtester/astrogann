@@ -4,12 +4,12 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 3 — Web auth, roles, single session (next to start)
-- **Last finished phase:** Phase 2 — Database (2026-10-06)
+- **Current phase:** Phase 4 — Super Admin module (next to start)
+- **Last finished phase:** Phase 3 — Web auth, roles, single session (2026-10-06)
 
 ## Next steps
-1. Phase 3: role redirect after login, `role` middleware + Gates, inactive-user block, remove registration,
-   SessionService + EnsureActiveSession (web), feature tests.
+1. Phase 4: Super Admin dashboard counts, admins/users CRUD + activate/deactivate, categories CRUD + sort order,
+   subscriptions (activate/extend/expire + payment) via SubscriptionService, all entries with filters, logs, settings.
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +18,15 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 3
+- One login page → role dashboards; `role` middleware + gates (`superadmin`, `admin`, `trader`); registration,
+  email verification, remember-me and self-delete removed; SessionService + EnsureActiveSession (web);
+  ActivityLogService, SettingsService, ApiResponse envelope; role-based navigation (`App\Support\Navigation`).
+- Tests: RoleAccessTest, SingleSessionTest (+ updated Breeze tests) — 38 pass. Live curl check of the 4 seed
+  accounts: each gets 200 on its own area, 403 on the others.
+- Test helpers `signIn()` / `apiSignIn()` in `tests/TestCase.php` (plain `actingAs()` is rejected by the
+  single-session middleware).
 
 ### 2026-10-06 — Phase 2
 - Migrations for all tables, 6 enums, 8 models with relations/casts, factories, SettingsSeeder + DemoSeeder,
