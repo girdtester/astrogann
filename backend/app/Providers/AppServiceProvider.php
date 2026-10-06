@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Services\Push\FcmPushService;
+use App\Services\Push\LogPushService;
+use App\Services\Push\PushService;
 use App\Services\SettingsService;
 use App\Support\Navigation;
 use App\Support\Permissions;
@@ -19,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SettingsService::class);
+
+        // Push driver (DECISIONS D-28): PUSH_DRIVER=log (default) | fcm.
+        $this->app->singleton(PushService::class, function () {
+            $cfg = config('astrogann.push');
+
+            return $cfg['driver'] === 'fcm' && $cfg['fcm_project_id'] && $cfg['fcm_credentials']
+                ? new FcmPushService($cfg['fcm_project_id'], $cfg['fcm_credentials'])
+                : new LogPushService;
+        });
     }
 
     public function boot(): void

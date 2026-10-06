@@ -4,13 +4,14 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 8 — Queues, notifications, email, scheduler (next to start)
-- **Last finished phase:** Phase 7 — REST API (2026-10-06)
+- **Current phase:** Branding (owner request) then Phase 9 — Security and QA
+- **Last finished phase:** Phase 8 — Queues, notifications, email, scheduler (2026-10-06)
 
 ## Next steps
-1. Phase 8: EntryCreated event → queued fan-out job (chunked) → user_notifications + PushService (log/fcm);
-   expiry reminder Mailable + daily command (never twice), daily expire command, scheduler incl.
-   `queue:work --stop-when-empty`, failed jobs; DEPLOYMENT.md cron.
+1. Apply owner branding: name "ASTRO GANN", logo (`logo/logo.png`), dark theme olive green / light blue / yellow,
+   **no red anywhere**, contact ganndecoder@gmail.com, phones 7558377920 & 8149343315 (WhatsApp + call).
+2. Phase 9: security review, full tests, end-to-end walk-through, then **stop and ask the owner before mobile
+   (Phase 10)** — owner instruction 2026-10-06.
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -19,6 +20,14 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 8
+- EntryCreated event + listener; jobs NotifyUsersOfNewEntry (chunked, self-continuing) and SendPushToUsers;
+  PushService interface with LogPushService / FcmPushService (HTTP v1, JWT via openssl_sign, Http::pool);
+  SubscriptionExpiringMail (markdown, queued); commands astrogann:send-expiry-reminders / astrogann:expire-subscriptions;
+  scheduler incl. queue drain each minute; failed-job logging.
+- NotificationsAndSchedulerTest (12 tests) — 111 tests pass. Live: admin posted an entry via API → 1 job queued →
+  one `schedule:run` drained it → active trader got "New entry added in Nifty 50…", expired trader nothing.
 
 ### 2026-10-06 — Phase 7
 - REST API: 19 routes (spec 3.6 paths + D-53 additions), Sanctum + `session.single` + rate limits, envelope via

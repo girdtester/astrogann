@@ -167,7 +167,10 @@ class SubscriptionService
             ->update(['status' => SubscriptionStatus::Expired->value, 'updated_at' => now()]);
     }
 
-    /** Active subscriptions ending exactly N days from today that have not been reminded yet. */
+    /**
+     * Active subscriptions ending within the next N days (today .. today+N) that have not been reminded yet.
+     * A window (not an exact day) means a missed cron day or a short new period still gets one reminder.
+     */
     public function dueForReminder(?int $days = null): Builder
     {
         $days ??= $this->settings->reminderDays();
@@ -175,7 +178,8 @@ class SubscriptionService
         return Subscription::query()
             ->with('user')
             ->where('status', SubscriptionStatus::Active->value)
-            ->whereDate('end_date', today()->addDays($days))
+            ->whereDate('end_date', '>=', today())
+            ->whereDate('end_date', '<=', today()->addDays($days))
             ->whereNull('reminder_sent_at')
             ->whereHas('user', fn (Builder $q) => $q->where('status', 'active')->ofKind(RoleKind::User));
     }

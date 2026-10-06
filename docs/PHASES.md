@@ -62,11 +62,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] docs/API.md complete + `docs/api.http` / Postman collection
 
 ### Phase 8 — Queues, notifications, email, scheduler
-- [ ] EntryCreated event → queued job → DB notifications (chunked) + PushService (log / fcm)
-- [ ] Expiry reminder Mailable (queued), never twice
-- [ ] Daily expire job
-- [ ] Scheduler: queue:work --stop-when-empty each minute; daily jobs
-- [ ] Failed-job handling; DEPLOYMENT.md cron
+- [x] EntryCreated event → queued job → DB notifications (chunked) + PushService (log / fcm)
+- [x] Expiry reminder Mailable (queued), never twice
+- [x] Daily expire job
+- [x] Scheduler: queue:work --stop-when-empty each minute; daily jobs
+- [x] Failed-job handling; DEPLOYMENT.md cron
 
 ### Phase 9 — Security and QA
 - [ ] SECURITY.md review ticked
@@ -115,11 +115,11 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.2 U | Latest 7 if active | /user (EntryService::visibleFor) | GET /api/categories/{id}/entries | | web+API done |
 | 3.2 U | Latest 3 if expired | /user | GET /api/categories/{id}/entries | | web+API done |
 | 3.2 U | Show More (contact admin) | /user, /user/subscription | entries.show_more, GET /api/settings | | web+API done |
-| 3.2 U | Push for new entries | | | | |
-| 3.2 U | Email 3 days before expiry | | | | |
+| 3.2 U | Push for new entries | (web: unread badge) | NotifyUsersOfNewEntry → SendPushToUsers → FcmPushService | | backend done; app Phase 12 |
+| 3.2 U | Email 3 days before expiry | astrogann:send-expiry-reminders + SubscriptionExpiringMail | | n/a | done |
 | 3.2 U | Single login | Login + EnsureActiveSession | session_replaced (D-52) | | web+API done |
 | 3.3 | End-to-end flow 1–8 | | | | |
-| 3.4 | Subscription check per request, daily jobs | EntryService::visibleFor (per request) | same service | | per-request done; daily jobs Phase 8 |
-| 3.7 | Notification flow | | | | |
+| 3.4 | Subscription check per request, daily jobs | EntryService::visibleFor; astrogann:expire-subscriptions, astrogann:send-expiry-reminders | same service | | done |
+| 3.7 | Notification flow | EntryCreated → jobs → user_notifications + push; /user/notifications | GET /api/notifications | | backend done |
 | 3.8 | Single session | SessionService::startWeb, EnsureActiveSession, SingleSessionTest | SessionService::startApi, ApiTest | | web+API done |
 | 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | GET /api/categories, GET /api/settings | | web+API done |

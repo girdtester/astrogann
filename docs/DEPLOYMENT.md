@@ -1,6 +1,6 @@
 # AstroGann — Deployment (GoDaddy shared hosting / cPanel)
 
-Status: **draft (Phase 0)** — completed in Phase 8/9 once the scheduler and assets exist.
+Status: **draft (Phase 0)**; §6 cron/queue completed in Phase 8 (2026-10-06); rest finalised in Phase 9.
 
 Constraints: no S3, SES, Redis, Supervisor, possibly no SSH. Everything below works with cPanel only.
 
@@ -62,7 +62,21 @@ cPanel → *Cron Jobs* → every minute (`* * * * *`):
 /usr/local/bin/php /home/<cpaneluser>/astrogann/artisan schedule:run >> /dev/null 2>&1
 ```
 (Use the PHP binary path cPanel shows, e.g. `/opt/cpanel/ea-php82/root/usr/bin/php`.)
-The scheduler then runs `queue:work --stop-when-empty` every minute and the daily subscription jobs.
+The scheduler then runs (see `backend/routes/console.php`):
+
+| When | Command | Purpose |
+|---|---|---|
+| every minute | `queue:work --stop-when-empty --max-time=50 --tries=3` | sends queued notifications, pushes, e-mails, then exits |
+| 00:05 daily | `astrogann:expire-subscriptions` | marks past-due subscriptions expired |
+| 09:00 daily | `astrogann:send-expiry-reminders` | "expires in N days" e-mail + in-app notice + push (once per period) |
+| daily | `queue:prune-failed --hours=720`, `sanctum:prune-expired` | housekeeping |
+
+Each run is short (jobs work in chunks of `NOTIFICATION_CHUNK`, default 200 users), so it fits shared-hosting
+CPU/time limits. Failed jobs land in the `failed_jobs` table and an activity-log row `job.failed`; retry them with
+`php artisan queue:retry all` (via SSH or a one-off cron line).
+
+Check it works: cPanel → Cron Jobs → set an e-mail for cron output temporarily, or look at
+`storage/logs/laravel.log`; the Super Admin "Reports / Logs" screen shows `subscription.*` and `job.failed` rows.
 
 ## 7. Folder permissions
 - `storage/` and `bootstrap/cache/` → 755 (775 if the host requires), writable by the PHP user.

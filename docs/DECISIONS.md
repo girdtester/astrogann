@@ -264,3 +264,26 @@ subscribers). Traders follow the subscription rule.
 
 **D-56 (2026-10-06) — `ForceJsonResponse` on the api group** + `ApiExceptionRenderer`: every `/api/*` error is the
 envelope with `errors.code` (table in docs/API.md §1).
+
+## Phase 8 — 2026-10-06
+
+**D-57 (2026-10-06) — Notification pipeline.** `EntryService::create` fires `EntryCreated` → listener
+`QueueEntryNotifications` queues `NotifyUsersOfNewEntry` (after commit). The job takes one chunk of eligible users
+(`NOTIFICATION_CHUNK`, default 200, ordered by id), bulk-inserts `user_notifications`, queues `SendPushToUsers` for
+that chunk and re-dispatches itself for the next chunk. Push goes to the active session's `fcm_token` only (single
+session ⇒ one device). Invalid tokens reported by FCM are cleared. Jobs: 3 tries with backoff, `failed()` writes an
+activity log row (`job.failed`); failed jobs stay in `failed_jobs` (pruned after 30 days).
+
+**D-58 (2026-10-06) — Expiry reminder window.** Daily 09:00 the reminder command takes active subscriptions ending
+between today and today+`reminder_days` that have `reminder_sent_at = NULL`, claims each atomically, queues the
+e-mail (`SubscriptionExpiringMail`), stores an `expiry` in-app notification and a push. A window instead of
+"exactly 3 days" means a missed cron day or a short new period still gets exactly one reminder. Extending resets
+the flag.
+
+**D-59 (2026-10-06) — Scheduler** (`routes/console.php`): `queue:work --stop-when-empty --max-time=50` every minute
+(withoutOverlapping), `astrogann:expire-subscriptions` 00:05, `astrogann:send-expiry-reminders` 09:00,
+`queue:prune-failed` and `sanctum:prune-expired` daily. Production = one cPanel cron running `schedule:run`.
+
+**D-60 (2026-10-06) — FCM test key.** `tests/Fixtures/fcm-test-private-key.pem` is a throwaway RSA key generated
+only for the FCM driver test (XAMPP's OpenSSL cannot generate keys without an `openssl.cnf`). It is not a real
+credential.

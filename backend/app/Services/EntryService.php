@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\EntryCreated;
 use App\Models\Category;
 use App\Models\Entry;
 use App\Models\User;
@@ -56,6 +57,8 @@ class EntryService
             Storage::disk('uploads')->delete($dir.'/'.$name);
             throw $e;
         }
+
+        EntryCreated::dispatch($entry->setRelation('category', $category));
 
         $this->logs->log('entry.created', $entry, "Entry added to {$category->name} ({$entry->entry_date->toDateString()} {$entry->timeLabel()})", $admin);
 
