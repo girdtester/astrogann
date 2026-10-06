@@ -25,6 +25,10 @@ class _EntriesScreenState extends State<EntriesScreen> with TickerProviderStateM
   bool _loading = true;
   TabController? _tabs;
 
+  /// Selected tab + a counter, so a tab reloads from the server every time it is shown (fresh data, and a device
+  /// whose session was replaced elsewhere is logged out on the very next tap — D-92).
+  final ValueNotifier<(int, int)> _shown = ValueNotifier((0, 0));
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +40,7 @@ class _EntriesScreenState extends State<EntriesScreen> with TickerProviderStateM
   void dispose() {
     widget.openCategory.removeListener(_jumpToRequested);
     _tabs?.dispose();
+    _shown.dispose();
     super.dispose();
   }
 
@@ -52,6 +57,9 @@ class _EntriesScreenState extends State<EntriesScreen> with TickerProviderStateM
           : null;
       _tabs?.dispose();
       _tabs = cats.isEmpty ? null : TabController(length: cats.length, vsync: this);
+      _tabs?.addListener(() {
+        if (!_tabs!.indexIsChanging) _shown.value = (_tabs!.index, _shown.value.$2 + 1);
+      });
       final keep = cats.indexWhere((c) => c.id == previousId);
       if (keep > 0) _tabs!.index = keep;
       setState(() => _categories = cats);
@@ -108,7 +116,10 @@ class _EntriesScreenState extends State<EntriesScreen> with TickerProviderStateM
       Expanded(
         child: TabBarView(
           controller: _tabs,
-          children: [for (final c in cats) _CategoryTab(category: c, onCategoriesChanged: _loadCategories)],
+          children: [
+            for (var i = 0; i < cats.length; i++)
+              _CategoryTab(category: cats[i], index: i, shown: _shown, onCategoriesChanged: _loadCategories),
+          ],
         ),
       ),
     ]);
@@ -116,8 +127,10 @@ class _EntriesScreenState extends State<EntriesScreen> with TickerProviderStateM
 }
 
 class _CategoryTab extends StatefulWidget {
-  const _CategoryTab({required this.category, required this.onCategoriesChanged});
+  const _CategoryTab({required this.category, required this.index, required this.shown, required this.onCategoriesChanged});
   final Category category;
+  final int index;
+  final ValueNotifier<(int, int)> shown;
   final Future<void> Function() onCategoriesChanged;
 
   @override
@@ -136,6 +149,18 @@ class _CategoryTabState extends State<_CategoryTab> with AutomaticKeepAliveClien
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    widget.shown.addListener(_onShown);
+  }
+
+  @override
+  void dispose() {
+    widget.shown.removeListener(_onShown);
+    super.dispose();
+  }
+
+  /// Tab selected again → quiet refresh (keeps the current cards on screen while loading).
+  void _onShown() {
+    if (widget.shown.value.$1 == widget.index && _page != null && mounted) _load();
   }
 
   Future<void> _load() async {

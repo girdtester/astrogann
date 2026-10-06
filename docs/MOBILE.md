@@ -49,7 +49,8 @@ Packages: `http`, `shared_preferences`, `intl`, `url_launcher` (all Dart/Flutter
 - Subscription tab: status, start, expiry, days left; Show More when not active.
 - Notifications tab: unread highlight + badge (refreshed every 60 s and when the app comes back), mark one / all
   as read, tap opens the category tab; paging.
-- Logged in elsewhere / deactivated → the app logs out and the login screen shows the server's reason.
+- Logged in elsewhere / deactivated → the app logs out and the login screen shows the server's reason — on the next
+  tap (any category tab, bottom tab, pull to refresh) or within 30 s while the app is open (D-92).
 - Every screen has loading, empty and error (with retry) states.
 
 ### 4b. Sign up & forgot password (D-84, D-85)

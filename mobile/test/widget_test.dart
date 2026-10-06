@@ -222,6 +222,24 @@ void main() {
     expect(fake.calls, contains('POST auth/logout'));
   });
 
+  testWidgets('switching category tab after another device logged in logs out (D-92)', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await _login(tester);
+    await tester.tap(find.text('NSE'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nifty 50')); // back to an already-loaded tab: still calls the server
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('logout-reason')), findsNothing);
+
+    fake.replaceSession = true; // same email/password used on another phone
+    await tester.tap(find.text('NSE'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('logout-reason')), findsOneWidget);
+    expect(find.textContaining('another device'), findsOneWidget);
+  });
+
   testWidgets('session replaced elsewhere logs out with the server message', (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();

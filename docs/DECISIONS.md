@@ -473,3 +473,9 @@ API); the full image is used for zoom. GD only; if processing fails the original
 6000×6000 px (GD memory on shared hosting). Images cached for a year (`public/uploads/.htaccess`). Edit/delete remove
 image + thumbnail. Backfill: `php artisan astrogann:make-thumbnails`. Settings: `IMAGE_MAX_PX`, `IMAGE_THUMB_PX`,
 `IMAGE_QUALITY`.
+
+**D-92 (2026-10-06) — Old device notices the replaced session on the next tap.** Live-checked: web → phone 1 → phone 2 →
+web again; each new login ends the previous one and the old device gets `session_replaced` on its next request
+(only 1 active session remains). App change: switching a category tab now refreshes that tab from the server (fresh
+entries + immediate logout on a replaced device), and the background check runs every 30 s (was 60 s), like the
+website's poll. Bottom tabs (Subscription / Notifications), pull to refresh and returning to the app also check.
