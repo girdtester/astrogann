@@ -407,3 +407,18 @@ and the ready-made `FirebasePushService` are in docs/MOBILE.md §5.
 **D-83 (2026-10-06) — Mobile state without extra packages:** `ChangeNotifier` controllers shared through an
 `InheritedWidget` (`AppScope`). Content width capped at 760 px so the app also looks right in a desktop browser.
 Images use `WebHtmlElementStrategy.prefer` on web (no CORS needed for static image files).
+
+## Forgot password + self sign-up (owner requests, 2026-10-06)
+
+**D-84 (2026-10-06) — Forgot password on web and app, one service.** `PasswordResetService` is used by `/forgot-password`
+(web) and `POST /api/auth/forgot-password` (app). It always answers with the same neutral message (no account
+enumeration; the old Breeze page revealed unknown e-mails) and only sends to active accounts; 6 requests/min. The
+e-mailed link opens the website reset page. After a reset, `LogPasswordReset` ends every session (web + mobile) so
+only the new password works anywhere. Verified with real SMTP (test Gmail).
+
+**D-85 (2026-10-06) — Self sign-up (supersedes "public registration disabled", spec Phase 3).** Owner: a first-time
+user can sign up on the login screen (web `/register`, app "Create an account", `POST /api/auth/register`), then
+sees the content as an unsubscribed user (latest 3 entries + Show More / contact admin). New accounts are always
+user/trader, active, with no subscription; logged as `user.registered`; the API logs straight in (single session).
+Super Admin can switch sign-up off in Settings (`allow_registration`, public, default on); when off the web page is
+404, POSTs are 403 and the app hides the link. Phone number optional at sign-up.

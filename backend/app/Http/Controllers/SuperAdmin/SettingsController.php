@@ -28,6 +28,7 @@ class SettingsController extends Controller
     {
         $values = array_map(fn ($v) => $v === null ? '' : (string) $v, $request->validated());
         $values['notify_expired_users'] = $request->boolean('notify_expired_users') ? '1' : '0';
+        $values['allow_registration'] = $request->boolean('allow_registration') ? '1' : '0';
         $before = $this->settings->all();
         $this->settings->update($values);
 

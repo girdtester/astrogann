@@ -21,6 +21,9 @@ class ApiClient {
 
   void Function(ApiException error)? onSessionEnded;
 
+  /// The `message` of the last successful response (e.g. the neutral forgot-password text).
+  String? lastMessage;
+
   Future<dynamic> get(String path, {Map<String, String>? query}) => _send('GET', path, query: query);
 
   Future<dynamic> post(String path, {Map<String, dynamic>? body}) => _send('POST', path, body: body);
@@ -53,7 +56,10 @@ class ApiClient {
       throw ApiException('Unexpected server response (${res.statusCode}).', code: 'bad_response', status: res.statusCode);
     }
 
-    if (json['success'] == true) return json['data'];
+    if (json['success'] == true) {
+      lastMessage = json['message'] as String?;
+      return json['data'];
+    }
 
     final errors = json['errors'];
     final error = ApiException(

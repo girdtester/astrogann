@@ -24,6 +24,14 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Forgot password + self sign-up (web + app)
+- D-84 PasswordResetService (web + API, neutral message, active accounts only, reset ends all sessions); real reset
+  e-mail sent via the test Gmail SMTP to laravel7777@gmail.com (existing local account id 5).
+- D-85 self sign-up: web /register + login link, POST /api/auth/register, app "Create an account" screen, Settings
+  switch `allow_registration`. New users see 3 entries + Show More.
+- Backend 137 tests, app 7 widget tests, analyze clean. Web app rebuilt and served at http://localhost:5555
+  (`php -S localhost:5555 -t mobile/build/web`).
+
 ### 2026-10-06 — Phases 10–13 completed
 - Flutter screens: splash, login (staff refused, server messages), home shell (bottom nav + unread badge, logout),
   entries tabs from API (pull to refresh, image/date/time cards, zoom viewer, subscription strip, Show More with

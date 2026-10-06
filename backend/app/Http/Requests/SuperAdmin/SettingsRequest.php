@@ -25,6 +25,7 @@ class SettingsRequest extends FormRequest
             'contact_email' => ['nullable', 'email', 'max:255'],
             'notice_text' => ['nullable', 'string', 'max:1000'],
             'notify_expired_users' => ['nullable', 'boolean'],
+            'allow_registration' => ['nullable', 'boolean'],
         ];
     }
 }

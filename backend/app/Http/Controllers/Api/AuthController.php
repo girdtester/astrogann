@@ -6,10 +6,13 @@ use App\Enums\DeviceType;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\EnsureActiveSession;
 use App\Http\Requests\Api\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\User;
+use App\Services\AccountService;
 use App\Services\ActivityLogService;
+use App\Services\PasswordResetService;
 use App\Services\SessionService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
@@ -64,6 +67,31 @@ class AuthController extends Controller
             'user' => (new UserResource($user))->resolve($request),
             'subscription' => $user->isTrader() ? $this->subscriptions->summary($user) : null,
         ], 'Logged in. Any other session of this account has been logged out.');
+    }
+
+    /** POST /api/auth/register — self sign-up (D-85); logs straight in like /auth/login (single session). */
+    public function register(RegisterRequest $request, AccountService $accounts): JsonResponse
+    {
+        $user = $accounts->register($request->validated());
+        [$token, $session] = $this->sessions->startApi(
+            $user, $request, DeviceType::from($request->input('device_type', 'mobile')), $request->input('fcm_token'),
+        );
+
+        return ApiResponse::success([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'session_id' => $session->id,
+            'user' => (new UserResource($user))->resolve($request),
+            'subscription' => $this->subscriptions->summary($user),
+        ], 'Welcome! Your account is ready.', 201);
+    }
+
+    /** POST /api/auth/forgot-password — e-mails a reset link (opens the website); neutral answer (D-84). */
+    public function forgotPassword(Request $request, PasswordResetService $resets): JsonResponse
+    {
+        $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
+
+        return ApiResponse::success(null, $resets->sendLink($data['email']));
     }
 
     public function logout(Request $request): JsonResponse

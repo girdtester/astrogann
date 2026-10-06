@@ -5,11 +5,15 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
-// Public registration is disabled: accounts are created by the Super Admin (spec 3.2).
+// Self sign-up for users/traders (owner request, D-85 — supersedes "registration disabled"); can be switched off in Settings.
 
 Route::middleware('guest')->group(function () {
+    Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('register', [RegisteredUserController::class, 'store'])->middleware('throttle:6,1');
+
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 

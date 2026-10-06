@@ -37,7 +37,7 @@ lib/
   screens/                     splash, login, home shell, entries (tabs), subscription, notifications
   widgets/                     entry card + image viewer, Show More, loading/empty/error views, brand
   theme/app_theme.dart         same colours as the website: olive, light blue, yellow — never red
-test/widget_test.dart          5 widget tests with a fake API (login, 7 vs 3 + Show More, staff refused, session replaced)
+test/widget_test.dart          7 widget tests with a fake API (login, 7 vs 3 + Show More, staff refused, session replaced)
 ```
 Packages: `http`, `shared_preferences`, `intl`, `url_launcher` (all Dart/Flutter-team packages).
 
@@ -51,6 +51,11 @@ Packages: `http`, `shared_preferences`, `intl`, `url_launcher` (all Dart/Flutter
   as read, tap opens the category tab; paging.
 - Logged in elsewhere / deactivated → the app logs out and the login screen shows the server's reason.
 - Every screen has loading, empty and error (with retry) states.
+
+### 4b. Sign up & forgot password (D-84, D-85)
+- Login screen: **Forgot password?** (sends the reset e-mail; the link opens the website; then log in with the new
+  password) and **Create an account** (hidden when the Super Admin switches sign-up off). After sign-up the user is
+  logged in and sees the latest 3 entries + Show More until the admin activates a subscription.
 
 ## 5. Push notifications — add Firebase later (Phase 12)
 The app works without push (users still get the in-app list and badge). When you have a Firebase project:

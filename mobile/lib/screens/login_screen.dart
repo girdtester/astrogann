@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../app_scope.dart';
 import '../core/api_exception.dart';
 import '../theme/app_theme.dart';
+import 'forgot_password_screen.dart';
+import 'signup_screen.dart';
 
 /// Login for users / traders (spec 3.2). Sends device_type=mobile and the FCM token when available.
 class LoginScreen extends StatefulWidget {
@@ -127,7 +129,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       ]),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    key: const Key('forgot-link'),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => ForgotPasswordScreen(initialEmail: _email.text),
+                    )),
+                    child: const Text('Forgot password?'),
+                  ),
+                  if (scope.settings.settings?.allowRegistration ?? true) ...[
+                    const Divider(height: 24),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      const Text('New here?', style: TextStyle(color: AppColors.muted)),
+                      TextButton(
+                        key: const Key('signup-link'),
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SignupScreen())),
+                        child: const Text('Create an account', style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ]),
+                  ],
+                  const SizedBox(height: 8),
                   const Text('One account can be logged in on one device at a time.',
                       textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 ]),

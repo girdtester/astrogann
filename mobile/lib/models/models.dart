@@ -23,6 +23,7 @@ class AppSettings {
     required this.whatsapp,
     required this.email,
     required this.noticeText,
+    this.allowRegistration = true,
   });
 
   final String appName;
@@ -34,6 +35,9 @@ class AppSettings {
   final List<ContactLink> whatsapp;
   final String? email;
   final String? noticeText;
+
+  /// Super Admin setting: show "Create an account" (D-85).
+  final bool allowRegistration;
 
   factory AppSettings.fromJson(Map<String, dynamic> j) {
     final c = (j['contact'] as Map?) ?? const {};
@@ -47,6 +51,7 @@ class AppSettings {
       whatsapp: [for (final w in (c['whatsapp_links'] as List? ?? const [])) ContactLink(_s(w['label']), _s(w['url']))],
       email: c['email'] as String?,
       noticeText: (j['notice_text'] as String?)?.trim().isEmpty ?? true ? null : j['notice_text'] as String,
+      allowRegistration: j['allow_registration'] != false,
     );
   }
 }

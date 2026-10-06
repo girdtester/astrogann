@@ -62,6 +62,8 @@ Base URL: `{APP_URL}/api` — local `http://localhost:8000/api`.
 | 17 | POST | /api/admin/subscription | permission `subscriptions.manage` | activate / extend / expire |
 | 18 | POST | /api/entries/{id} | `entries.edit` + reach (D-71) | Edit entry (multipart; `image` optional) |
 | 19 | DELETE | /api/entries/{id} | `entries.delete` + reach (D-71) | Delete entry and its image |
+| 20 | POST | /api/auth/register | public (if sign-up allowed) | Self sign-up → token like login (D-85) |
+| 21 | POST | /api/auth/forgot-password | public | E-mail a reset link; neutral answer (D-84) |
 
 Rows 1–2, 4–8, 11, 13–17 are the spec's endpoints (3.6) with their exact paths. Rows 3, 9, 10 are additions for the
 app; row 12 comes from the architecture image (DECISIONS D-09). Super Admin has every permission; the other roles
@@ -153,6 +155,13 @@ current one). 200 → entry object. Delete → 200 `data = null`; the image file
 Entry objects also contain `"display": { "date": "06 Oct 2026", "time": "3:45 PM", "added_on": "06 Oct 2026, 1:45 PM",
 "added_ago": "2 hours ago" }`; notification objects contain `"display": { "date_time": "…", "ago": "…" }`. Show
 these to people; use the raw fields for logic.
+
+### 2.7d POST /api/auth/register and POST /api/auth/forgot-password (added 2026-10-06)
+Register body: `name, email, phone?, password, password_confirmation, device_type?, fcm_token?` → **201** with the same
+`data` as login (`token`, `user`, `subscription` with `status: "none"`). 422 for validation (e.g. e-mail already
+exists), **403** when sign-up is switched off (`GET /api/settings` → `allow_registration`). 6 requests/min.
+Forgot password body: `email` → always 200 with the neutral message in `message`; the link in the e-mail opens the
+website reset page. 6 requests/min.
 
 ### 2.8 GET /api/notifications
 ```json

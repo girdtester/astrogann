@@ -20,6 +20,9 @@ etc.) and subscribed users/traders view the latest entries on web and, later, on
 
 ## 2. Roles and permissions (image panel 2)
 
+> 2026-10-06 (D-85): users can sign up themselves (web + app, switchable in Settings); new accounts have no
+> subscription (latest 3 + Show More). (D-84) Forgot password works on web and app.
+>
 > 2026-10-06 (D-71/D-72): entries are no longer immutable — Super Admin (and roles granted `entries.edit` /
 > `entries.delete` / `records.force_delete`) can edit and delete. The "Admin: no edit / no delete" rule is the
 > default of the Admin role.

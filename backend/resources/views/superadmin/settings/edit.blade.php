@@ -26,6 +26,13 @@
             </label>
         </x-card>
 
+        <x-card title="Sign-up">
+            <label class="flex items-start gap-2 text-sm">
+                <input type="hidden" name="allow_registration" value="0">
+                <input type="checkbox" name="allow_registration" value="1" class="mt-0.5 rounded border-gray-300 text-olive-600" @checked(old('allow_registration', $settings['allow_registration'] ?? '1') === '1')>
+                <span>Allow people to create their own user account on the website and in the app. New accounts have no subscription: they see the latest {{ $settings['entries_limit_expired'] }} entries and "Show More" until you activate a subscription.</span>
+            </label>
+        </x-card>
         <x-card title="&quot;Show More&quot; / contact admin">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-3">

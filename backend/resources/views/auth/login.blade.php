@@ -36,4 +36,10 @@
             </x-primary-button>
         </div>
     </form>
+
+    @if (app(\App\Services\SettingsService::class)->bool('allow_registration'))
+        <div class="mt-6 border-t border-gray-100 pt-4 text-center text-sm text-gray-600">
+            New here? <a href="{{ route('register') }}" class="font-semibold text-olive-700 hover:underline">Create an account</a>
+        </div>
+    @endif
 </x-guest-layout>

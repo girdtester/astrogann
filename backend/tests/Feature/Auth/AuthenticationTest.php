@@ -52,9 +52,12 @@ class AuthenticationTest extends TestCase
         $this->assertDatabaseHas('user_sessions', ['user_id' => $user->id, 'is_active' => false]);
     }
 
-    public function test_registration_is_disabled(): void
+    public function test_registration_is_closed_when_the_setting_is_off(): void
     {
+        // Sign-up is allowed by default since D-85; the Super Admin can switch it off.
+        app(\App\Services\SettingsService::class)->update(['allow_registration' => '0']);
+
         $this->get('/register')->assertNotFound();
-        $this->post('/register', ['name' => 'x', 'email' => 'x@x.test', 'password' => 'password'])->assertNotFound();
+        $this->post('/register', ['name' => 'x', 'email' => 'x@x.test', 'password' => 'password'])->assertForbidden();
     }
 }

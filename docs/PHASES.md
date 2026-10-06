@@ -163,3 +163,5 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | Owner | Branding, light theme, grouped menu, buttons, readable dates, pickers | all screens | `display` fields | same colours/strings | done (D-61…D-79) |
 | Owner | Scale to lakhs, sorting/filters | all lists | — | — | done (docs/PERFORMANCE.md) |
 | Owner | Subscription change e-mails | — | SubscriptionChangedMail | notification type `subscription` | done (D-81) |
+| Owner | Forgot password everywhere | /forgot-password | POST /api/auth/forgot-password | Forgot password screen | done (D-84) |
+| Owner | Self sign-up (3 entries until subscribed) | /register | POST /api/auth/register | Create account screen | done (D-85) |

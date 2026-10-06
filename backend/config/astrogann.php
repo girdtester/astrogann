@@ -42,11 +42,12 @@ return [
         'contact_whatsapp' => '+917558377920, +918149343315',
         'contact_email' => 'ganndecoder@gmail.com',
         'notice_text' => '',
+        'allow_registration' => '1', // D-85: users can sign up themselves (web + app)
         'notify_expired_users' => '1', // D-73: expired / unsubscribed users get a "renew" notification (no push)
     ],
 
     'public_settings' => [
         'app_name', 'entries_limit_active', 'entries_limit_expired', 'reminder_days',
-        'show_more_text', 'contact_phone', 'contact_whatsapp', 'contact_email', 'notice_text',
+        'show_more_text', 'contact_phone', 'contact_whatsapp', 'contact_email', 'notice_text', 'allow_registration',
     ],
 ];

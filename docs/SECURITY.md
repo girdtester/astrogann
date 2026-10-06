@@ -85,6 +85,11 @@ no details). API: inactive category → 404. Notifications are scoped to their o
 parameters are whitelisted (D-77). Uploaded image names are random 40-character strings, uploads folder has no
 directory listing.
 
+## 6d. Sign-up and password reset (2026-10-06, D-84/D-85)
+Neutral forgot-password answer (no account enumeration), reset only for active accounts, 6/min limits on sign-up
+and reset requests, reset ends all sessions, sign-up creates only user/trader accounts without subscription and
+can be switched off.
+
 ## 7. Phase 9 review — 2026-10-06
 
 | Area | Result | Evidence |

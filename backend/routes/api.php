@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('settings', [Api\ContentController::class, 'settings'])->middleware('throttle:api-public');
 Route::post('auth/login', [Api\AuthController::class, 'login'])->middleware('throttle:api-public');
+Route::post('auth/register', [Api\AuthController::class, 'register'])->middleware('throttle:6,1');
+Route::post('auth/forgot-password', [Api\AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
 
 Route::middleware(['auth:sanctum', 'session.single', 'throttle:api'])->group(function () {
     Route::post('auth/logout', [Api\AuthController::class, 'logout']);

@@ -50,6 +50,7 @@ class ContentController extends Controller
                 'whatsapp_links' => $this->settings->contact()['whatsapp'],
             ],
             'notice_text' => $s['notice_text'] ?: null,
+            'allow_registration' => $this->settings->bool('allow_registration'),
         ]);
     }
 

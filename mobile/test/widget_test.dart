@@ -66,6 +66,24 @@ class FakeApi {
               'user': {'id': 1, 'name': 'Active Trader', 'email': body['email'], 'role': {'kind': roleKind}},
               'subscription': roleKind == 'user' ? _sub : null,
             });
+          case 'auth/register':
+            final body = jsonDecode(req.body) as Map<String, dynamic>;
+            return http.Response(
+                jsonEncode({
+                  'success': true,
+                  'message': 'Welcome! Your account is ready.',
+                  'data': {
+                    'token': '2|new',
+                    'user': {'id': 9, 'name': body['name'], 'email': body['email'], 'role': {'kind': 'user'}},
+                    'subscription': {'status': 'none', 'is_active': false, 'days_left': 0, 'entries_limit': 3},
+                  },
+                  'errors': null,
+                }),
+                201);
+          case 'auth/forgot-password':
+            return http.Response(
+                jsonEncode({'success': true, 'message': 'If an account exists for this e-mail, we have sent a password reset link.', 'data': null, 'errors': null}),
+                200);
           case 'auth/logout':
             return _ok(null);
           case 'subscription':
@@ -154,6 +172,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Call +91 75583 77920'), findsOneWidget);
     expect(find.text('ganndecoder@gmail.com'), findsOneWidget);
+  });
+
+  testWidgets('sign up creates an account and shows 3 entries with Show More', (tester) async {
+    fake.subscribed = false;
+    tester.view.physicalSize = const Size(900, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('signup-link')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('signup-name')), 'New Trader');
+    await tester.enterText(find.byKey(const Key('signup-email')), 'new@example.com');
+    await tester.enterText(find.byKey(const Key('signup-password')), 'password1');
+    await tester.enterText(find.byKey(const Key('signup-confirm')), 'password1');
+    await tester.tap(find.byKey(const Key('signup-button')));
+    await tester.pumpAndSettle();
+
+    expect(fake.calls, contains('POST auth/register'));
+    expect(find.text('Nifty 50'), findsOneWidget);
+    expect(find.text('03 Oct 2026'), findsOneWidget);
+    expect(find.byKey(const Key('show-more-button')), findsWidgets);
+  });
+
+  testWidgets('forgot password shows the server message', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('forgot-link')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('forgot-email')), 'user.active@astrogann.test');
+    await tester.tap(find.byKey(const Key('forgot-button')));
+    await tester.pumpAndSettle();
+
+    expect(fake.calls, contains('POST auth/forgot-password'));
+    expect(find.byKey(const Key('forgot-done')), findsOneWidget);
+    expect(find.textContaining('password reset link'), findsOneWidget);
   });
 
   testWidgets('staff accounts are refused by the app', (tester) async {

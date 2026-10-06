@@ -78,6 +78,29 @@ class AuthController extends ChangeNotifier {
     push.onTokenRefresh((t) => api.post('update-fcm-token', body: {'fcm_token': t}).catchError((_) => null));
   }
 
+  /// Self sign-up (D-85): creates a user/trader without subscription and logs straight in.
+  Future<void> register({required String name, required String email, String? phone, required String password}) async {
+    final data = await api.post('auth/register', body: {
+      'name': name.trim(),
+      'email': email.trim(),
+      if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+      'password': password,
+      'password_confirmation': password,
+      'device_type': AppConfig.deviceType,
+      'fcm_token': await push.token(),
+    }) as Map<String, dynamic>;
+    await tokens.write(data['token'] as String);
+    _apply(data);
+    logoutReason = null;
+    _set(AuthStatus.loggedIn);
+  }
+
+  /// "Forgot password": the server e-mails a reset link (opens the website). Returns the server's message.
+  Future<String> forgotPassword(String email) async {
+    await api.post('auth/forgot-password', body: {'email': email.trim()});
+    return api.lastMessage ?? 'Please check your e-mail.';
+  }
+
   Future<void> logout() async {
     try {
       await api.post('auth/logout');

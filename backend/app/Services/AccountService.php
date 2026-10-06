@@ -50,6 +50,27 @@ class AccountService
         return $user;
     }
 
+    /**
+     * Self sign-up from the website or the app (owner request, DECISIONS D-85). Always a user/trader, active,
+     * with NO subscription — so they see the restricted number of entries + "Show More" until the admin subscribes them.
+     *
+     * @param  array{name: string, email: string, password: string, phone?: ?string}  $data
+     */
+    public function register(array $data): User
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => strtolower(trim($data['email'])),
+            'password' => $data['password'],
+            'phone' => $data['phone'] ?? null,
+            'role_id' => Role::findBySlug(Role::USER)->id,
+            'status' => ActiveStatus::Active->value,
+        ]);
+        $this->logs->log('user.registered', $user, "Self sign-up: {$user->email}", $user);
+
+        return $user;
+    }
+
     /** Update name/email/phone/status/role/extra permissions and optionally the password. */
     public function update(User $user, array $data, User $by): User
     {
