@@ -1,14 +1,15 @@
 # AstroGann — Database
 
 Engine: MariaDB 10.4 locally (XAMPP), MySQL/MariaDB on GoDaddy. Connection `mysql`, database `astrogann`,
-charset `utf8mb4`. Status: **planned (Phase 0)** — will be marked "implemented" in Phase 2.
+charset `utf8mb4`. Status: **implemented (Phase 2, 2026-10-06)** — migrations `0001_01_01_000000_create_users_table.php` (role/status/phone
+added) and `2026_10_06_120000_create_astrogann_tables.php`. `php artisan migrate:fresh --seed` runs cleanly.
 
 ## Enums (PHP backed enums in `app/Enums`)
 
 | Enum | Values |
 |---|---|
 | `Role` | `superadmin`, `admin`, `user` |
-| `UserStatus` / `CategoryStatus` | `active`, `inactive` |
+| `ActiveStatus` (users + categories) | `active`, `inactive` |
 | `SubscriptionStatus` | `active`, `expired` |
 | `DeviceType` | `web`, `mobile` |
 | `NotificationType` | `new_entry`, `expiry` |
@@ -103,3 +104,16 @@ Indexes: `(user_id, is_read)`, `category_id`.
 - Category hasMany Entry. Entry belongsTo Category, belongsTo User as `admin`.
 - Subscription belongsTo User, belongsTo User as `creator` (`created_by`), hasMany SubscriptionPayment.
 - UserNotification belongsTo User, belongsTo Category.
+
+## Seed data (local only — `DemoSeeder`, refuses in production)
+
+- `SettingsSeeder` (safe in production, never overwrites): the 9 keys from `config/astrogann.php` `settings_defaults`.
+- `DemoSeeder`: 4 accounts (docs/TEST_ACCOUNTS.md), active subscription (+30 days, with a payment) and expired
+  subscription (ended 10 days ago); categories Nifty 50, NSE, Bank Nifty, Sensex, Index (active, sort 1–5) and
+  Commodities (inactive); 12 entries per active category (one per day, newest today) with GD-generated PNGs in
+  `public/uploads/entries/seed-*.png` (git-ignored).
+
+## Filesystem
+
+Disk `uploads` (config/filesystems.php): root `public_path('uploads')`, URL `APP_URL/uploads`. `entries.image_path` is
+relative to `public/` (e.g. `uploads/entries/x.png`) so `asset($path)` yields the URL.

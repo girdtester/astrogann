@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Entry images live directly in public/uploads (no storage:link; shared hosting). DECISIONS D-12.
+        'uploads' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
+            'visibility' => 'public',
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

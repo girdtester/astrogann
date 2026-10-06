@@ -20,10 +20,10 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] `.gitignore` sensible (keep `public/build` committed — D-30)
 
 ### Phase 2 — Database
-- [ ] Migrations for every table in DATABASE.md
-- [ ] Models, relations, casts, enums
-- [ ] Factories + seeders (4 accounts, categories, ≥10 entries/category with placeholder images, settings)
-- [ ] `migrate:fresh --seed` clean
+- [x] Migrations for every table in DATABASE.md
+- [x] Models, relations, casts, enums
+- [x] Factories + seeders (4 accounts, categories, ≥10 entries/category with placeholder images, settings)
+- [x] `migrate:fresh --seed` clean
 
 ### Phase 3 — Web auth, roles, single session
 - [ ] One login page; redirect by role to /superadmin, /admin, /user
