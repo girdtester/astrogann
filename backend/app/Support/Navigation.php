@@ -54,7 +54,10 @@ class Navigation
                     self::link('Users / Traders', 'superadmin.users.index', 'superadmin.users.*', Permissions::USERS_MANAGE),
                     self::link('Roles & Permissions', 'superadmin.roles.index', 'superadmin.roles.*', Permissions::ROLES_MANAGE),
                 ]),
-                self::link('Subscriptions', 'superadmin.subscriptions.index', 'superadmin.subscriptions.*', Permissions::SUBSCRIPTIONS_MANAGE),
+                self::group('Subscriptions', [
+                    self::link('Subscriptions', 'superadmin.subscriptions.index', 'superadmin.subscriptions.*', Permissions::SUBSCRIPTIONS_MANAGE),
+                    self::link('Expiry reminders', 'superadmin.reminders.index', 'superadmin.reminders.*', Permissions::SUBSCRIPTIONS_MANAGE),
+                ]),
                 self::group('Entries', [
                     self::link('Add Entry', 'admin.entries.create', 'admin.entries.create', Permissions::ENTRIES_CREATE),
                     $p(Permissions::ENTRIES_VIEW_ALL)

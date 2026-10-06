@@ -6,7 +6,6 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
@@ -14,15 +13,11 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * "Subscription will expire in N days" (spec 3.4). Queued; sent through SMTP in production.
+ * "Subscription will expire in N days" (spec 3.4). Sent one by one via the SendMail job (D-87).
  */
-class SubscriptionExpiringMail extends Mailable implements ShouldQueue
+class SubscriptionExpiringMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public int $tries = 3;
-
-    public array $backoff = [60, 600];
 
     public function __construct(
         public readonly User $user,

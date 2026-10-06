@@ -18,7 +18,7 @@ class SecurityAuditTest extends TestCase
     /** Routes that are meant to be reachable without logging in. */
     private const PUBLIC = [
         'GET /', 'GET login', 'POST login', 'GET forgot-password', 'POST forgot-password', 'GET reset-password/{token}',
-        'POST reset-password', 'GET up', 'GET api/settings', 'POST api/auth/login', 'POST api/auth/register', 'POST api/auth/forgot-password', 'GET register', 'POST register', 'GET storage/{path}', 'PUT storage/{path}',
+        'POST reset-password', 'GET up', 'GET api/settings', 'POST api/auth/login', 'POST api/auth/register', 'POST api/auth/forgot-password', 'GET register', 'POST register', 'GET cron/run/{token}', 'GET storage/{path}', 'PUT storage/{path}',
         'GET sanctum/csrf-cookie',
     ];
 

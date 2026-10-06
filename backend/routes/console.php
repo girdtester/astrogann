@@ -15,7 +15,9 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3 --sleep=
 
 // Spec 3.4 daily jobs.
 Schedule::command('astrogann:expire-subscriptions')->dailyAt('00:05')->withoutOverlapping();
-Schedule::command('astrogann:send-expiry-reminders')->dailyAt('09:00')->withoutOverlapping();
+// Expiry reminders (D-88): 1) save the list once a day at 18:00, 2) send it one by one every minute.
+Schedule::command('astrogann:collect-expiry-reminders')->dailyAt('18:00')->withoutOverlapping();
+Schedule::command('astrogann:send-expiry-reminders')->everyMinute()->withoutOverlapping(10);
 
 // Housekeeping.
 Schedule::command('queue:prune-failed --hours=720')->daily();

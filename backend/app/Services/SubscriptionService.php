@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\NotificationType;
 use App\Enums\PaymentStatus;
+use App\Jobs\SendMail;
 use App\Mail\SubscriptionChangedMail;
 use App\Enums\RoleKind;
 use App\Enums\SubscriptionStatus;
@@ -15,7 +16,6 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 
 /**
@@ -212,7 +212,7 @@ class SubscriptionService
     private function notifyChange(User $user, Subscription $sub, string $action): void
     {
         DB::afterCommit(function () use ($user, $sub, $action) {
-            Mail::to($user)->queue(new SubscriptionChangedMail($user, $sub->fresh(), $action));
+            SendMail::dispatch($user->email, new SubscriptionChangedMail($user, $sub->fresh(), $action));
             $user->appNotifications()->create([
                 'type' => NotificationType::Subscription,
                 'message' => SubscriptionChangedMail::summary($sub->fresh(), $action),

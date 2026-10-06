@@ -111,13 +111,30 @@ The scheduler (`backend/routes/console.php`) then runs:
 |---|---|---|
 | every minute | `queue:work --stop-when-empty --max-time=50 --tries=3` | sends queued notifications, pushes, e-mails, then exits |
 | 00:05 daily | `astrogann:expire-subscriptions` | marks past-due subscriptions expired |
-| 09:00 daily | `astrogann:send-expiry-reminders` | "expires in N days" e-mail + in-app notice + push (once per period) |
+| ~~09:00 daily~~ | ~~`astrogann:send-expiry-reminders`~~ | superseded 2026-10-06 by the two rows below (D-88) |
+| 18:00 daily | `astrogann:collect-expiry-reminders` | saves all users expiring within N days (once per expiry date) |
+| every minute | `astrogann:send-expiry-reminders` | e-mails the saved list one by one (`MAIL_PER_MINUTE`) + in-app + push |
 | daily | `queue:prune-failed --hours=720`, `sanctum:prune-expired` | housekeeping |
 
 Each run is short (jobs work in chunks of `NOTIFICATION_CHUNK`, default 200 users). Failed jobs are kept in the
 `failed_jobs` table and logged as `job.failed` (Super Admin → Reports / Logs); retry with
 `php artisan queue:retry all`. **One-off commands without SSH:** add a temporary cron line such as
 `/usr/local/bin/php /home/<cpaneluser>/astrogann/artisan migrate --force`, let it run once, delete it.
+
+### 6b. Cron by link (alternative, D-86)
+If you prefer a link (or cPanel cron is not available), set a secret in `.env`:
+```
+CRON_TOKEN=<48 random letters/digits>     # e.g. php -r "echo bin2hex(random_bytes(24));"
+MAIL_PER_MINUTE=20
+```
+then call **every minute**:
+```
+https://app.your-domain.com/cron/run/<CRON_TOKEN>
+```
+- cPanel → Cron Jobs → every minute: `wget -q -O /dev/null "https://app.your-domain.com/cron/run/<CRON_TOKEN>"`
+- or a free service such as cron-job.org: create a job with that URL, schedule "every minute".
+It answers `OK <time>` and runs the same schedule as §6. A wrong key returns 404. Keep the link secret.
+Check results in Super Admin → Subscriptions ▾ → Expiry reminders and Reports / Logs.
 
 ## 7. Folder permissions
 - `storage/` and `bootstrap/cache/` (recursive) → 755 directories / 644 files, writable by your user (775 if the host requires).

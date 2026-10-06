@@ -24,6 +24,12 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Cron link, e-mail pacing, saved expiry-reminder list
+- D-86 `/cron/run/{CRON_TOKEN}`; D-87 SendMail job + `MAIL_PER_MINUTE`; D-88 collect at 18:00 into
+  `expiry_reminders`, send one by one every minute, Super Admin "Expiry reminders" screen.
+- Real SMTP check earlier: 3-days-before reminder + activated e-mail to laravel7777@gmail.com delivered via queue.
+- 143 backend tests pass.
+
 ### 2026-10-06 — Forgot password + self sign-up (web + app)
 - D-84 PasswordResetService (web + API, neutral message, active accounts only, reset ends all sessions); real reset
   e-mail sent via the test Gmail SMTP to laravel7777@gmail.com (existing local account id 5).

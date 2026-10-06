@@ -11,6 +11,10 @@ Route::get('/', fn () => auth()->check()
     ? redirect()->route(auth()->user()->homeRoute())
     : redirect()->route('login'));
 
+// URL cron (D-86): call every minute from cPanel or cron-job.org. Secret key from CRON_TOKEN; otherwise 404.
+Route::get('/cron/run/{token}', \App\Http\Controllers\CronController::class)
+    ->where('token', '[A-Za-z0-9]+')->middleware('throttle:20,1')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class)->name('cron.run');
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn () => redirect()->route(auth()->user()->homeRoute()))->name('dashboard');
 
@@ -39,6 +43,10 @@ Route::middleware('auth')->group(function () {
             Route::get('subscriptions/{user}', [SuperAdmin\SubscriptionController::class, 'show'])->name('subscriptions.show');
             Route::post('subscriptions/{user}', [SuperAdmin\SubscriptionController::class, 'action'])->name('subscriptions.action');
             Route::post('subscriptions/{user}/payments', [SuperAdmin\SubscriptionController::class, 'storePayment'])->name('subscriptions.payments.store');
+            Route::get('reminders', [SuperAdmin\ExpiryReminderController::class, 'index'])->name('reminders.index');
+            Route::post('reminders/collect', [SuperAdmin\ExpiryReminderController::class, 'collect'])->name('reminders.collect');
+            Route::post('reminders/send', [SuperAdmin\ExpiryReminderController::class, 'send'])->name('reminders.send');
+            Route::post('reminders/retry', [SuperAdmin\ExpiryReminderController::class, 'retry'])->name('reminders.retry');
         });
 
         Route::middleware('can:'.P::CATEGORIES_MANAGE)->group(function () {

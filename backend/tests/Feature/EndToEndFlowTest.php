@@ -79,9 +79,11 @@ class EndToEndFlowTest extends TestCase
         $this->withToken($token)->getJson('/api/notifications')->assertJsonPath('data.unread_count', 10); // 9 new entries + 1 "subscription activated"
 
         // 7. Subscription ends in 3 days → reminder e-mail (once).
+        $this->artisan('astrogann:collect-expiry-reminders');
+        $this->artisan('astrogann:collect-expiry-reminders');
         $this->artisan('astrogann:send-expiry-reminders');
         $this->artisan('astrogann:send-expiry-reminders');
-        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
 
         // 8. Subscription expires → still logs in, sees 3 + Show More; no more notifications.
         $this->travelTo(today()->addDays(4)->setTime(1, 0));

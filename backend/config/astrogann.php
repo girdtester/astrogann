@@ -28,6 +28,12 @@ return [
         'ended_sessions_days' => (int) env('RETAIN_ENDED_SESSIONS_DAYS', 90),
     ],
 
+    // E-mails sent per minute by the queue (D-87). Gmail ≈ 500/day, GoDaddy cPanel ≈ 250/hour — keep it modest.
+    'mail_per_minute' => (int) env('MAIL_PER_MINUTE', 20),
+
+    // Secret for the URL cron https://your-domain/cron/run/{CRON_TOKEN} (D-86). At least 32 characters; empty = disabled.
+    'cron_token' => env('CRON_TOKEN'),
+
     // Users per chunk when fanning out notifications (keeps shared-hosting runs short).
     'notification_chunk' => (int) env('NOTIFICATION_CHUNK', 200),
 

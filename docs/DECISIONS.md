@@ -422,3 +422,22 @@ sees the content as an unsubscribed user (latest 3 entries + Show More / contact
 user/trader, active, with no subscription; logged as `user.registered`; the API logs straight in (single session).
 Super Admin can switch sign-up off in Settings (`allow_registration`, public, default on); when off the web page is
 404, POSTs are 403 and the app hides the link. Phone number optional at sign-up.
+
+## Cron link + e-mail pacing + saved reminder list (owner requests, 2026-10-06)
+
+**D-86 (2026-10-06) — URL cron.** `GET /cron/run/{CRON_TOKEN}` runs `schedule:run` (same as the cPanel cron line), for
+hosts or people who prefer a link (cron-job.org etc.). Secret `CRON_TOKEN` in `.env` (≥ 32 chars, otherwise the route
+is a 404), rate-limited, `ignore_user_abort` so it finishes even if the caller hangs up.
+
+**D-87 (2026-10-06) — E-mails one by one at a safe pace.** Subscription e-mails are sent individually (one e-mail per
+user, never BCC). `MAIL_PER_MINUTE` (default 20) limits the pace (Gmail ≈ 500/day, GoDaddy ≈ 250/hour).
+Activated / extended / expired e-mails go through the `SendMail` job with the `outgoing-mail` rate limit (waits
+instead of failing, retries for 2 days, gives up after 3 real errors → `job.failed` in Reports / Logs).
+
+**D-88 (2026-10-06) — Expiry reminders: save the list once, then send (supersedes the reminder part of D-58).**
+Step 1 `astrogann:collect-expiry-reminders` daily at **18:00** saves every user whose subscription ends within
+`reminder_days` into `expiry_reminders` (one row per subscription + end date — never collected twice; extending
+gives a new end date and therefore a new reminder). Step 2 `astrogann:send-expiry-reminders` every minute sends up to
+`MAIL_PER_MINUTE` pending rows one by one (e-mail + in-app notice + push), marks them sent with the time, retries
+failures up to 3 times, and skips users who were deactivated/renewed meanwhile. Super Admin → Subscriptions ▾ →
+**Expiry reminders** shows the list (waiting / sent / failed) with Collect now, Send pending now and Retry failed.

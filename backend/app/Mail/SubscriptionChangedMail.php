@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\SettingsService;
 use App\Support\Fmt;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
@@ -15,15 +14,11 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Sent when the Super Admin activates, extends or expires a subscription (owner request, DECISIONS D-81).
+ * Sent when the Super Admin activates, extends or expires a subscription (D-81), one by one via SendMail (D-87).
  */
-class SubscriptionChangedMail extends Mailable implements ShouldQueue
+class SubscriptionChangedMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public int $tries = 3;
-
-    public array $backoff = [60, 600];
 
     /** @param 'activated'|'extended'|'expired' $action */
     public function __construct(public readonly User $user, public readonly Subscription $subscription, public readonly string $action) {}

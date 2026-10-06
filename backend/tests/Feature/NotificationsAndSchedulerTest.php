@@ -176,22 +176,25 @@ class NotificationsAndSchedulerTest extends TestCase
         $later = Subscription::factory()->endingIn(10)->create();   // not due
         $expired = Subscription::factory()->expired()->create();     // not due
 
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueued(SubscriptionExpiringMail::class, fn ($m) => $m->hasTo($u->email) && $m->daysLeft === 3);
-        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
+        Mail::assertSent(SubscriptionExpiringMail::class, fn ($m) => $m->hasTo($u->email) && $m->daysLeft === 3);
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
         $this->assertNotNull($sub->fresh()->reminder_sent_at);
         $this->assertDatabaseHas('user_notifications', ['user_id' => $u->id, 'type' => 'expiry']);
 
         // Second run the same day or the next: nothing new.
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
 
         // Extension resets the flag; when the new end date comes close, a new reminder goes out.
         app(SubscriptionService::class)->extend($u, today()->addDays(2)->addMonth(), User::factory()->superAdmin()->create());
         $this->assertNull($sub->fresh()->reminder_sent_at);
         $this->travelTo(today()->addMonth());
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueued(SubscriptionExpiringMail::class, 2);
+        Mail::assertSent(SubscriptionExpiringMail::class, 2);
     }
 
     public function test_reminder_window_uses_the_setting(): void
@@ -201,8 +204,9 @@ class NotificationsAndSchedulerTest extends TestCase
         app(\App\Services\SettingsService::class)->update(['reminder_days' => '5']);
         Subscription::factory()->endingIn(5)->create();
 
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
     }
 
     public function test_mail_renders(): void
@@ -260,5 +264,68 @@ class NotificationsAndSchedulerTest extends TestCase
             && $r->hasHeader('Authorization', 'Bearer ya29.test')
             && $r['message']['data']['category_id'] === '1');
         @unlink($path);
+    }
+    public function test_subscription_emails_go_one_by_one_at_a_safe_pace(): void
+    {
+        Mail::fake();
+        Queue::fake([SendPushToUsers::class]);
+        config(['astrogann.mail_per_minute' => 2]);
+        $users = collect(range(1, 3))->map(fn () => User::factory()->create());
+        $users->each(fn ($u) => Subscription::factory()->endingIn(3)->create(['user_id' => $u->id]));
+
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
+        $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
+
+        // Saved once, then sent one by one: at most MAIL_PER_MINUTE per cron run, the rest on the next run.
+        Mail::assertSent(SubscriptionExpiringMail::class, 2);
+        $this->assertSame(1, \App\Models\ExpiryReminder::where('status', 'pending')->count());
+        $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
+        Mail::assertSent(SubscriptionExpiringMail::class, 3);
+        foreach ($users as $u) {
+            Mail::assertSent(SubscriptionExpiringMail::class, fn ($m) => $m->hasTo($u->email));
+        }
+        $this->assertSame(3, \App\Models\ExpiryReminder::where('status', 'sent')->whereNotNull('sent_at')->count());
+    }
+
+    public function test_reminders_are_collected_at_6pm_and_sent_every_minute(): void
+    {
+        $find = fn (string $cmd) => collect(app(Schedule::class)->events())->first(fn ($e) => str_contains((string) $e->command, $cmd));
+        $this->assertSame('0 18 * * *', $find('astrogann:collect-expiry-reminders')->expression);
+        $this->assertSame('* * * * *', $find('astrogann:send-expiry-reminders')->expression);
+    }
+
+    public function test_users_are_collected_only_once_and_changed_ones_are_skipped(): void
+    {
+        Mail::fake();
+        Queue::fake([SendPushToUsers::class]);
+        $keep = User::factory()->create();
+        $gone = User::factory()->create();
+        Subscription::factory()->endingIn(3)->create(['user_id' => $keep->id]);
+        Subscription::factory()->endingIn(2)->create(['user_id' => $gone->id]);
+
+        $this->artisan('astrogann:collect-expiry-reminders')->expectsOutputToContain('Saved 2');
+        $this->artisan('astrogann:collect-expiry-reminders')->expectsOutputToContain('Saved 0'); // never twice
+
+        $gone->update(['status' => 'inactive']); // deactivated after the list was saved
+        $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
+
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
+        Mail::assertSent(SubscriptionExpiringMail::class, fn ($m) => $m->hasTo($keep->email));
+        $this->assertSame('failed', \App\Models\ExpiryReminder::where('user_id', $gone->id)->value('status'));
+    }
+
+    public function test_super_admin_reminders_screen_and_buttons(): void
+    {
+        Mail::fake();
+        Queue::fake([SendPushToUsers::class]);
+        $u = User::factory()->create(['name' => 'Soon Expiring']);
+        Subscription::factory()->endingIn(3)->create(['user_id' => $u->id]);
+        $this->signIn(User::factory()->superAdmin()->create());
+
+        $this->post(route('superadmin.reminders.collect'))->assertSessionHas('success');
+        $this->get(route('superadmin.reminders.index'))->assertOk()->assertSee('Soon Expiring')->assertSee('waiting');
+        $this->post(route('superadmin.reminders.send'))->assertSessionHas('success');
+        $this->get(route('superadmin.reminders.index', ['status' => 'sent']))->assertOk()->assertSee('Soon Expiring');
+        Mail::assertSent(SubscriptionExpiringMail::class, 1);
     }
 }

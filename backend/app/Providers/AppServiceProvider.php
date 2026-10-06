@@ -48,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
 
         // API rate limits (docs/SECURITY.md §3).
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->user()?->id ?: $request->ip()));
+        // Outgoing e-mail pace (D-87): one by one, MAIL_PER_MINUTE (default 20) — under Gmail / GoDaddy limits.
+        RateLimiter::for('outgoing-mail', fn () => Limit::perMinute(max(1, (int) config('astrogann.mail_per_minute'))));
         RateLimiter::for('api-public', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
 
         Password::defaults(fn () => app()->isProduction()
