@@ -309,3 +309,17 @@ strings). The owner's personal e-mail is intentionally not stored anywhere in th
 reminder sets **Reply-To = contact_email**. For production deliverability see DEPLOYMENT.md §5 (a @gmail.com
 From address sent through GoDaddy's servers may land in spam; a mailbox on the own domain with Reply-To Gmail is
 the safer choice).
+
+## Phase 9 — 2026-10-06
+
+**D-64 (2026-10-06) — `SecurityHeaders` middleware** on every response (X-Frame-Options SAMEORIGIN, nosniff,
+Referrer-Policy, Permissions-Policy, HSTS when HTTPS).
+
+**D-65 (2026-10-06) — `.public_path` marker file** (next to `artisan`) relocates Laravel's public folder for hosts
+whose web root must be `public_html`; works for web and cron because it is read in `bootstrap/app.php`.
+
+**D-66 (2026-10-06) — `php artisan astrogann:create-superadmin {name} {email} [--password=]`** creates the first
+production Super Admin (non-interactive, cron-friendly; prints a random password).
+
+**D-67 (2026-10-06) — Owner instruction:** after the web part is complete, stop and ask before starting the mobile
+app (Phase 10).

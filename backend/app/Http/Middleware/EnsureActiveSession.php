@@ -8,6 +8,7 @@ use App\Services\SessionService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -56,7 +57,10 @@ class EnsureActiveSession
     private function reject(Request $request, string $message, string $code, int $status): Response
     {
         if ($request->is('api/*') || $request->expectsJson()) {
-            $request->user()?->currentAccessToken()?->delete();
+            $token = $request->user()?->currentAccessToken();
+            if ($token instanceof PersonalAccessToken) {
+                $token->delete();
+            }
 
             return ApiResponse::error($message, $status, ['code' => $code]);
         }

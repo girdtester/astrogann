@@ -72,3 +72,24 @@ Implemented Phase 5 (2026-10-06): `StoreEntryRequest`, `EntryService::create`, `
 - Token stored with `shared_preferences` (works on web and devices) — documented trade-off; switch to
   `flutter_secure_storage` for device builds if desired.
 - On `session_replaced` the app clears the token and shows the reason on the login screen.
+
+
+## 7. Phase 9 review — 2026-10-06
+
+| Area | Result | Evidence |
+|---|---|---|
+| Authorization on every route | ✅ every route is public-by-list or behind `auth`/`auth:sanctum`; every management/API-admin route has `role:` + `can:` | `SecurityAuditTest` (route table scan, fails on any new unguarded route) |
+| Single session | ✅ web + API, staff flag, `session_replaced` / `account_inactive` codes | `SingleSessionTest`, `ApiTest`, `EndToEndFlowTest` |
+| Privilege escalation (dynamic roles) | ✅ grant ⊆ own permissions, no self-management, Super Admin untouchable | `RolesPermissionsTest` |
+| CSRF | ✅ all web POST/PUT/PATCH/DELETE; live `POST /login` without token → 419 | manual curl |
+| Mass assignment | ✅ explicit `$fillable` on every model; profile accepts `name` only; role/status only via AccountService | `ProfileTest` |
+| XSS | ✅ no `{!! !!}` in app views; Blade escaping | `SecurityAuditTest::test_no_html_is_rendered_unescaped…` |
+| Uploads | ✅ image+mimes+mimetypes+size+dimensions, random name, sniffed extension, `.htaccess` no-exec | `AdminModuleTest::test_upload_validation` |
+| Rate limits | ✅ web login 5/min, API login 5 failures/min + 30/min/IP, API 60/min/user, uploads 30/min | `RoleAccessTest`, `ApiTest` |
+| Passwords | ✅ bcrypt; `Password::defaults()` = min 8 (+letters+numbers in production) on all forms | — |
+| Session cookie | ✅ http-only, SameSite=Lax, `SESSION_SECURE_COOKIE=true` in production `.env` (DEPLOYMENT §5) | config/session.php |
+| Security headers | ✅ X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS on HTTPS | `SecurityHeaders`, `SecurityAuditTest` |
+| Secrets | ✅ `.env` ignored; only a throwaway test RSA key in `tests/Fixtures` (D-60); Firebase JSON goes to `storage/app` | `git ls-files` check |
+| Activity log | ✅ login, logout, failed login, session replaced, password change/reset, accounts, roles/permissions, categories, subscriptions, payments, entries, settings, reminders, failed jobs | `activity_logs` |
+| Error output | ✅ API: envelope without stack traces when `APP_DEBUG=false`; web: branded error pages | `ApiExceptionRenderer` |
+| Bug found & fixed in review | rejecting a cookie-authenticated (TransientToken) API request crashed with 500 → now only real tokens are deleted | `EndToEndFlowTest` |

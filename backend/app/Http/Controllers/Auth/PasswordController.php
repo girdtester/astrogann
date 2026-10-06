@@ -24,6 +24,8 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        app(\App\Services\ActivityLogService::class)->log('auth.password_changed', null, 'Password changed from the profile page');
+
         return back()->with('status', 'password-updated');
     }
 }

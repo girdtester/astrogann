@@ -69,9 +69,10 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] Failed-job handling; DEPLOYMENT.md cron
 
 ### Phase 9 — Security and QA
-- [ ] SECURITY.md review ticked
-- [ ] Full test run
-- [ ] 3.3 flow walk-through; 3.2 bullets ticked below
+- [x] SECURITY.md review ticked (§7)
+- [x] Full test run (119 tests)
+- [x] 3.3 flow walk-through (`EndToEndFlowTest` + manual checks); 3.2 bullets ticked below
+- [x] DEPLOYMENT.md final (GoDaddy, public_html variant, cron, mail, FCM, first Super Admin)
 
 ### Phase 10 — Mobile setup
 - [ ] flutter doctor; app in `mobile/` (android, ios, web)
@@ -118,7 +119,7 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.2 U | Push for new entries | (web: unread badge) | NotifyUsersOfNewEntry → SendPushToUsers → FcmPushService | | backend done; app Phase 12 |
 | 3.2 U | Email 3 days before expiry | astrogann:send-expiry-reminders + SubscriptionExpiringMail | | n/a | done |
 | 3.2 U | Single login | Login + EnsureActiveSession | session_replaced (D-52) | | web+API done |
-| 3.3 | End-to-end flow 1–8 | | | | |
+| 3.3 | End-to-end flow 1–8 | EndToEndFlowTest (web staff steps) | EndToEndFlowTest (API trader steps) | | done |
 | 3.4 | Subscription check per request, daily jobs | EntryService::visibleFor; astrogann:expire-subscriptions, astrogann:send-expiry-reminders | same service | | done |
 | 3.7 | Notification flow | EntryCreated → jobs → user_notifications + push; /user/notifications | GET /api/notifications | | backend done |
 | 3.8 | Single session | SessionService::startWeb, EnsureActiveSession, SingleSessionTest | SessionService::startApi, ApiTest | | web+API done |

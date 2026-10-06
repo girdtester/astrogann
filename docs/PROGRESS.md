@@ -4,12 +4,17 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 9 — Security and QA (branding done)
-- **Last finished phase:** Phase 8 — Queues, notifications, email, scheduler (2026-10-06)
+- **Current phase:** Phase 10 — Mobile setup — **WAITING for the owner's go-ahead** (D-67)
+- **Last finished phase:** Phase 9 — Security and QA (2026-10-06). Web + API are complete.
 
 ## Next steps
-1. Phase 9: security review, full tests, end-to-end walk-through, then **stop and ask the owner before mobile
-   (Phase 10)** — owner instruction 2026-10-06.
+1. Ask the owner the mobile questions (see the Phase 9 report in the chat / below) and wait for the answer.
+2. Then Phase 10: `flutter doctor`, create `mobile/` (Android + iOS + web), run with `flutter run -d chrome`
+   against http://localhost:8000, local-only CORS, docs/MOBILE.md.
+
+## Open items for the owner
+- Production: GoDaddy cPanel access/domain, SMTP mailbox (or Gmail App Password), Firebase project files.
+- PHP 8.2 security support ends 2026-12-31 → choose PHP 8.3/8.4 on the server (D-01).
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +23,13 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 9
+- Security review (SECURITY.md §7): SecurityHeaders middleware, password change/reset logging, route-guard audit
+  test, CSRF/headers checked live, `.public_path` hook for public_html hosting, `astrogann:create-superadmin`.
+- Found & fixed: API rejection of a cookie-authenticated request crashed (TransientToken::delete) → 500.
+- EndToEndFlowTest walks spec 3.3 steps 1–8 + renewal + single session across web/API. 119 tests pass.
+- DEPLOYMENT.md finalised.
 
 ### 2026-10-06 — Branding (owner details)
 - ASTRO GANN name, cropped transparent logo + favicons, dark olive/light-blue/yellow theme, no red (D-61);

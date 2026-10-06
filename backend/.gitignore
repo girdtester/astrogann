@@ -23,3 +23,4 @@ Homestead.yaml
 Thumbs.db
 /public/uploads/entries/*
 !/public/uploads/entries/.gitkeep
+/.public_path
