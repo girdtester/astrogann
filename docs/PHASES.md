@@ -117,9 +117,9 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | 3.2 U | Show More (contact admin) | /user, /user/subscription | entries.show_more, GET /api/settings | | web+API done |
 | 3.2 U | Push for new entries | | | | |
 | 3.2 U | Email 3 days before expiry | | | | |
-| 3.2 U | Single login | | | | |
+| 3.2 U | Single login | Login + EnsureActiveSession | session_replaced (D-52) | | web+API done |
 | 3.3 | End-to-end flow 1–8 | | | | |
-| 3.4 | Subscription check per request, daily jobs | | | | |
+| 3.4 | Subscription check per request, daily jobs | EntryService::visibleFor (per request) | same service | | per-request done; daily jobs Phase 8 |
 | 3.7 | Notification flow | | | | |
-| 3.8 | Single session | | | | |
+| 3.8 | Single session | SessionService::startWeb, EnsureActiveSession, SingleSessionTest | SessionService::startApi, ApiTest | | web+API done |
 | 3.9 | Dynamic tabs + settings | /user tabs, SettingsService | GET /api/categories, GET /api/settings | | web+API done |
