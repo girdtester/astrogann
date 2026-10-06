@@ -14,86 +14,29 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
+        $this->signIn($user)->get('/profile')->assertOk();
     }
 
-    public function test_profile_information_can_be_updated(): void
+    public function test_name_can_be_updated_but_email_cannot(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['email' => 'keep@example.com']);
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
-
-        $response
+        $this->signIn($user)
+            ->patch('/profile', ['name' => 'New Name', 'email' => 'hack@example.com', 'role' => 'superadmin'])
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
         $user->refresh();
-
-        $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
+        $this->assertSame('New Name', $user->name);
+        $this->assertSame('keep@example.com', $user->email);
+        $this->assertTrue($user->isTrader());
     }
 
-    public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
+    public function test_users_cannot_delete_their_own_account(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => $user->email,
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
-
-        $this->assertNotNull($user->refresh()->email_verified_at);
-    }
-
-    public function test_user_can_delete_their_account(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
-                'password' => 'password',
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
-    }
-
-    public function test_correct_password_must_be_provided_to_delete_account(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
-
+        $this->signIn($user)->delete('/profile', ['password' => 'password'])->assertStatus(405);
         $this->assertNotNull($user->fresh());
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Middleware\EnsureActiveSession;
+use App\Services\ActivityLogService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,11 +44,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // "Remember me" is disabled: it would outlive the single-session rule (DECISIONS D-38).
+        if (! Auth::attempt($this->only('email', 'password'))) {
             RateLimiter::hit($this->throttleKey());
+            app(ActivityLogService::class)->log('auth.failed', null, 'Failed web login for '.$this->string('email'));
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        if (! Auth::user()->isActive()) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => EnsureActiveSession::MSG_INACTIVE,
             ]);
         }
 

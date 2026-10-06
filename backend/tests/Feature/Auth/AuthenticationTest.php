@@ -12,9 +12,7 @@ class AuthenticationTest extends TestCase
 
     public function test_login_screen_can_be_rendered(): void
     {
-        $response = $this->get('/login');
-
-        $response->assertStatus(200);
+        $this->get('/login')->assertStatus(200)->assertDontSee('Register')->assertDontSee('Remember me');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
@@ -27,7 +25,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('user.dashboard', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -40,15 +38,23 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
+        $this->assertDatabaseHas('activity_logs', ['action' => 'auth.failed']);
     }
 
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post('/logout');
+        $response = $this->signIn($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
+        $this->assertDatabaseHas('user_sessions', ['user_id' => $user->id, 'is_active' => false]);
+    }
+
+    public function test_registration_is_disabled(): void
+    {
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', ['name' => 'x', 'email' => 'x@x.test', 'password' => 'password'])->assertNotFound();
     }
 }

@@ -12,7 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => \App\Http\Middleware\EnsureRole::class,
+            'session.single' => \App\Http\Middleware\EnsureActiveSession::class,
+        ]);
+
+        // Every authenticated web request must belong to the user's single active session.
+        $middleware->web(append: [\App\Http\Middleware\EnsureActiveSession::class]);
+
+        // Guests hitting a protected page go to the login page; logged-in users hitting /login go home.
+        $middleware->redirectUsersTo(fn ($request) => route($request->user()->role->homeRoute()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

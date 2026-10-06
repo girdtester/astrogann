@@ -172,3 +172,20 @@ touches the real `astrogann` database. Code must stay portable (no MySQL-only SQ
 
 **D-37 (2026-10-06) — `php artisan db:show` fails on XAMPP MariaDB** (`performance_schema.session_status` missing).
 Harmless; use `php artisan tinker` / `migrate:status` to check the connection instead.
+
+## Phase 3 — 2026-10-06
+
+**D-38 (2026-10-06) — "Remember me" is removed from the login form.** A remember-me cookie would silently start a new
+web session after the old one expired, outside the single-session rule. Users log in again after
+`SESSION_LIFETIME` (default 120 min, adjustable in `.env`).
+
+**D-39 (2026-10-06) — Self-service account changes are limited.** Breeze's email verification, registration and
+"delete account" were removed. The profile page lets a user change their name and password only; email, role and
+status are changed by the Super Admin. Password reset by email stays (uses SMTP in production).
+
+**D-40 (2026-10-06) — `EnsureActiveSession` also enforces `status = active`.** It is appended to the `web` middleware
+group (runs on every web request with a logged-in user) and added after `auth:sanctum` on API routes. A deactivated
+user is logged out on the next request (web) or gets 403 `account_inactive` (API).
+
+**D-41 (2026-10-06) — After login every role goes to its own dashboard** (`/superadmin`, `/admin`, `/user`), not to
+the "intended" URL, so a stale link to another role's area cannot produce a confusing 403 right after login.
