@@ -8,6 +8,17 @@ S3 or SES needed. The mobile app only needs the API URL (docs/MOBILE.md, later).
 - One MySQL database + user (cPanel → *MySQL Databases*).
 - An e-mail account for sending (see §5).
 
+## 0b. PHP-only hosting — no Node.js on the server (D-93)
+The server only needs **PHP + MySQL**. Node.js/npm is a *build tool on your PC*: it turns the design files
+(Tailwind CSS, date/time picker, live-notification script) into plain files in `backend/public/build/` — those
+files are committed and uploaded like images. Verified 2026-10-06: with `node_modules` removed, login, styles,
+scripts and the date/time pickers all load (HTTP 200).
+- Upload: `backend/` with `vendor/` and `public/build/`. **Do not upload `node_modules/`** (not in git anyway).
+- Never run `npm`/`node`/`vite` on the server. Make sure there is **no `public/hot` file** on the server.
+- Only if you change CSS/JS or Tailwind classes in Blade views: on your PC run `npm run build`, then upload the
+  new `public/build/` folder.
+- The `mobile/` folder is the phone app source — it is not uploaded to the server either.
+
 ## 1. Build the upload package on your PC
 From `E:\astrogann\backend`:
 ```

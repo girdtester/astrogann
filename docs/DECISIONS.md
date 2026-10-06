@@ -479,3 +479,7 @@ web again; each new login ends the previous one and the old device gets `session
 (only 1 active session remains). App change: switching a category tab now refreshes that tab from the server (fresh
 entries + immediate logout on a replaced device), and the background check runs every 30 s (was 60 s), like the
 website's poll. Bottom tabs (Subscription / Notifications), pull to refresh and returning to the app also check.
+
+**D-93 (2026-10-06) — No Node.js in production.** Owner's hosting is PHP-only. Vite/Tailwind/flatpickr are build-time
+only; compiled assets in `backend/public/build/` are committed (D-30) and served as static files. Verified by
+removing `node_modules` and loading the site. Server never runs npm.
