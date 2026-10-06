@@ -24,6 +24,15 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Owner requests: scale, filters/sorting, pickers, live notifications, URL security, readability, buttons
+- D-73 immediate + idempotent notifications, renew nudge for expired users (setting), live web badge/toast/tab title.
+- D-74 flatpickr date/time pickers; D-75 indexes, deferred pagination, prune job, dashboard cache, load test
+  (docs/PERFORMANCE.md: all screens < 1 s with 2 lakh entries / 50k users); D-76 `?tab=<code>` instead of ids;
+  D-77 sorting/filters/page size on all lists; D-78 readable dates/times + clearer column names + API display
+  strings; D-79 real buttons.
+- 131 tests pass. Browser checks: pickers (06 Oct 2026 / 1:43 PM → 2026-10-06 / 13:43), entry list buttons and
+  times, user tabs by code, notification created ~1 s after the admin saved, badge + "(1)" title + toast.
+
 ### 2026-10-06 — Owner change requests (after Phase 9)
 - Light theme (D-69), grouped top menu with dropdowns + grouped mobile menu (D-70), entry edit/delete with
   `entries.edit` / `entries.delete` on web and API (D-71), deleting records with history with

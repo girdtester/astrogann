@@ -22,6 +22,12 @@ class Category extends Model
         ];
     }
 
+    /** Key used in user-facing URLs (?tab=nifty50) instead of the numeric id (DECISIONS D-76). */
+    public function tabKey(): string
+    {
+        return strtolower($this->code);
+    }
+
     public function isActive(): bool
     {
         return $this->status === ActiveStatus::Active;

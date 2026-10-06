@@ -149,6 +149,11 @@ Edit uses **POST** (PHP cannot read multipart bodies on PATCH): same fields as 2
 current one). 200 → entry object. Delete → 200 `data = null`; the image file is removed. 403 without
 `entries.edit` / `entries.delete`, or if the entry is not the caller's and the caller lacks `entries.view_all`.
 
+### 2.7c Display strings (added 2026-10-06, D-78)
+Entry objects also contain `"display": { "date": "06 Oct 2026", "time": "3:45 PM", "added_on": "06 Oct 2026, 1:45 PM",
+"added_ago": "2 hours ago" }`; notification objects contain `"display": { "date_time": "…", "ago": "…" }`. Show
+these to people; use the raw fields for logic.
+
 ### 2.8 GET /api/notifications
 ```json
 { "success": true, "message": "OK", "errors": null, "data": {

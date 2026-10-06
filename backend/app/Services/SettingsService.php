@@ -25,6 +25,11 @@ class SettingsService
         return $this->all()[$key] ?? $default;
     }
 
+    public function bool(string $key): bool
+    {
+        return in_array(strtolower((string) $this->get($key)), ['1', 'true', 'yes', 'on'], true);
+    }
+
     public function int(string $key): int
     {
         return (int) $this->get($key);

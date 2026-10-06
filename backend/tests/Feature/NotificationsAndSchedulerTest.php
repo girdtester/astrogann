@@ -17,6 +17,7 @@ use Database\Seeders\SettingsSeeder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -60,10 +61,10 @@ class NotificationsAndSchedulerTest extends TestCase
         return $u;
     }
 
-    public function test_adding_an_entry_fires_the_event_and_queues_the_fan_out(): void
+    public function test_adding_an_entry_starts_the_fan_out_right_after_the_response(): void
     {
         Storage::fake('uploads');
-        Queue::fake();
+        Bus::fake();
         $admin = User::factory()->admin()->create();
         $cat = Category::factory()->create();
 
@@ -72,7 +73,7 @@ class NotificationsAndSchedulerTest extends TestCase
             'image' => UploadedFile::fake()->image('x.png'),
         ])->assertRedirect();
 
-        Queue::assertPushed(NotifyUsersOfNewEntry::class, fn ($job) => $job->entryId === Entry::sole()->id);
+        Bus::assertDispatchedAfterResponse(NotifyUsersOfNewEntry::class, fn ($job) => $job->entryId === Entry::sole()->id);
     }
 
     public function test_event_listener_is_registered(): void
@@ -81,24 +82,51 @@ class NotificationsAndSchedulerTest extends TestCase
         Event::assertListening(EntryCreated::class, \App\Listeners\QueueEntryNotifications::class);
     }
 
-    public function test_only_active_subscribers_get_notification_and_push(): void
+    public function test_active_users_get_notification_and_push_expired_users_get_renew_notice_only(): void
     {
         $active = $this->traderWithDevice(true, 'tok-active');
         $expired = $this->traderWithDevice(false, 'tok-expired');
+        $never = User::factory()->create(); // never subscribed
         $inactive = $this->traderWithDevice(true, 'tok-inactive', accountActive: false);
         $staff = User::factory()->admin()->create();
         $entry = Entry::factory()->create(['admin_id' => $staff->id]);
 
-        (new NotifyUsersOfNewEntry($entry->id))->handle(app(SubscriptionService::class), app(\App\Services\NotificationService::class));
-        // run the queued push job synchronously
-        (new SendPushToUsers([$active->id], $entry->category->name, 'msg'))->handle($this->push);
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']);
 
-        $this->assertDatabaseHas('user_notifications', ['user_id' => $active->id, 'type' => 'new_entry', 'category_id' => $entry->category_id]);
-        foreach ([$expired, $inactive, $staff] as $u) {
+        $this->assertStringContainsString('Check latest update', $active->appNotifications()->sole()->message);
+        $this->assertStringContainsString('Renew your subscription', $expired->appNotifications()->sole()->message);
+        $this->assertStringContainsString('Renew your subscription', $never->appNotifications()->sole()->message);
+        foreach ([$inactive, $staff] as $u) {
             $this->assertDatabaseMissing('user_notifications', ['user_id' => $u->id]);
         }
+        // Push only to the active subscriber (D-18), sent immediately for the first chunk.
+        $this->assertCount(1, $this->push->sent);
         $this->assertSame(['tok-active'], $this->push->sent[0]['tokens']);
-        $this->assertStringContainsString($entry->category->name, \App\Models\UserNotification::first()->message);
+    }
+
+    public function test_expired_users_are_skipped_when_the_setting_is_off(): void
+    {
+        app(\App\Services\SettingsService::class)->update(['notify_expired_users' => '0']);
+        $active = $this->traderWithDevice(true, 'a');
+        $expired = $this->traderWithDevice(false, 'e');
+        $entry = Entry::factory()->create();
+
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']);
+
+        $this->assertSame(1, $active->appNotifications()->count());
+        $this->assertSame(0, $expired->appNotifications()->count());
+    }
+
+    public function test_fan_out_is_idempotent(): void
+    {
+        $u = $this->traderWithDevice(true, 'tok');
+        $entry = Entry::factory()->create();
+
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']);
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']); // retry / duplicate run
+
+        $this->assertSame(1, $u->appNotifications()->count());
+        $this->assertCount(1, $this->push->sent);
     }
 
     public function test_fan_out_is_chunked_and_continues_in_a_new_job(): void
@@ -108,7 +136,7 @@ class NotificationsAndSchedulerTest extends TestCase
         $users = collect(range(1, 5))->map(fn ($i) => $this->traderWithDevice(true, "t{$i}"));
         $entry = Entry::factory()->create();
 
-        (new NotifyUsersOfNewEntry($entry->id))->handle(app(SubscriptionService::class), app(\App\Services\NotificationService::class));
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']);
 
         $this->assertSame(2, \App\Models\UserNotification::count());
         Queue::assertPushed(SendPushToUsers::class, 1);
@@ -122,6 +150,7 @@ class NotificationsAndSchedulerTest extends TestCase
         $entry = Entry::factory()->create();
 
         EntryCreated::dispatch($entry->load('category'));
+        $this->app->terminate(); // runs the after-response first chunk
 
         $this->assertSame(1, $u->appNotifications()->count());
         $this->assertSame(['tok-1'], $this->push->sent[0]['tokens']);

@@ -6,9 +6,11 @@ use App\Enums\RoleKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\PaymentRequest;
 use App\Http\Requests\SuperAdmin\SubscriptionActionRequest;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Services\SettingsService;
 use App\Services\SubscriptionService;
+use App\Support\Sorting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,20 +29,27 @@ class SubscriptionController extends Controller
         $filter = $request->input('filter');
         $soon = today()->addDays($this->settings->reminderDays());
 
-        $users = User::query()
+        $query = User::query()
+            ->select('users.*')
             ->ofKind(RoleKind::User)
             ->with('latestSubscription')
             ->when($request->string('q')->trim()->value(), fn ($q, $t) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$t}%")->orWhere('email', 'like', "%{$t}%")))
             ->when($filter === 'active', fn ($q) => $q->whereHas('subscriptions', fn ($s) => $s->currentlyActive()))
-            ->when($filter === 'expiring', fn ($q) => $q->whereHas('subscriptions', fn ($s) => $s->currentlyActive()->whereDate('end_date', '<=', $soon)))
+            ->when($filter === 'expiring', fn ($q) => $q->whereHas('subscriptions', fn ($s) => $s->currentlyActive()->where('end_date', '<=', $soon->toDateString().' 23:59:59')))
             ->when($filter === 'expired', fn ($q) => $q->whereHas('subscriptions')->whereDoesntHave('subscriptions', fn ($s) => $s->currentlyActive()))
-            ->when($filter === 'none', fn ($q) => $q->whereDoesntHave('subscriptions'))
-            ->orderBy('name')
-            ->paginate(20)
-            ->withQueryString();
+            ->when($filter === 'none', fn ($q) => $q->whereDoesntHave('subscriptions'));
 
-        return view('superadmin.subscriptions.index', compact('users', 'filter'));
+        $latest = fn (string $col) => Subscription::select($col)->whereColumn('subscriptions.user_id', 'users.id')->latest('id')->limit(1);
+        $sorting = Sorting::apply($query, $request, [
+            'name' => 'users.name',
+            'end' => fn ($q, string $dir) => $q->orderBy($latest('end_date'), $dir),
+            'start' => fn ($q, string $dir) => $q->orderBy($latest('start_date'), $dir),
+        ], 'end', 'asc');
+
+        $users = Sorting::paginateDeferred($query, Sorting::perPage($request), $request);
+
+        return view('superadmin.subscriptions.index', compact('users', 'filter', 'sorting'));
     }
 
     public function show(User $user): View

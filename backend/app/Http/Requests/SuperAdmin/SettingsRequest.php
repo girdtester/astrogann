@@ -24,6 +24,7 @@ class SettingsRequest extends FormRequest
             'contact_whatsapp' => ['nullable', 'string', 'max:100', 'regex:/^[0-9+ ,]+$/'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'notice_text' => ['nullable', 'string', 'max:1000'],
+            'notify_expired_users' => ['nullable', 'boolean'],
         ];
     }
 }

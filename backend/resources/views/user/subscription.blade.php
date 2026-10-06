@@ -10,8 +10,8 @@
                     @endif
                 </dd>
             </div>
-            <div><dt class="text-gray-500">Start date</dt><dd class="mt-1 font-medium">{{ $subscription['start_date'] ? \Illuminate\Support\Carbon::parse($subscription['start_date'])->format('d M Y') : '—' }}</dd></div>
-            <div><dt class="text-gray-500">Expiry date</dt><dd class="mt-1 font-medium">{{ $subscription['end_date'] ? \Illuminate\Support\Carbon::parse($subscription['end_date'])->format('d M Y') : '—' }}</dd></div>
+            <div><dt class="text-gray-500">Start date</dt><dd class="mt-1 font-medium">{{ $subscription['start_date'] ? \App\Support\Fmt::date($subscription['start_date']) : '—' }}</dd></div>
+            <div><dt class="text-gray-500">Expiry date</dt><dd class="mt-1 font-medium">{{ $subscription['end_date'] ? \App\Support\Fmt::date($subscription['end_date']) : '—' }}</dd></div>
             <div><dt class="text-gray-500">Days left</dt><dd class="mt-1 font-medium">{{ $subscription['is_active'] ? $subscription['days_left'] : '—' }}</dd></div>
         </dl>
         <p class="mt-4 text-sm text-gray-600">

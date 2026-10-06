@@ -18,7 +18,7 @@ class UserNotification extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['user_id', 'category_id', 'type', 'message', 'is_read'];
+    protected $fillable = ['user_id', 'category_id', 'entry_id', 'type', 'message', 'is_read'];
 
     protected function casts(): array
     {

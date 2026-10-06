@@ -18,19 +18,20 @@
                             <td class="py-2 pr-4"><code>{{ $category->code }}</code></td>
                             <td class="py-2 pr-4">{{ $category->entries_count }}</td>
                             <td class="py-2 pr-4"><x-badge :color="$category->isActive() ? 'green' : 'yellow'">{{ $category->status->value }}</x-badge></td>
-                            <td class="py-2 text-right whitespace-nowrap space-x-2">
-                                <a href="{{ route('superadmin.categories.edit', $category) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('superadmin.categories.status', $category) }}" class="inline">
-                                    @csrf @method('PATCH')
-                                    <button class="{{ $category->isActive() ? 'text-yellow-600' : 'text-green-700' }} hover:underline">{{ $category->isActive() ? 'Deactivate' : 'Activate' }}</button>
-                                </form>
-                                @if ($category->entries_count === 0 || $canForceDelete)
-                                    <form method="POST" action="{{ route('superadmin.categories.destroy', $category) }}" class="inline"
-                                          onsubmit="return confirm({{ \Illuminate\Support\Js::from($category->entries_count ? 'Delete '.$category->name.' AND its '.$category->entries_count.' entries with their images? This cannot be undone.' : 'Delete '.$category->name.'?') }})">
-                                        @csrf @method('DELETE')
-                                        <button class="text-yellow-600 hover:underline">Delete</button>
-                                    </form>
-                                @endif
+                            <td class="py-2 text-right">
+                                <div class="inline-flex flex-wrap justify-end gap-2">
+                                    <x-action :href="route('superadmin.categories.edit', $category)" variant="primary" icon="edit">Edit</x-action>
+                                    <x-action :action="route('superadmin.categories.status', $category)" method="PATCH"
+                                        :variant="$category->isActive() ? 'warning' : 'secondary'" :icon="$category->isActive() ? 'power' : 'check'">
+                                        {{ $category->isActive() ? 'Deactivate' : 'Activate' }}
+                                    </x-action>
+                                    @if ($category->entries_count === 0 || $canForceDelete)
+                                        <x-action :action="route('superadmin.categories.destroy', $category)" method="DELETE" variant="warning" icon="trash"
+                                            :confirm="$category->entries_count ? 'Delete '.$category->name.' AND its '.number_format($category->entries_count).' entries with their images? This cannot be undone.' : 'Delete '.$category->name.'?'">
+                                            Delete
+                                        </x-action>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

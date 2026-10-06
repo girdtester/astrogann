@@ -6,9 +6,11 @@ use App\Events\EntryCreated;
 use App\Models\Category;
 use App\Models\Entry;
 use App\Models\User;
+use App\Support\Sorting;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -149,18 +151,33 @@ class EntryService
         return ['entries' => $entries, 'limit' => $limit, 'restricted' => ! $active];
     }
 
-    /** Filterable listing for Super Admin (all) and Admin (own only). */
-    public function search(array $filters, ?User $onlyAdmin = null, int $perPage = 20): LengthAwarePaginator
+    /**
+     * Filterable, sortable listing for staff: all entries, or only $onlyAdmin's. Index-friendly for lakhs of rows
+     * (plain comparisons on entry_date, composite indexes from migration 2026_10_06_140000).
+     *
+     * @return array{0: LengthAwarePaginator, 1: array{sort: string, dir: string}}
+     */
+    public function search(array $filters, ?User $onlyAdmin = null, int $perPage = 20, ?Request $request = null): array
     {
-        return Entry::query()
-            ->with(['category', 'admin'])
-            ->when($onlyAdmin, fn (Builder $q) => $q->where('admin_id', $onlyAdmin->id))
-            ->when($filters['category_id'] ?? null, fn (Builder $q, $v) => $q->where('category_id', $v))
-            ->when($filters['admin_id'] ?? null, fn (Builder $q, $v) => $q->where('admin_id', $v))
-            ->when($filters['from'] ?? null, fn (Builder $q, $v) => $q->whereDate('entry_date', '>=', $v))
-            ->when($filters['to'] ?? null, fn (Builder $q, $v) => $q->whereDate('entry_date', '<=', $v))
-            ->latestFirst()
-            ->paginate($perPage)
-            ->withQueryString();
+        $query = Entry::query()
+            ->select('entries.*')
+            ->with(['category:id,name,code,status', 'admin:id,name,email,role_id'])
+            ->when($onlyAdmin, fn (Builder $q) => $q->where('entries.admin_id', $onlyAdmin->id))
+            ->when($filters['category_id'] ?? null, fn (Builder $q, $v) => $q->where('entries.category_id', $v))
+            ->when($filters['admin_id'] ?? null, fn (Builder $q, $v) => $q->where('entries.admin_id', $v))
+            ->when($filters['from'] ?? null, fn (Builder $q, $v) => $q->where('entries.entry_date', '>=', $v))
+            ->when($filters['to'] ?? null, fn (Builder $q, $v) => $q->where('entries.entry_date', '<=', $v.' 23:59:59'));
+
+        $sorting = Sorting::apply($query, $request ?? request(), [
+            'entry' => ['entries.entry_date', 'entries.entry_time'],
+            'uploaded' => 'entries.created_at',
+            'category' => fn (Builder $q, string $dir) => $q->join('categories', 'categories.id', '=', 'entries.category_id')
+                ->orderBy('categories.name', $dir)->orderBy('entries.entry_date', 'desc'),
+            'admin' => fn (Builder $q, string $dir) => $q->join('users as admins', 'admins.id', '=', 'entries.admin_id')
+                ->orderBy('admins.name', $dir)->orderBy('entries.entry_date', 'desc'),
+        ], 'entry');
+
+        // Deferred pagination: sort/offset over ids only, then load the 20 full rows (fast at lakhs of rows, D-75).
+        return [Sorting::paginateDeferred($query, $perPage, $request ?? request()), $sorting];
     }
 }

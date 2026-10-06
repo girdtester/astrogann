@@ -19,6 +19,11 @@
                 <x-field name="entries_limit_expired" label="Entries shown — expired / no subscription" type="number" min="0" :value="$settings['entries_limit_expired']" required />
                 <x-field name="reminder_days" label="Expiry reminder e-mail (days before)" type="number" min="1" :value="$settings['reminder_days']" required />
             </div>
+            <label class="mt-4 flex items-start gap-2 text-sm">
+                <input type="hidden" name="notify_expired_users" value="0">
+                <input type="checkbox" name="notify_expired_users" value="1" class="mt-0.5 rounded border-gray-300 text-olive-600" @checked(old('notify_expired_users', $settings['notify_expired_users'] ?? '1') === '1')>
+                <span>Also notify users whose subscription is expired (or who never subscribed) about new entries, with a "renew your subscription" message. They never get a push notification.</span>
+            </label>
         </x-card>
 
         <x-card title="&quot;Show More&quot; / contact admin">

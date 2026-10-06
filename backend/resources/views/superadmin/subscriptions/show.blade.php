@@ -87,7 +87,7 @@
                 <thead class="text-left text-gray-500 border-b"><tr><th class="py-1 pr-3">Start</th><th class="py-1 pr-3">End</th><th class="py-1 pr-3">Status</th><th class="py-1">By</th></tr></thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($history as $s)
-                        <tr><td class="py-1 pr-3">{{ $s->start_date->format('d M Y') }}</td><td class="py-1 pr-3">{{ $s->end_date->format('d M Y') }}</td>
+                        <tr><td class="py-1 pr-3">{{ \App\Support\Fmt::date($s->start_date) }}</td><td class="py-1 pr-3">{{ \App\Support\Fmt::date($s->end_date) }}</td>
                             <td class="py-1 pr-3"><x-badge :color="$s->isCurrentlyActive() ? 'green' : 'yellow'">{{ $s->isCurrentlyActive() ? 'active' : 'expired' }}</x-badge></td>
                             <td class="py-1 text-gray-500">{{ $s->creator?->name ?? '—' }}</td></tr>
                     @empty
@@ -101,7 +101,7 @@
                 <thead class="text-left text-gray-500 border-b"><tr><th class="py-1 pr-3">Date</th><th class="py-1 pr-3">Amount</th><th class="py-1 pr-3">Ref</th><th class="py-1">Status</th></tr></thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($payments as $p)
-                        <tr><td class="py-1 pr-3">{{ $p->payment_date->format('d M Y') }}</td><td class="py-1 pr-3">{{ number_format((float) $p->amount, 2) }}</td>
+                        <tr><td class="py-1 pr-3">{{ \App\Support\Fmt::date($p->payment_date) }}</td><td class="py-1 pr-3">{{ number_format((float) $p->amount, 2) }}</td>
                             <td class="py-1 pr-3">{{ $p->transaction_ref ?? '—' }}</td><td class="py-1">{{ $p->status->label() }}</td></tr>
                     @empty
                         <tr><td colspan="4" class="py-3 text-gray-500">No payments recorded.</td></tr>

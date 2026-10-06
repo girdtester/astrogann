@@ -32,7 +32,7 @@
                     <li class="py-2 flex items-center gap-3">
                         <img src="{{ $entry->imageUrl() }}" class="h-10 w-16 object-cover rounded border" alt="">
                         <span class="font-medium">{{ $entry->category->name }}</span>
-                        <span class="text-gray-500">{{ $entry->entry_date->format('d M Y') }} {{ $entry->timeLabel() }}</span>
+                        <span class="text-gray-500">{{ \App\Support\Fmt::date($entry->entry_date) }}, {{ \App\Support\Fmt::time($entry->entry_time) }}</span>
                     </li>
                 @endforeach
             </ul>

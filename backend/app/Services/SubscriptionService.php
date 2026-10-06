@@ -57,6 +57,24 @@ class SubscriptionService
             ->whereHas('subscriptions', fn (Builder $q) => $q->currentlyActive());
     }
 
+    /** All active trader accounts (any subscription state). */
+    public function notifiableTraders(): Builder
+    {
+        return User::query()->ofKind(RoleKind::User)->where('status', 'active');
+    }
+
+    /**
+     * Which of these user ids currently have an active subscription (one query).
+     *
+     * @param  list<int>  $userIds
+     * @return list<int>
+     */
+    public function filterActive(array $userIds, ?Category $category = null): array
+    {
+        return Subscription::query()->currentlyActive()->whereIn('user_id', $userIds)
+            ->distinct()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+    }
+
     /** Status summary for screens and the API. */
     public function summary(User $user): array
     {
@@ -163,7 +181,7 @@ class SubscriptionService
     {
         return Subscription::query()
             ->where('status', SubscriptionStatus::Active->value)
-            ->whereDate('end_date', '<', today())
+            ->where('end_date', '<', today()->toDateString())
             ->update(['status' => SubscriptionStatus::Expired->value, 'updated_at' => now()]);
     }
 
@@ -178,8 +196,8 @@ class SubscriptionService
         return Subscription::query()
             ->with('user')
             ->where('status', SubscriptionStatus::Active->value)
-            ->whereDate('end_date', '>=', today())
-            ->whereDate('end_date', '<=', today()->addDays($days))
+            ->where('end_date', '>=', today()->toDateString())
+            ->where('end_date', '<=', today()->addDays($days)->toDateString().' 23:59:59')
             ->whereNull('reminder_sent_at')
             ->whereHas('user', fn (Builder $q) => $q->where('status', 'active')->ofKind(RoleKind::User));
     }

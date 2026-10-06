@@ -39,16 +39,16 @@
                                 @endif
                             </td>
                             <td class="py-2 pr-4">{{ $role->users_count }}</td>
-                            <td class="py-2 text-right whitespace-nowrap space-x-2">
-                                @if ($role->hasEditablePermissions())
-                                    <a href="{{ route('superadmin.roles.edit', $role) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                @endif
-                                @if (! $role->is_system && $role->users_count === 0)
-                                    <form method="POST" action="{{ route('superadmin.roles.destroy', $role) }}" class="inline" onsubmit="return confirm('Delete role {{ $role->name }}?')">
-                                        @csrf @method('DELETE')
-                                        <button class="text-yellow-600 hover:underline">Delete</button>
-                                    </form>
-                                @endif
+                            <td class="py-2 text-right">
+                                <div class="inline-flex flex-wrap justify-end gap-2">
+                                    @if ($role->hasEditablePermissions())
+                                        <x-action :href="route('superadmin.roles.edit', $role)" variant="primary" icon="edit">Edit</x-action>
+                                    @endif
+                                    @if (! $role->is_system && $role->users_count === 0)
+                                        <x-action :action="route('superadmin.roles.destroy', $role)" method="DELETE" variant="warning" icon="trash"
+                                            :confirm="'Delete role '.$role->name.'?'">Delete</x-action>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach

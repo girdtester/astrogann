@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [User\DashboardController::class, 'index'])->name('dashboard');
         Route::get('subscription', [User\AccountController::class, 'subscription'])->name('subscription');
         Route::get('notifications', [User\AccountController::class, 'notifications'])->name('notifications.index');
+        Route::get('notifications/poll', [User\AccountController::class, 'poll'])->middleware('throttle:30,1')->name('notifications.poll');
         Route::post('notifications/read-all', [User\AccountController::class, 'markAllRead'])->name('notifications.read-all');
         Route::post('notifications/{id}/read', [User\AccountController::class, 'markRead'])->whereNumber('id')->name('notifications.read');
     });

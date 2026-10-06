@@ -32,6 +32,25 @@
                 </header>
             @endisset
 
+            @if (auth()->user()?->isTrader())
+                {{-- Live notifications (D-73): app.js polls this URL and shows toasts + updates the unread badge. --}}
+                <div id="notify-root" data-poll-url="{{ route('user.notifications.poll') }}"
+                     data-unread="{{ app(\App\Services\NotificationService::class)->unreadCount(auth()->user()) }}"
+                     data-last-id="{{ (int) auth()->user()->appNotifications()->max('id') }}"
+                     x-data class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">
+                    <template x-for="t in $store.notify.toasts" :key="t.id">
+                        <a :href="t.url" x-transition
+                           class="pointer-events-auto block rounded-lg border border-olive-200 bg-white p-3 shadow-lg hover:bg-olive-50">
+                            <div class="flex items-center gap-2 text-sm font-semibold text-olive-800">
+                                <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
+                                <span x-text="t.title"></span>
+                            </div>
+                            <div class="mt-1 text-sm text-gray-700" x-text="t.message"></div>
+                        </a>
+                    </template>
+                </div>
+            @endif
+
             <!-- Page Content -->
             <main class="py-6">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

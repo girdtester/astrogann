@@ -19,4 +19,5 @@ Schedule::command('astrogann:send-expiry-reminders')->dailyAt('09:00')->withoutO
 
 // Housekeeping.
 Schedule::command('queue:prune-failed --hours=720')->daily();
+Schedule::command('astrogann:prune')->dailyAt('02:30')->withoutOverlapping();
 Schedule::command('sanctum:prune-expired --hours=24')->daily();

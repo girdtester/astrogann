@@ -40,8 +40,9 @@
                             <a href="{{ route($item['route']) }}"
                                class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap {{ $active ? 'bg-olive-50 text-olive-800' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}">
                                 {{ $item['label'] }}
-                                @if ($item['badge'] ?? null)
-                                    <span class="ms-1 inline-flex items-center justify-center rounded-full bg-yellow-400 px-1.5 text-xs font-bold text-gray-900">{{ $item['badge'] }}</span>
+                                @if (! is_null($item['badge'] ?? null))
+                                    <span x-data x-cloak x-show="$store.notify.unread > 0" x-text="$store.notify.unread"
+                                          class="ms-1 inline-flex items-center justify-center rounded-full bg-yellow-400 px-1.5 text-xs font-bold text-gray-900"></span>
                                 @endif
                             </a>
                         @endif
@@ -100,8 +101,9 @@
                 @else
                     <x-responsive-nav-link :href="route($item['route'])" :active="request()->routeIs($item['active'])">
                         {{ $item['label'] }}
-                        @if ($item['badge'] ?? null)
-                            <span class="ms-1 inline-flex items-center justify-center rounded-full bg-yellow-400 px-1.5 text-xs font-bold text-gray-900">{{ $item['badge'] }}</span>
+                        @if (! is_null($item['badge'] ?? null))
+                            <span x-data x-cloak x-show="$store.notify.unread > 0" x-text="$store.notify.unread"
+                                  class="ms-1 inline-flex items-center justify-center rounded-full bg-yellow-400 px-1.5 text-xs font-bold text-gray-900"></span>
                         @endif
                     </x-responsive-nav-link>
                 @endif

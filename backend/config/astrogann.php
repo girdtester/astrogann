@@ -21,6 +21,13 @@ return [
         'fcm_credentials' => env('FCM_CREDENTIALS'), // absolute path to the service-account JSON
     ],
 
+    // Daily clean-up (astrogann:prune) so big tables stay fast (DECISIONS D-75).
+    'retention' => [
+        'activity_logs_days' => (int) env('RETAIN_LOGS_DAYS', 365),
+        'read_notifications_days' => (int) env('RETAIN_READ_NOTIFICATIONS_DAYS', 180),
+        'ended_sessions_days' => (int) env('RETAIN_ENDED_SESSIONS_DAYS', 90),
+    ],
+
     // Users per chunk when fanning out notifications (keeps shared-hosting runs short).
     'notification_chunk' => (int) env('NOTIFICATION_CHUNK', 200),
 
@@ -35,6 +42,7 @@ return [
         'contact_whatsapp' => '+917558377920, +918149343315',
         'contact_email' => 'ganndecoder@gmail.com',
         'notice_text' => '',
+        'notify_expired_users' => '1', // D-73: expired / unsubscribed users get a "renew" notification (no push)
     ],
 
     'public_settings' => [

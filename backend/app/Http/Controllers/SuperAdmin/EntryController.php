@@ -7,11 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\User;
 use App\Services\EntryService;
+use App\Support\Sorting;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * View all entries with filters (spec 3.2 "View All Entries"). Read-only: entries are immutable (D-19).
+ * View all entries with filters and sorting (spec 3.2 "View All Entries"). Edit/delete per EntryPolicy (D-71).
  */
 class EntryController extends Controller
 {
@@ -22,12 +23,15 @@ class EntryController extends Controller
         $filters = $request->validate([
             'category_id' => ['nullable', 'integer'],
             'admin_id' => ['nullable', 'integer'],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date'],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
         ]);
 
+        [$entries, $sorting] = $this->entries->search($filters, null, Sorting::perPage($request), $request);
+
         return view('superadmin.entries.index', [
-            'entries' => $this->entries->search($filters),
+            'entries' => $entries,
+            'sorting' => $sorting,
             'filters' => $filters,
             'categories' => Category::query()->ordered()->get(),
             'admins' => User::query()->ofKind(RoleKind::Staff, RoleKind::SuperAdmin)->orderBy('name')->get(),

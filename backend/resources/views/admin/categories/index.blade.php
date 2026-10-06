@@ -13,7 +13,7 @@
                             <td class="py-2 pr-4">{{ $category->entries_count }}</td>
                             <td class="py-2 text-right">
                                 @can('entries.create')
-                                    <a href="{{ route('admin.entries.create', ['category_id' => $category->id]) }}" class="text-indigo-600 hover:underline">Add entry</a>
+                                    <x-action :href="route('admin.entries.create', ['category_id' => $category->id])" variant="primary" icon="plus">Add entry</x-action>
                                 @endcan
                             </td>
                         </tr>

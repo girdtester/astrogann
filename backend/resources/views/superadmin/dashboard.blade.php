@@ -13,14 +13,14 @@
             @forelse ($recentLogs as $log)
                 <li class="py-2 flex flex-wrap justify-between gap-2">
                     <span><x-badge color="indigo">{{ $log->action }}</x-badge> {{ $log->description }}</span>
-                    <span class="text-gray-500">{{ $log->user?->email ?? 'system' }} · {{ $log->created_at?->diffForHumans() }}</span>
+                    <span class="text-gray-500">{{ $log->user?->email ?? 'system' }} · <span title="{{ \App\Support\Fmt::dateTime($log->created_at) }}">{{ \App\Support\Fmt::ago($log->created_at) }}</span></span>
                 </li>
             @empty
                 <li class="py-2 text-gray-500">No activity yet.</li>
             @endforelse
         </ul>
         @can('logs.view')
-            <div class="mt-4"><a href="{{ route('superadmin.logs.index') }}" class="text-sm text-indigo-600 hover:underline">All logs →</a></div>
+            <div class="mt-4"><x-action :href="route('superadmin.logs.index')" icon="arrow">All logs</x-action></div>
         @endcan
     </x-card>
 </x-page>

@@ -18,7 +18,7 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', [
             'links' => array_slice(Navigation::for($user), 1), // without "Dashboard" itself
-            'myEntriesToday' => $user->entries()->whereDate('created_at', today())->count(),
+            'myEntriesToday' => $user->entries()->where('created_at', '>=', today())->count(),
             'myEntriesTotal' => $user->entries()->count(),
             'latest' => $user->entries()->with('category')->latestFirst()->limit(5)->get(),
         ]);

@@ -62,7 +62,7 @@ class UserModuleTest extends TestCase
 
     public function test_active_subscription_sees_latest_seven_newest_first_without_show_more(): void
     {
-        $res = $this->signIn($this->trader(true))->get('/user?category='.$this->nifty->id)->assertOk();
+        $res = $this->signIn($this->trader(true))->get('/user?tab='.$this->nifty->tabKey())->assertOk();
 
         $res->assertSeeInOrder($this->dates(7));
         $res->assertDontSee(today()->subDays(7)->format('d M Y'));
@@ -71,7 +71,7 @@ class UserModuleTest extends TestCase
 
     public function test_expired_subscription_sees_latest_three_and_show_more_with_contacts(): void
     {
-        $res = $this->signIn($this->trader(false))->get('/user?category='.$this->nifty->id)->assertOk();
+        $res = $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())->assertOk();
 
         $res->assertSeeInOrder($this->dates(3));
         $res->assertDontSee(today()->subDays(3)->format('d M Y'));
@@ -82,7 +82,7 @@ class UserModuleTest extends TestCase
 
     public function test_user_without_any_subscription_is_restricted(): void
     {
-        $res = $this->signIn(User::factory()->create())->get('/user?category='.$this->nifty->id);
+        $res = $this->signIn(User::factory()->create())->get('/user?tab='.$this->nifty->tabKey());
         $res->assertSee('Show More')->assertDontSee(today()->subDays(3)->format('d M Y'));
     }
 
@@ -90,12 +90,12 @@ class UserModuleTest extends TestCase
     {
         app(SettingsService::class)->update(['entries_limit_active' => '2', 'entries_limit_expired' => '1', 'show_more_text' => 'Pay to unlock']);
 
-        $this->signIn($this->trader(true))->get('/user?category='.$this->nifty->id)
+        $this->signIn($this->trader(true))->get('/user?tab='.$this->nifty->tabKey())
             ->assertSee(today()->subDays(1)->format('d M Y'))
             ->assertDontSee(today()->subDays(2)->format('d M Y'));
 
         $this->flushSession();
-        $this->signIn($this->trader(false))->get('/user?category='.$this->nifty->id)
+        $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())
             ->assertSee('Pay to unlock')
             ->assertDontSee(today()->subDays(1)->format('d M Y'));
     }
@@ -114,7 +114,7 @@ class UserModuleTest extends TestCase
         $sa = User::factory()->superAdmin()->create();
         app(\App\Services\SubscriptionService::class)->activate($user, today(), today()->addDays(30), $sa);
 
-        $this->signIn($user)->get('/user?category='.$this->nifty->id)
+        $this->signIn($user)->get('/user?tab='.$this->nifty->tabKey())
             ->assertSee(today()->subDays(6)->format('d M Y'))
             ->assertDontSee('Show More');
     }
@@ -148,6 +148,27 @@ class UserModuleTest extends TestCase
         $other = UserNotification::factory()->create();
         $this->signIn($this->trader(true))->post(route('user.notifications.read', $other->id))->assertNotFound();
         $this->assertFalse($other->fresh()->is_read);
+    }
+
+    public function test_direct_url_access_cannot_open_inactive_or_unknown_categories(): void
+    {
+        $user = $this->trader(true);
+        $hidden = Category::where('name', 'Hidden Cat')->sole();
+        Entry::factory()->create(['category_id' => $hidden->id, 'entry_date' => '2020-02-02']);
+        $this->signIn($user);
+
+        // Tabs never expose numeric ids.
+        $this->get('/user')->assertOk()->assertDontSee('category=', false)->assertSee('?tab='.$this->nifty->tabKey(), false);
+
+        foreach (['/user?tab='.$hidden->tabKey(), '/user?tab=does-not-exist', '/user?category='.$hidden->id, '/user?tab[]=x'] as $url) {
+            $this->get($url)->assertRedirect(route('user.dashboard'))->assertSessionHas('status', 'That category is not available.');
+        }
+        $this->get('/user')->assertDontSee('02 Feb 2020');
+
+        // API enforces the same rule.
+        $this->flushSession();
+        $this->app['auth']->forgetGuards();
+        $this->apiSignIn($user)->getJson("/api/categories/{$hidden->id}/entries")->assertNotFound();
     }
 
     public function test_notice_text_is_shown_when_set(): void

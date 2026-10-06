@@ -10,7 +10,8 @@
             <x-select name="category_id" label="Category" :options="$categories->pluck('name', 'id')->all()" :value="$filters['category_id'] ?? null" placeholder="All" />
             <x-field name="from" label="From" type="date" :value="$filters['from'] ?? null" />
             <x-field name="to" label="To" type="date" :value="$filters['to'] ?? null" />
-            <div><x-secondary-button type="submit">Filter</x-secondary-button></div>
+            <input type="hidden" name="sort" value="{{ $sorting['sort'] }}"><input type="hidden" name="dir" value="{{ $sorting['dir'] }}">
+            <div><x-primary-button>Apply filters</x-primary-button></div>
         </form>
 
         @include('partials.entry-table', ['entries' => $entries, 'showAdmin' => false])

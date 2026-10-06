@@ -137,7 +137,8 @@ class User extends Authenticatable
 
     public function scopeOfKind(Builder $query, RoleKind ...$kinds): Builder
     {
-        return $query->whereHas('role', fn (Builder $q) => $q->ofKind(...$kinds));
+        // whereIn on an indexed column scales better than whereHas (EXISTS) for lakhs of users (D-75).
+        return $query->whereIn('users.role_id', Role::query()->ofKind(...$kinds)->select('id'));
     }
 
     // ---- status ---------------------------------------------------------------------------

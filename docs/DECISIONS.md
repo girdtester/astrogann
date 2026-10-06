@@ -349,3 +349,38 @@ notification); delete removes the image file. Web: `/admin/entries/{id}/edit|upd
 notifications go with them); staff with entries can be deleted (entries are re-assigned to the person deleting);
 categories with entries can be deleted (entries and image files are deleted). Without this permission the old rule
 stays (deactivate instead). Super Admin accounts are never deletable in the app.
+
+## Owner requests — scale, filters, pickers, notifications, security, readability, buttons (2026-10-06)
+
+**D-73 (2026-10-06) — Notifications appear immediately; expired users are nudged.** Locally nothing ran the queue,
+so no notification appeared. Now the first chunk of the fan-out runs right after the admin's request
+(`dispatchAfterResponse`); further chunks go through the cron-driven queue. Active subscribers: "New entry added in
+X. Check latest update now!" + push. Expired / never-subscribed users (setting `notify_expired_users`, default on,
+Settings screen): "New entry added in X. Renew your subscription to see all the latest updates." — **no push**
+(D-18 kept for push). Fan-out is idempotent: `user_notifications.entry_id` + unique `(user_id, entry_id)`; only
+newly-notified users get a push. Web: logged-in users poll `/user/notifications/poll` (30 s visible tab, 2 min hidden
+tab) → live unread badge, "(n)" in the browser-tab title and a toast linking to the category tab.
+
+**D-74 (2026-10-06) — Date and time pickers:** flatpickr 4.6 (MIT, front-end only, bundled by Vite — nothing needed
+on the server), themed olive/yellow. Dates show "06 Oct 2026", times "3:45 PM"; the form still submits `Y-m-d` /
+`H:i`. Monday first, Today/Clear buttons, same picker on phones.
+
+**D-75 (2026-10-06) — Built for lakhs of rows.** Indexes for every filter/sort, no `DATE()` in WHERE, deferred
+pagination, `role_id IN (…)`, cached dashboard counts, daily `astrogann:prune`. Measured with 2 lakh entries and
+50,000 users — every screen under 1 s (docs/PERFORMANCE.md). Local-only `astrogann:generate-load` command.
+
+**D-76 (2026-10-06) — No category ids in user URLs.** User tabs use the category code (`/user?tab=nifty50`); only
+ACTIVE categories resolve; inactive / unknown / old `?category=ID` links redirect with "That category is not
+available." without revealing anything. Notification links follow the same rule. The API keeps numeric ids (JSON
+contract for the app) but returns 404 for inactive categories. Entry image files have random 40-character names.
+
+**D-77 (2026-10-06) — Sorting & filters on every list** (entries, users, staff, subscriptions, logs): whitelisted
+`?sort=&dir=` (`App\Support\Sorting`, tampered values fall back), clickable headers with arrows, result count,
+20/50/100 per page, reset filters; date ranges validated (`to` ≥ `from`); users filter by subscription state.
+
+**D-78 (2026-10-06) — Human-readable dates/times** via `App\Support\Fmt`: "06 Oct 2026", "3:45 PM",
+"06 Oct 2026, 3:45 PM", "2 hours ago" (exact time on hover). Columns renamed: **Market date & time** (date/time chosen
+for the entry) vs **Added on** (when it was saved). API responses add a `display` object with the same strings.
+
+**D-79 (2026-10-06) — Real buttons for row actions** (`<x-action>`: olive primary, white secondary, yellow warning,
+light-blue info, with icons) instead of text links, on every list.

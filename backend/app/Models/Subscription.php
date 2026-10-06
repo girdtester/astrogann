@@ -37,7 +37,7 @@ class Subscription extends Model
     public function scopeCurrentlyActive(Builder $query): Builder
     {
         return $query->where('status', SubscriptionStatus::Active->value)
-            ->whereDate('end_date', '>=', today());
+            ->where('end_date', '>=', today()->toDateString());
     }
 
     public function daysLeft(): int

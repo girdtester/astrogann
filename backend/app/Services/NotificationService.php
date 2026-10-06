@@ -39,20 +39,43 @@ class NotificationService
         return "New entry added in {$entry->category->name}. Check latest update now!";
     }
 
-    /** Insert one new_entry row per user id (bulk insert; used by the queued fan-out job). */
-    public function storeNewEntryFor(Entry $entry, array $userIds): void
+    public static function renewMessage(Entry $entry): string
     {
-        $now = now();
-        $message = self::newEntryMessage($entry);
+        return "New entry added in {$entry->category->name}. Renew your subscription to see all the latest updates.";
+    }
 
-        UserNotification::insert(array_map(fn (int $id) => [
+    /**
+     * Insert one new_entry row per user id (bulk). Idempotent: users who already have a notification for this
+     * entry are skipped (unique user_id+entry_id). Returns the ids that were actually notified now.
+     *
+     * @param  list<int>  $userIds
+     * @return list<int>
+     */
+    public function storeNewEntryFor(Entry $entry, array $userIds, ?string $message = null): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+        $already = UserNotification::query()->where('entry_id', $entry->id)->whereIn('user_id', $userIds)
+            ->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $userIds = array_values(array_diff($userIds, $already));
+        if ($userIds === []) {
+            return [];
+        }
+        $now = now();
+        $message ??= self::newEntryMessage($entry);
+
+        UserNotification::insertOrIgnore(array_map(fn (int $id) => [
             'user_id' => $id,
             'category_id' => $entry->category_id,
+            'entry_id' => $entry->id,
             'type' => NotificationType::NewEntry->value,
             'message' => $message,
             'is_read' => false,
             'created_at' => $now,
         ], $userIds));
+
+        return $userIds;
     }
 
     public function storeExpiryReminder(User $user, string $message): UserNotification

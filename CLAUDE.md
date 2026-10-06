@@ -43,6 +43,10 @@ Laravel first-party packages only unless the owner approves.
   permissions (EntryPolicy); deleting records with history needs `records.force_delete` (D-72).
 - UI: light theme, olive/light-blue/yellow, **never red** (D-69); grouped top menu (D-70).
 - Uploads to `public/uploads/entries/` via disk `uploads`; store relative path only.
+- Lists: `App\Support\Sorting` (whitelisted sort, `paginateDeferred` for big tables), `<x-sort-th>`, `<x-list-toolbar>`;
+  row actions with `<x-action>`; dates/times via `App\Support\Fmt`; date/time inputs via `<x-field type="date|time">`
+  (flatpickr). Never `whereDate()` on big tables. User URLs never contain category ids (`?tab=<code>`).
+- Performance numbers and how to re-measure: docs/PERFORMANCE.md.
 - Timezone Asia/Kolkata.
 
 ## Doc rules
@@ -62,5 +66,6 @@ Laravel first-party packages only unless the owner approves.
 - [docs/SECURITY.md](docs/SECURITY.md) — single session, roles, limits, uploads
 - [docs/TEST_ACCOUNTS.md](docs/TEST_ACCOUNTS.md) — local seed accounts
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — GoDaddy deployment
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md) — load test results (2 lakh entries / 50k users)
 - [docs/MOBILE.md](docs/MOBILE.md) — Flutter app (from Phase 10)
 - [docs/architecture.png](docs/architecture.png) — source architecture image

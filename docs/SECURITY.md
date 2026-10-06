@@ -79,6 +79,12 @@ Implemented Phase 5 (2026-10-06): `StoreEntryRequest`, `EntryService::create`, `
 else own). Routes use `can:update,entry` / `can:delete,entry`; the request classes re-check. Deleting records with
 history needs `records.force_delete`. All edits/deletes are activity-logged.
 
+## 6c. Direct URL access (2026-10-06, D-76)
+User tabs use category codes, never ids; inactive/unknown categories cannot be opened by editing the URL (redirect,
+no details). API: inactive category → 404. Notifications are scoped to their owner (others → 404). Sort/filter
+parameters are whitelisted (D-77). Uploaded image names are random 40-character strings, uploads folder has no
+directory listing.
+
 ## 7. Phase 9 review — 2026-10-06
 
 | Area | Result | Evidence |

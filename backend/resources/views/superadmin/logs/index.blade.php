@@ -5,18 +5,20 @@
             <x-field name="user" label="User (name or email)" :value="$filters['user'] ?? null" />
             <x-field name="from" label="From" type="date" :value="$filters['from'] ?? null" />
             <x-field name="to" label="To" type="date" :value="$filters['to'] ?? null" />
-            <div><x-secondary-button type="submit">Filter</x-secondary-button></div>
+            <input type="hidden" name="sort" value="{{ $sorting['sort'] }}"><input type="hidden" name="dir" value="{{ $sorting['dir'] }}">
+            <div><x-primary-button>Apply filters</x-primary-button></div>
         </form>
 
+        <x-list-toolbar :paginator="$logs" />
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="text-left text-gray-500 border-b">
-                    <tr><th class="py-2 pr-4">When</th><th class="py-2 pr-4">User</th><th class="py-2 pr-4">Action</th><th class="py-2 pr-4">Details</th><th class="py-2">IP</th></tr>
+                    <tr><x-sort-th column="date" label="When" :sorting="$sorting" /><th class="py-2 pr-4">User</th><x-sort-th column="action" label="Action" :sorting="$sorting" /><th class="py-2 pr-4">Details</th><th class="py-2">IP</th></tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($logs as $log)
                         <tr class="align-top">
-                            <td class="py-2 pr-4 whitespace-nowrap">{{ $log->created_at?->format('d M Y H:i:s') }}</td>
+                            <td class="py-2 pr-4 whitespace-nowrap" title="{{ $log->created_at?->format('d M Y, g:i:s A') }}">{{ \App\Support\Fmt::dateTime($log->created_at) }}<div class="text-xs text-gray-500">{{ \App\Support\Fmt::ago($log->created_at) }}</div></td>
                             <td class="py-2 pr-4">{{ $log->user?->email ?? 'system' }}</td>
                             <td class="py-2 pr-4"><x-badge color="indigo">{{ $log->action }}</x-badge></td>
                             <td class="py-2 pr-4">{{ $log->description }}</td>

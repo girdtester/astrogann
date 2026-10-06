@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Entry;
 use App\Services\EntryService;
 use App\Support\Permissions;
+use App\Support\Sorting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,12 +27,15 @@ class EntryController extends Controller
     {
         $filters = $request->validate([
             'category_id' => ['nullable', 'integer'],
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date'],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
         ]);
 
+        [$entries, $sorting] = $this->entries->search($filters, $request->user(), Sorting::perPage($request), $request);
+
         return view('admin.entries.index', [
-            'entries' => $this->entries->search($filters, onlyAdmin: $request->user()),
+            'entries' => $entries,
+            'sorting' => $sorting,
             'filters' => $filters,
             'categories' => Category::query()->ordered()->get(),
         ]);

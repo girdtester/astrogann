@@ -97,7 +97,7 @@ class Navigation
 
     private static function link(string $label, string $route, string $active, ?string $permission = null, ?int $badge = null): array
     {
-        return ['label' => $label, 'route' => $route, 'active' => $active, 'permission' => $permission, 'badge' => $badge ?: null];
+        return ['label' => $label, 'route' => $route, 'active' => $active, 'permission' => $permission, 'badge' => $badge];
     }
 
     private static function group(string $label, array $children): array

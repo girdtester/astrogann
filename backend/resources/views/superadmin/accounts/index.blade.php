@@ -7,25 +7,30 @@
         <form method="GET" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
             <x-text-input name="q" :value="request('q')" placeholder="Search name, email, phone" class="sm:col-span-2" />
             <x-select name="status" :options="['active' => 'Active', 'inactive' => 'Inactive']" :value="request('status')" placeholder="Any status" />
-            @unless ($isTraders)
+            @if ($isTraders)
+                <x-select name="subscription" :options="['active' => 'Subscription active', 'expired' => 'Subscription expired', 'none' => 'Never subscribed']" :value="request('subscription')" placeholder="Any subscription" />
+            @else
                 <x-select name="role_id" :options="\App\Models\Role::query()->ofKind(\App\Enums\RoleKind::Staff)->orderBy('name')->pluck('name', 'id')->all()" :value="request('role_id')" placeholder="Any role" />
-            @endunless
-            <div class="sm:col-span-4"><x-secondary-button type="submit">Filter</x-secondary-button></div>
+            @endif
+            <input type="hidden" name="sort" value="{{ $sorting['sort'] }}"><input type="hidden" name="dir" value="{{ $sorting['dir'] }}">
+            <div class="sm:col-span-4"><x-primary-button>Apply filters</x-primary-button></div>
         </form>
 
+        <x-list-toolbar :paginator="$accounts" />
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="text-left text-gray-500 border-b">
                     <tr>
-                        <th class="py-2 pr-4">Name</th>
-                        <th class="py-2 pr-4">Email / Phone</th>
+                        <x-sort-th column="name" label="Name" :sorting="$sorting" />
+                        <x-sort-th column="email" label="Email / Phone" :sorting="$sorting" />
                         @if ($isTraders)
-                            <th class="py-2 pr-4">Subscription</th>
+                            <x-sort-th column="expiry" label="Subscription" :sorting="$sorting" />
                         @else
-                            <th class="py-2 pr-4">Role</th>
+                            <x-sort-th column="role" label="Role" :sorting="$sorting" />
                             <th class="py-2 pr-4">Entries</th>
                         @endif
-                        <th class="py-2 pr-4">Status</th>
+                        <x-sort-th column="status" label="Status" :sorting="$sorting" />
+                        <x-sort-th column="created" label="Created" :sorting="$sorting" />
                         <th class="py-2 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -40,9 +45,9 @@
                                     @if (! $sub)
                                         <x-badge>none</x-badge>
                                     @elseif ($sub->isCurrentlyActive())
-                                        <x-badge color="green">active</x-badge> <span class="text-xs text-gray-500">until {{ $sub->end_date->format('d M Y') }}</span>
+                                        <x-badge color="green">active</x-badge> <span class="text-xs text-gray-500">until {{ \App\Support\Fmt::date($sub->end_date) }}</span>
                                     @else
-                                        <x-badge color="yellow">expired</x-badge> <span class="text-xs text-gray-500">{{ $sub->end_date->format('d M Y') }}</span>
+                                        <x-badge color="yellow">expired</x-badge> <span class="text-xs text-gray-500">on {{ \App\Support\Fmt::date($sub->end_date) }}</span>
                                     @endif
                                 </td>
                             @else
@@ -57,25 +62,26 @@
                             <td class="py-2 pr-4">
                                 <x-badge :color="$account->isActive() ? 'green' : 'yellow'">{{ $account->status->value }}</x-badge>
                             </td>
-                            <td class="py-2 text-right whitespace-nowrap space-x-2">
-                                @if ($isTraders)
-                                    @can('subscriptions.manage')
-                                        <a href="{{ route('superadmin.subscriptions.show', $account) }}" class="text-indigo-600 hover:underline">Subscription</a>
-                                    @endcan
-                                @endif
-                                <a href="{{ route($routePrefix.'.edit', $account) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                @if ($account->id !== auth()->id())
-                                    <form method="POST" action="{{ route($routePrefix.'.status', $account) }}" class="inline">
-                                        @csrf @method('PATCH')
-                                        <button class="{{ $account->isActive() ? 'text-yellow-600' : 'text-green-700' }} hover:underline">
+                            <td class="py-2 pr-4 whitespace-nowrap text-gray-500">{{ \App\Support\Fmt::date($account->created_at) }}<div class="text-xs">{{ \App\Support\Fmt::ago($account->created_at) }}</div></td>
+                            <td class="py-2 text-right">
+                                <div class="inline-flex flex-wrap justify-end gap-2">
+                                    @if ($isTraders)
+                                        @can('subscriptions.manage')
+                                            <x-action :href="route('superadmin.subscriptions.show', $account)" variant="info" icon="money">Subscription</x-action>
+                                        @endcan
+                                    @endif
+                                    <x-action :href="route($routePrefix.'.edit', $account)" variant="primary" icon="edit">Edit</x-action>
+                                    @if ($account->id !== auth()->id())
+                                        <x-action :action="route($routePrefix.'.status', $account)" method="PATCH"
+                                            :variant="$account->isActive() ? 'warning' : 'secondary'" :icon="$account->isActive() ? 'power' : 'check'">
                                             {{ $account->isActive() ? 'Deactivate' : 'Activate' }}
-                                        </button>
-                                    </form>
-                                @endif
+                                        </x-action>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="py-6 text-center text-gray-500">No accounts found.</td></tr>
+                        <tr><td colspan="7" class="py-6 text-center text-gray-500">No accounts match these filters.</td></tr>
                     @endforelse
                 </tbody>
             </table>
