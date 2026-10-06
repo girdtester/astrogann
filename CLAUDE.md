@@ -66,6 +66,7 @@ Laravel first-party packages only unless the owner approves.
 - [docs/SECURITY.md](docs/SECURITY.md) — single session, roles, limits, uploads
 - [docs/TEST_ACCOUNTS.md](docs/TEST_ACCOUNTS.md) — local seed accounts
 - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — GoDaddy deployment
+- [docs/BACKLOG.md](docs/BACKLOG.md) — work waiting for the owner (B-01 push on phones: what to supply, steps, test plan)
 - [docs/PERFORMANCE.md](docs/PERFORMANCE.md) — load test results (2 lakh entries / 50k users)
 - [docs/MOBILE.md](docs/MOBILE.md) — Flutter app: run in Chrome, API URL in one place, Firebase, builds
 - [docs/architecture.png](docs/architecture.png) — source architecture image

@@ -13,6 +13,7 @@ Update at the end of every work session. Newest session on top.
    docs/MOBILE.md §5–7).
 
 ## Open items for the owner
+- **B-01 Push on phones** — waiting for Firebase files / key; checklist + test plan in docs/BACKLOG.md.
 - Production: GoDaddy cPanel access/domain, SMTP mailbox (or Gmail App Password), Firebase project files.
 - PHP 8.2 security support ends 2026-12-31 → choose PHP 8.3/8.4 on the server (D-01).
 
