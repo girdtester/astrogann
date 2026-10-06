@@ -4,12 +4,12 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Phase 4 — Super Admin module (next to start)
-- **Last finished phase:** Phase 3 — Web auth, roles, single session (2026-10-06)
+- **Current phase:** Phase 5 — Admin module (next to start)
+- **Last finished phase:** Phase 4 — Super Admin module + dynamic roles & permissions (2026-10-06)
 
 ## Next steps
-1. Phase 4: Super Admin dashboard counts, admins/users CRUD + activate/deactivate, categories CRUD + sort order,
-   subscriptions (activate/extend/expire + payment) via SubscriptionService, all entries with filters, logs, settings.
+1. Phase 5: staff dashboard (/admin), categories view, add entry (EntryService::create, validation, random name),
+   own entries list, EntryPolicy + tests that edit/delete are impossible.
 
 ## Known issues / notes
 - PHP 8.2.12 → Laravel 12 (Laravel 13 needs PHP 8.3). PHP 8.2 security support ends 2026-12-31 (D-01).
@@ -18,6 +18,17 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Phase 4 (+ owner request: dynamic roles & permissions)
+- Owner asked mid-phase for manageable roles/permissions, so D-42 was implemented before finishing Phase 4: `roles`,
+  `permissions`, `permission_role`, `permission_user`, `users.role_id`; `RoleKind` enum; `PermissionService`
+  (catalogue sync, role CRUD, per-user grants, anti-escalation); `AccessSeeder`; gates per permission; routes use
+  `can:`; permission-driven navigation; Roles screen. Local DB re-created with `migrate:fresh --seed` (demo data only).
+- Super Admin module: dashboard counts + recent activity; staff (admins) and users CRUD with activate/deactivate,
+  role + extra permissions; categories CRUD/status/order; subscriptions activate/extend/expire + payments; all
+  entries with filters; logs with filters; settings. Services: AccountService, CategoryService, SubscriptionService,
+  EntryService. Shared Blade components (page, card, field, select, badge, flash, link-button).
+- Tests: SuperAdminModuleTest, RolesPermissionsTest — 58 tests pass. Assets rebuilt.
 
 ### 2026-10-06 — Phase 3
 - One login page → role dashboards; `role` middleware + gates (`superadmin`, `admin`, `trader`); registration,

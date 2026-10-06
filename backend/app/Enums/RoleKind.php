@@ -2,10 +2,18 @@
 
 namespace App\Enums;
 
-enum Role: string
+/**
+ * The panel a role belongs to. Roles themselves (names, permissions) are data in the `roles`
+ * table (DECISIONS D-42); the kind only decides which area the account uses.
+ *
+ * - superadmin: implicitly holds every permission; home /superadmin
+ * - staff: back-office roles (Admin and any custom role) — access = granted permissions; home /admin
+ * - user: subscribers/traders; home /user
+ */
+enum RoleKind: string
 {
     case SuperAdmin = 'superadmin';
-    case Admin = 'admin';
+    case Staff = 'staff';
     case User = 'user';
 
     /** @return list<string> */
@@ -18,17 +26,17 @@ enum Role: string
     {
         return match ($this) {
             self::SuperAdmin => 'Super Admin',
-            self::Admin => 'Admin',
+            self::Staff => 'Staff',
             self::User => 'User / Trader',
         };
     }
 
-    /** Named route of this role's dashboard. */
+    /** Named route of this kind's dashboard. */
     public function homeRoute(): string
     {
         return match ($this) {
             self::SuperAdmin => 'superadmin.dashboard',
-            self::Admin => 'admin.dashboard',
+            self::Staff => 'admin.dashboard',
             self::User => 'user.dashboard',
         };
     }

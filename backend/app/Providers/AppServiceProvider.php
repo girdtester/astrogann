@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\User;
 use App\Services\SettingsService;
 use App\Support\Navigation;
+use App\Support\Permissions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -19,9 +20,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Role gates (docs/SECURITY.md §2). Model-level rules live in app/Policies.
+        // One gate per catalogue permission (DECISIONS D-42). Routes use `can:<key>`, views @can('<key>').
+        // Super Admin passes through User::permissionKeys(), which returns the whole catalogue.
+        foreach (Permissions::keys() as $key) {
+            Gate::define($key, fn (User $user) => $user->hasPermission($key));
+        }
+
+        // Kind gates (panel checks).
         Gate::define('superadmin', fn (User $user) => $user->isSuperAdmin());
-        Gate::define('admin', fn (User $user) => $user->isAdmin());
+        Gate::define('staff', fn (User $user) => $user->isStaff());
         Gate::define('trader', fn (User $user) => $user->isTrader());
 
         Password::defaults(fn () => app()->isProduction()

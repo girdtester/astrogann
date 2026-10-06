@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\ActiveStatus;
-use App\Enums\Role;
+use App\Enums\RoleKind;
+use App\Support\Permissions;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -19,7 +22,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * role and status are set only from validated Super Admin forms / seeders.
+     * role_id and status are set only by AccountService from validated Super Admin / staff forms.
      *
      * @var list<string>
      */
@@ -27,7 +30,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
+        'role_id',
         'status',
         'phone',
     ];
@@ -38,35 +41,57 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $with = ['role'];
+
+    /** @var list<string>|null effective permission keys, memoised per request */
+    private ?array $permissionCache = null;
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => Role::class,
             'status' => ActiveStatus::class,
         ];
     }
 
-    public function isSuperAdmin(): bool
+    // ---- role & permissions (DECISIONS D-42) -------------------------------------------
+
+    public function role(): BelongsTo
     {
-        return $this->role === Role::SuperAdmin;
+        return $this->belongsTo(Role::class);
     }
 
-    public function isAdmin(): bool
+    /** Extra permissions granted to this user on top of the role. */
+    public function directPermissions(): BelongsToMany
     {
-        return $this->role === Role::Admin;
+        return $this->belongsToMany(Permission::class);
+    }
+
+    public function kind(): RoleKind
+    {
+        return $this->role->kind;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->kind() === RoleKind::SuperAdmin;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->kind() === RoleKind::Staff;
     }
 
     public function isTrader(): bool
     {
-        return $this->role === Role::User;
+        return $this->kind() === RoleKind::User;
     }
 
-    public function hasRole(Role|string ...$roles): bool
+    public function hasKind(RoleKind|string ...$kinds): bool
     {
-        foreach ($roles as $role) {
-            if ($this->role === ($role instanceof Role ? $role : Role::from($role))) {
+        foreach ($kinds as $kind) {
+            if ($this->kind() === ($kind instanceof RoleKind ? $kind : RoleKind::from($kind))) {
                 return true;
             }
         }
@@ -74,15 +99,55 @@ class User extends Authenticatable
         return false;
     }
 
+    public function homeRoute(): string
+    {
+        return $this->kind()->homeRoute();
+    }
+
+    /** @return list<string> */
+    public function permissionKeys(): array
+    {
+        if ($this->permissionCache !== null) {
+            return $this->permissionCache;
+        }
+
+        if ($this->isSuperAdmin()) {
+            return $this->permissionCache = Permissions::keys();
+        }
+        if ($this->isTrader()) {
+            return $this->permissionCache = [];
+        }
+
+        $fromRole = $this->role->permissions()->pluck('key')->all();
+        $direct = $this->directPermissions()->pluck('key')->all();
+
+        return $this->permissionCache = array_values(array_unique([...$fromRole, ...$direct]));
+    }
+
+    public function hasPermission(string $key): bool
+    {
+        return in_array($key, $this->permissionKeys(), true);
+    }
+
+    public function flushPermissionCache(): void
+    {
+        $this->permissionCache = null;
+        $this->unsetRelation('role');
+    }
+
+    public function scopeOfKind(Builder $query, RoleKind ...$kinds): Builder
+    {
+        return $query->whereHas('role', fn (Builder $q) => $q->ofKind(...$kinds));
+    }
+
+    // ---- status ---------------------------------------------------------------------------
+
     public function isActive(): bool
     {
         return $this->status === ActiveStatus::Active;
     }
 
-    public function scopeRole(Builder $query, Role $role): Builder
-    {
-        return $query->where('role', $role->value);
-    }
+    // ---- relations ------------------------------------------------------------------------
 
     public function entries(): HasMany
     {

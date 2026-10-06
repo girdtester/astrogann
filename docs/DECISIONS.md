@@ -189,3 +189,30 @@ user is logged out on the next request (web) or gets 403 `account_inactive` (API
 
 **D-41 (2026-10-06) — After login every role goes to its own dashboard** (`/superadmin`, `/admin`, `/user`), not to
 the "intended" URL, so a stale link to another role's area cannot produce a confusing 403 right after login.
+
+## Phase 4 — 2026-10-06
+
+**D-42 (2026-10-06) — Dynamic roles & permissions (owner request during Phase 4).** The owner asked for roles and
+permissions that the Super Admin can manage (create new roles, give permissions to roles, give extra permissions to
+individual admins) instead of fixed roles. This **supersedes** brief section 2 "a role column on users" and spec
+3.5 `users.role (superadmin/admin/user)`. Implementation, still first-party only (Gates + own tables, no package):
+- Tables `roles` (name, slug, kind, description, is_system), `permissions` (key, group, label, description, sort),
+  `permission_role`, `permission_user` (extra per-user grants); `users.role_id` FK replaces `users.role`.
+- `kind` decides the panel: `superadmin` (implicitly every permission, home /superadmin), `staff` (back office,
+  access = permissions, home /admin), `user` (subscriber/trader, home /user). System roles: Super Admin, Admin,
+  User / Trader (cannot be deleted). Custom roles are always `staff`.
+- Permission keys are defined in code (`App\Support\Permissions`) because each one guards a feature; they are synced
+  into the DB by `AccessSeeder` (safe in production). Which role/user holds them is data.
+- Every management route uses `can:<permission>`; navigation shows only permitted links.
+- The built-in Admin role defaults to the spec's "data entry only" permissions (`categories.view`,
+  `entries.create`, `entries.view_own`). The Super Admin may change them, so the spec's "NOT allowed" list for Admin
+  is now the *default*, not a hard rule.
+- Anti-escalation: an actor can only grant permissions it holds; can only assign roles whose permissions it holds;
+  can only manage accounts whose permissions are a subset of its own; never its own account; never a Super Admin.
+- Entries stay immutable for everyone (no permission exists to edit/delete them, D-19 unchanged).
+
+**D-43 (2026-10-06) — Accounts with history are never hard-deleted.** Accounts with entries, subscriptions or
+payments can only be deactivated; empty accounts can be deleted. Same for categories with entries.
+
+**D-44 (2026-10-06) — Profile email locked;** account email is changed by staff holding `staff.manage` /
+`users.manage`.

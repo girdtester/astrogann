@@ -7,21 +7,56 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Run the migrations. Roles and permissions are data (DECISIONS D-42).
      */
     public function up(): void
     {
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100);
+            $table->string('slug', 100)->unique();
+            $table->string('kind', 20)->index(); // superadmin | staff | user
+            $table->string('description')->nullable();
+            $table->boolean('is_system')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('key', 100)->unique();
+            $table->string('group', 50);
+            $table->string('label', 150);
+            $table->string('description')->nullable();
+            $table->unsignedInteger('sort')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('permission_role', function (Blueprint $table) {
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+            $table->primary(['role_id', 'permission_id']);
+            $table->index('permission_id');
+        });
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('role', 20)->default('user')->index();
+            $table->foreignId('role_id')->constrained('roles')->restrictOnDelete();
             $table->string('status', 20)->default('active')->index();
             $table->string('phone', 30)->nullable();
             $table->rememberToken();
             $table->timestamps();
+        });
+
+        // Extra permissions granted directly to one user, on top of their role.
+        Schema::create('permission_user', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+            $table->primary(['user_id', 'permission_id']);
+            $table->index('permission_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -45,8 +80,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('roles');
     }
 };

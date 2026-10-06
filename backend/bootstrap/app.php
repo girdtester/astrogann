@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [\App\Http\Middleware\EnsureActiveSession::class]);
 
         // Guests hitting a protected page go to the login page; logged-in users hitting /login go home.
-        $middleware->redirectUsersTo(fn ($request) => route($request->user()->role->homeRoute()));
+        $middleware->redirectUsersTo(fn ($request) => route($request->user()->homeRoute()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -20,6 +20,11 @@ Status: **design (Phase 0)**; web parts of §1–§3 implemented in Phase 3 (202
 
 ## 2. Roles
 
+**Superseded in part 2026-10-06 by D-42 (dynamic roles & permissions):** roles are rows in `roles`, permissions are
+catalogue keys held by roles (`permission_role`) or granted per user (`permission_user`). Panel guard
+`role:<kinds>` (superadmin/staff/user) + per-route `can:<permission>`. Super Admin holds every permission.
+Anti-escalation rules: see DECISIONS D-42. Original text kept below for history.
+
 - `users.role` ∈ superadmin/admin/user; no permission package.
 - Middleware `role:<roles>` on route groups: `/superadmin/*` → superadmin, `/admin/*` → admin, `/user/*` → user,
   `/api/admin/*` → superadmin, `POST /api/entries` → admin.

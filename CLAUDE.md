@@ -32,7 +32,9 @@ Laravel first-party packages only unless the owner approves.
 - Business logic in `app/Services/*Service.php` (SubscriptionService, EntryService, SessionService,
   SettingsService, NotificationService, ActivityLogService, PushService). Web and API controllers are thin and call
   the same services. No duplicated logic.
-- Roles via `role` column + `role:` middleware + Gates/Policies. No permission package.
+- ~~Roles via `role` column~~ (superseded 2026-10-06, D-42): dynamic roles & permissions — `roles`/`permissions`
+  tables, `App\Support\Permissions` catalogue, `PermissionService`; routes use `role:<kind>` + `can:<permission>`.
+  New feature => add a permission key, guard the route, run `php artisan db:seed --class=AccessSeeder`. No package.
 - Validation in Form Requests; API output via API Resources; API envelope `{success, message, data, errors}`.
 - Enums in `app/Enums`. Explicit `$fillable` on every model.
 - Nothing user-visible is hard-coded: categories, limits (7/3), reminder days, contact info, texts come from DB

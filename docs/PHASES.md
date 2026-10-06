@@ -32,14 +32,15 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 - [x] Feature tests: each seed account sees only its own area, 403 elsewhere; single-session replacement
 
 ### Phase 4 — Super Admin module
-- [ ] Dashboard counts
-- [ ] Admins CRUD (no hard delete of admins with entries — deactivate instead)
-- [ ] Users CRUD + activate/deactivate
-- [ ] Categories CRUD + status + sort_order
-- [ ] Subscriptions activate/extend/expire + payment record
-- [ ] All entries with filters
-- [ ] Reports/logs (activity_logs)
-- [ ] Settings screen (limits, reminder days, contact details, texts)
+- [x] Dashboard counts
+- [x] Admins CRUD (no hard delete of admins with entries — deactivate instead)
+- [x] Users CRUD + activate/deactivate
+- [x] Categories CRUD + status + sort_order
+- [x] Subscriptions activate/extend/expire + payment record
+- [x] All entries with filters
+- [x] Reports/logs (activity_logs)
+- [x] Settings screen (limits, reminder days, contact details, texts)
+- [x] (owner request, D-42) Dynamic roles & permissions: Roles screen, extra per-user permissions, anti-escalation
 
 ### Phase 5 — Admin module
 - [ ] View categories
@@ -94,15 +95,16 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 
 | Spec | Bullet | Web | API | Mobile | Status |
 |---|---|---|---|---|---|
-| 3.2 SA | Login / dashboard | | | n/a | |
-| 3.2 SA | Create / manage admins | | | n/a | |
-| 3.2 SA | Create / manage users | | | n/a | |
-| 3.2 SA | Activate / deactivate users | | | n/a | |
-| 3.2 SA | Subscriptions activate/extend/expire | | | n/a | |
-| 3.2 SA | Manage categories | | | n/a | |
-| 3.2 SA | View all entries | | | n/a | |
-| 3.2 SA | Reports / logs | | | n/a | |
-| 3.2 SA | System settings | | | n/a | |
+| 3.2 SA | Login / dashboard | /superadmin | | n/a | web done |
+| 3.2 SA | Create / manage admins | /superadmin/admins (+ roles, extra perms) | | n/a | web done |
+| 3.2 SA | Create / manage users | /superadmin/users | | n/a | web done |
+| 3.2 SA | Activate / deactivate users | /superadmin/users/{id}/status | | n/a | web done |
+| 3.2 SA | Subscriptions activate/extend/expire | /superadmin/subscriptions/{user} | | n/a | web done |
+| 3.2 SA | Manage categories | /superadmin/categories | | n/a | web done |
+| 3.2 SA | View all entries | /superadmin/entries | | n/a | web done |
+| 3.2 SA | Reports / logs | /superadmin/logs | | n/a | web done |
+| 3.2 SA | System settings | /superadmin/settings | | n/a | web done |
+| D-42 | Roles & permissions | /superadmin/roles, staff edit form | | n/a | web done |
 | 3.2 A | Login | | | n/a | |
 | 3.2 A | View categories | | | n/a | |
 | 3.2 A | Add entry | | | n/a | |

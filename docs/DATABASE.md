@@ -8,7 +8,7 @@ added) and `2026_10_06_120000_create_astrogann_tables.php`. `php artisan migrate
 
 | Enum | Values |
 |---|---|
-| `Role` | `superadmin`, `admin`, `user` |
+| ~~`Role`~~ → `RoleKind` (D-42) | `superadmin`, `staff`, `user` (panel of a role; roles themselves are rows) |
 | `ActiveStatus` (users + categories) | `active`, `inactive` |
 | `SubscriptionStatus` | `active`, `expired` |
 | `DeviceType` | `web`, `mobile` |
@@ -27,11 +27,24 @@ Stored as `string` columns (not native ENUM) so values can be added without ALTE
 | email | varchar(255) | unique |
 | email_verified_at | timestamp null | Laravel default, unused |
 | password | varchar(255) | bcrypt |
-| role | varchar(20) | index; `superadmin/admin/user` |
+| ~~role~~ | ~~varchar(20)~~ | **superseded 2026-10-06 (D-42)** by `role_id` |
+| role_id | FK → roles.id | restrict on delete |
 | status | varchar(20) | index; `active/inactive` |
 | phone | varchar(30) null | optional contact for traders |
 | remember_token | varchar(100) null | |
 | created_at, updated_at | timestamp | |
+
+### roles (D-42)
+| id PK | name varchar(100) | slug varchar(100) unique | kind varchar(20) idx (`superadmin/staff/user`) | description null | is_system bool | timestamps |
+
+### permissions (D-42)
+| id PK | key varchar(100) unique | group varchar(50) | label varchar(150) | description null | sort int | timestamps |
+
+Rows mirror `App\Support\Permissions::catalog()`; synced by `AccessSeeder`.
+
+### permission_role, permission_user (D-42)
+Composite PKs (`role_id, permission_id`) / (`user_id, permission_id`), cascade on delete, index on `permission_id`.
+`permission_user` = extra permissions granted to one staff account on top of its role.
 
 ### categories
 | id PK | name varchar(100) | code varchar(50) unique | status varchar(20) idx | sort_order int default 0 idx | timestamps |

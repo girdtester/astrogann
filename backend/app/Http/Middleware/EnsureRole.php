@@ -7,15 +7,16 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Route guard: `role:superadmin` or `role:admin,superadmin`. Responds 403 otherwise.
+ * Panel guard by role kind: `role:superadmin`, `role:staff,superadmin`, `role:user`.
+ * Fine-grained access is checked per route with `can:<permission>` (DECISIONS D-42).
  */
 class EnsureRole
 {
-    public function handle(Request $request, Closure $next, string ...$roles): Response
+    public function handle(Request $request, Closure $next, string ...$kinds): Response
     {
         $user = $request->user();
 
-        if (! $user || ! $user->hasRole(...$roles)) {
+        if (! $user || ! $user->hasKind(...$kinds)) {
             abort(403, 'You do not have access to this area.');
         }
 

@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
         $this->sessions->startWeb($user, $request);
 
-        return redirect()->route($user->role->homeRoute());
+        return redirect()->route($user->homeRoute());
     }
 
     /**

@@ -20,6 +20,10 @@ etc.) and subscribed users/traders view the latest entries on web and, later, on
 
 ## 2. Roles and permissions (image panel 2)
 
+> 2026-10-06 (D-42): roles and permissions are now dynamic. The lists below are the **defaults** of the three
+> system roles; the Super Admin can create staff roles, change the Admin role's permissions and give extra
+> permissions to individual staff accounts. Entries remain immutable for everyone.
+
 ### Super Admin (full access)
 - Login / dashboard
 - Create / manage admins

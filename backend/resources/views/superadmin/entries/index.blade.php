@@ -1,0 +1,13 @@
+<x-page title="All Entries">
+    <x-card>
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-4 items-end">
+            <x-select name="category_id" label="Category" :options="$categories->pluck('name', 'id')->all()" :value="$filters['category_id'] ?? null" placeholder="All" />
+            <x-select name="admin_id" label="Added by" :options="$admins->pluck('name', 'id')->all()" :value="$filters['admin_id'] ?? null" placeholder="Anyone" />
+            <x-field name="from" label="From" type="date" :value="$filters['from'] ?? null" />
+            <x-field name="to" label="To" type="date" :value="$filters['to'] ?? null" />
+            <div><x-secondary-button type="submit">Filter</x-secondary-button></div>
+        </form>
+
+        @include('partials.entry-table', ['entries' => $entries, 'showAdmin' => true])
+    </x-card>
+</x-page>
