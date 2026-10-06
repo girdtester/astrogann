@@ -441,3 +441,19 @@ gives a new end date and therefore a new reminder). Step 2 `astrogann:send-expir
 `MAIL_PER_MINUTE` pending rows one by one (e-mail + in-app notice + push), marks them sent with the time, retries
 failures up to 3 times, and skips users who were deactivated/renewed meanwhile. Super Admin → Subscriptions ▾ →
 **Expiry reminders** shows the list (waiting / sent / failed) with Collect now, Send pending now and Retry failed.
+
+## Push notifications ready on the backend (owner request, 2026-10-06)
+
+**D-89 (2026-10-06) — Firebase key uploaded from Super Admin; push to all users.**
+- Super Admin → Settings → **Push notifications (Firebase)**: upload the service-account `.json` (validated: type
+  service_account, project_id, client_email, a real private key), stored privately at
+  `storage/app/private/firebase/service-account.json` (git-ignored, not web-accessible, chmod 600; override with
+  `FCM_KEY_PATH`). Uploading switches push on (`push_enabled`). **Check connection** asks Google for an access token
+  (no message sent); **Send test push** sends to a user's logged-in phone; **Remove key** switches push off. `.env`
+  (`PUSH_DRIVER=fcm`, `FCM_PROJECT_ID`, `FCM_CREDENTIALS`) remains a fallback.
+- New entry → push to **all** users with the app: active subscribers get "New entry added in X…" **with the entry
+  image**; expired / never-subscribed users get the "renew your subscription" text without image (setting
+  `push_expired_users`, default on — supersedes the "no push for expired users" default of D-18). In-app
+  notifications are unchanged. Push data: `type, category_id, entry_id, click_action` for the app.
+- Each push batch is logged (`push.sent`: title, device count, removed tokens). Tokens Firebase reports as dead are
+  cleared. Delivery stays chunked/idempotent (D-57, D-73).

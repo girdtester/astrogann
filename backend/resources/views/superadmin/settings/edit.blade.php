@@ -48,4 +48,6 @@
 
         <x-primary-button>Save settings</x-primary-button>
     </form>
+
+    @include('superadmin.settings._push')
 </x-page>

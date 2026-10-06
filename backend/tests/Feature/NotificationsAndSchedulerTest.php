@@ -99,7 +99,27 @@ class NotificationsAndSchedulerTest extends TestCase
         foreach ([$inactive, $staff] as $u) {
             $this->assertDatabaseMissing('user_notifications', ['user_id' => $u->id]);
         }
-        // Push only to the active subscriber (D-18), sent immediately for the first chunk.
+        // Push to all users (D-89): active with the entry image, expired with the "renew" text; sent immediately.
+        $this->assertCount(2, $this->push->sent);
+        $this->assertSame(['tok-active'], $this->push->sent[0]['tokens']);
+        $this->assertNotEmpty($this->push->sent[0]['data']['image']);
+        $this->assertSame(['tok-expired'], $this->push->sent[1]['tokens']);
+        $this->assertStringContainsString('Renew', $this->push->sent[1]['body']);
+        $this->assertArrayNotHasKey('image', $this->push->sent[1]['data']);
+
+        // Push summary in Reports / Logs.
+        $this->assertDatabaseHas('activity_logs', ['action' => 'push.sent']);
+    }
+
+    public function test_push_to_expired_users_can_be_switched_off(): void
+    {
+        app(\App\Services\SettingsService::class)->update(['push_expired_users' => '0']);
+        $this->traderWithDevice(true, 'tok-active');
+        $this->traderWithDevice(false, 'tok-expired');
+        $entry = Entry::factory()->create();
+
+        app()->call([new NotifyUsersOfNewEntry($entry->id), 'handle']);
+
         $this->assertCount(1, $this->push->sent);
         $this->assertSame(['tok-active'], $this->push->sent[0]['tokens']);
     }

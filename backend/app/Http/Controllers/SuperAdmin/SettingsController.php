@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SuperAdmin\SettingsRequest;
 use App\Services\ActivityLogService;
+use App\Services\Push\PushSettingsService;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -21,7 +22,12 @@ class SettingsController extends Controller
 
     public function edit(): View
     {
-        return view('superadmin.settings.edit', ['settings' => $this->settings->all()]);
+        $push = app(PushSettingsService::class);
+
+        return view('superadmin.settings.edit', [
+            'settings' => $this->settings->all(),
+            'push' => ['info' => $push->info(), 'enabled' => $push->enabled()],
+        ]);
     }
 
     public function update(SettingsRequest $request): RedirectResponse

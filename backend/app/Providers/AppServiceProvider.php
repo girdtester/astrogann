@@ -3,9 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
-use App\Services\Push\FcmPushService;
-use App\Services\Push\LogPushService;
 use App\Services\Push\PushService;
+use App\Services\Push\PushSettingsService;
 use App\Services\SettingsService;
 use App\Support\Navigation;
 use App\Support\Permissions;
@@ -24,13 +23,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsService::class);
 
         // Push driver (DECISIONS D-28): PUSH_DRIVER=log (default) | fcm.
-        $this->app->singleton(PushService::class, function () {
-            $cfg = config('astrogann.push');
-
-            return $cfg['driver'] === 'fcm' && $cfg['fcm_project_id'] && $cfg['fcm_credentials']
-                ? new FcmPushService($cfg['fcm_project_id'], $cfg['fcm_credentials'])
-                : new LogPushService;
-        });
+        // Firebase key uploaded in Super Admin → Settings (D-89), else .env (PUSH_DRIVER=fcm), else log driver.
+        $this->app->singleton(PushService::class, fn ($app) => $app->make(PushSettingsService::class)->driver());
     }
 
     public function boot(): void

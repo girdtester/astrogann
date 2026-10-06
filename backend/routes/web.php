@@ -60,6 +60,12 @@ Route::middleware('auth')->group(function () {
         Route::middleware('can:'.P::SETTINGS_MANAGE)->group(function () {
             Route::get('settings', [SuperAdmin\SettingsController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [SuperAdmin\SettingsController::class, 'update'])->name('settings.update');
+            // Push notifications / Firebase key (D-89)
+            Route::post('settings/push/upload', [SuperAdmin\PushSettingsController::class, 'upload'])->name('settings.push.upload');
+            Route::post('settings/push/toggle', [SuperAdmin\PushSettingsController::class, 'toggle'])->name('settings.push.toggle');
+            Route::post('settings/push/check', [SuperAdmin\PushSettingsController::class, 'check'])->name('settings.push.check');
+            Route::post('settings/push/test', [SuperAdmin\PushSettingsController::class, 'test'])->middleware('throttle:10,1')->name('settings.push.test');
+            Route::delete('settings/push', [SuperAdmin\PushSettingsController::class, 'remove'])->name('settings.push.remove');
         });
 
         Route::resource('roles', SuperAdmin\RoleController::class)->except('show')->middleware('can:'.P::ROLES_MANAGE);

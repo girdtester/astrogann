@@ -24,6 +24,11 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Push ready on the backend (D-89)
+- Super Admin Settings card: upload Firebase key (validated, private storage), on/off, push to expired users switch,
+  Check connection, Send test push, Remove key. New entries push to all users (active with image, others "renew").
+  Push batches logged. 152 backend tests pass. Waiting for the owner's Firebase project files.
+
 ### 2026-10-06 — Cron link, e-mail pacing, saved expiry-reminder list
 - D-86 `/cron/run/{CRON_TOKEN}`; D-87 SendMail job + `MAIL_PER_MINUTE`; D-88 collect at 18:00 into
   `expiry_reminders`, send one by one every minute, Super Admin "Expiry reminders" screen.

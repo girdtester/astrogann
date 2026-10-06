@@ -165,4 +165,5 @@ Rules: do not skip, merge or reorder phases. At the end of each phase: migrate/t
 | Owner | Subscription change e-mails | — | SubscriptionChangedMail | notification type `subscription` | done (D-81) |
 | Owner | Forgot password everywhere | /forgot-password | POST /api/auth/forgot-password | Forgot password screen | done (D-84) |
 | Owner | Self sign-up (3 entries until subscribed) | /register | POST /api/auth/register | Create account screen | done (D-85) |
+| Owner | Push set-up from Super Admin, push to all users on new entry | Settings → Push notifications | FcmPushService | (app: MOBILE.md §5) | backend done (D-89) |
 | Owner | Cron link + saved expiry list + one-by-one e-mails | Subscriptions ▾ Expiry reminders | /cron/run/{token} | — | done (D-86…D-88) |

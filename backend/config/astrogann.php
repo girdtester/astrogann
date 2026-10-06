@@ -18,7 +18,9 @@ return [
     'push' => [
         'driver' => env('PUSH_DRIVER', 'log'), // log | fcm
         'fcm_project_id' => env('FCM_PROJECT_ID'),
-        'fcm_credentials' => env('FCM_CREDENTIALS'), // absolute path to the service-account JSON
+        'fcm_credentials' => env('FCM_CREDENTIALS'), // absolute path to the service-account JSON (fallback)
+        // Where the key uploaded in Super Admin → Settings is stored (D-89). Empty = storage/app/private/firebase/.
+        'key_path' => env('FCM_KEY_PATH'),
     ],
 
     // Daily clean-up (astrogann:prune) so big tables stay fast (DECISIONS D-75).
@@ -49,7 +51,9 @@ return [
         'contact_email' => 'ganndecoder@gmail.com',
         'notice_text' => '',
         'allow_registration' => '1', // D-85: users can sign up themselves (web + app)
-        'notify_expired_users' => '1', // D-73: expired / unsubscribed users get a "renew" notification (no push)
+        'notify_expired_users' => '1',
+        'push_enabled' => '0',       // D-89: switched on automatically when the Firebase key is uploaded
+        'push_expired_users' => '1', // D-89: expired / unsubscribed users also get a push ("renew" text) // D-73: expired / unsubscribed users get a "renew" notification (no push)
     ],
 
     'public_settings' => [

@@ -93,8 +93,12 @@ class FirebasePushService implements PushService {
 }
 ```
 6. In `lib/main.dart` use `runApp(AstroGannApp(push: kIsWeb ? NoPushService() : FirebasePushService()));`
-7. Backend `.env`: `PUSH_DRIVER=fcm`, `FCM_PROJECT_ID=…`, `FCM_CREDENTIALS=/path/to/service-account.json`
-   (docs/DEPLOYMENT.md §5). Push is skipped in Chrome by design.
+7. ~~Backend `.env`: `PUSH_DRIVER=fcm`, …~~ (superseded 2026-10-06, D-89): in the website go to **Super Admin →
+   Settings → Push notifications (Firebase)**, upload the service-account key (Firebase console → Project settings →
+   Service accounts → Generate new private key), press **Check connection**, then **Send test push** to a user who
+   is logged in on the app. Push is skipped in Chrome by design.
+8. Foreground notifications: Android/iOS show FCM notifications automatically when the app is in the background;
+   to also show a banner while the app is open, add `flutter_local_notifications` (optional).
 
 ## 6. Build — Android
 - Fix the Java warning from `flutter doctor` first: Android Studio → Settings → Build Tools → Gradle → Gradle JDK =

@@ -95,9 +95,10 @@ ganndecoder@gmail.com (Reply-To = "Contact e-mail" setting). Alternative: Gmail 
 `MAIL_SCHEME=null`, username ganndecoder@gmail.com, a 16-character Google *App Password*). Many GoDaddy shared
 plans block outgoing SMTP to outside servers — if mails do not arrive, use the domain mailbox.
 
-**Push (FCM).** Firebase console → Project settings → Service accounts → *Generate new private key*. Upload the
-JSON to `astrogann/storage/app/` (never into `public`), set `FCM_PROJECT_ID` and `FCM_CREDENTIALS`, then
-`PUSH_DRIVER=fcm`. No package or SDK is needed (HTTP v1).
+**Push (FCM)** — easiest (D-89): log in as Super Admin → Settings → *Push notifications (Firebase)* → upload the key
+from Firebase console → Project settings → Service accounts → *Generate new private key*; press *Check connection*.
+Nothing to edit in `.env`, no SSH. (Alternative: upload the JSON to `astrogann/storage/app/` and set
+`PUSH_DRIVER=fcm`, `FCM_PROJECT_ID`, `FCM_CREDENTIALS`.) No package or SDK is needed (HTTP v1).
 
 ## 6. Cron (the only background process)
 cPanel → *Cron Jobs* → **Once per minute** (`* * * * *`):
