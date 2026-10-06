@@ -6,6 +6,7 @@ enum NotificationType: string
 {
     case NewEntry = 'new_entry';
     case Expiry = 'expiry';
+    case Subscription = 'subscription';
 
     /** @return list<string> */
     public static function values(): array

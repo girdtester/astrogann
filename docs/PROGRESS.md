@@ -24,6 +24,16 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-06 — Phase 10 started (INCOMPLETE — resume here) + subscription e-mails
+- Done: Flutter project `mobile/` created (app id com.astrogann.app, name, icons), packages http/shared_preferences/
+  intl/url_launcher, local CORS, `lib/config/app_config.dart` (base URL in one place), `lib/core` (api_client,
+  api_exception, token_storage), `lib/models/models.dart`, `lib/services/push_service.dart` (NoPushService),
+  `lib/state` (auth, settings, notifications controllers), `lib/theme/app_theme.dart` (same colours as web).
+- Backend: SubscriptionChangedMail on activate/extend/expire + in-app notification (D-81); SMTP via test Gmail in .env.
+- NEXT: screens (splash, login, home shell with bottom nav + badge, entries tabs from API with pull-to-refresh and
+  Show More, subscription, notifications), main.dart/app wiring, `flutter run -d chrome --web-port 5555`, widget tests,
+  docs/MOBILE.md, then Phase 12 (Firebase push, build docs).
+
 ### 2026-10-06 — Owner requests: scale, filters/sorting, pickers, live notifications, URL security, readability, buttons
 - D-73 immediate + idempotent notifications, renew nudge for expired users (setting), live web badge/toast/tab title.
 - D-74 flatpickr date/time pickers; D-75 indexes, deferred pagination, prune job, dashboard cache, load test

@@ -76,7 +76,7 @@ class EndToEndFlowTest extends TestCase
         // 6. User views the latest 7 entries (active subscription) and sees the notifications.
         $this->resetAuth();
         $this->withToken($token)->getJson("/api/categories/{$nifty->id}/entries")->assertJsonCount(7, 'data.entries')->assertJsonPath('data.restricted', false);
-        $this->withToken($token)->getJson('/api/notifications')->assertJsonPath('data.unread_count', 9);
+        $this->withToken($token)->getJson('/api/notifications')->assertJsonPath('data.unread_count', 10); // 9 new entries + 1 "subscription activated"
 
         // 7. Subscription ends in 3 days → reminder e-mail (once).
         $this->artisan('astrogann:send-expiry-reminders');

@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\NotificationType;
 use App\Enums\PaymentStatus;
+use App\Mail\SubscriptionChangedMail;
 use App\Enums\RoleKind;
 use App\Enums\SubscriptionStatus;
 use App\Models\Category;
@@ -13,6 +15,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
 
 /**
@@ -114,6 +117,7 @@ class SubscriptionService
             ]);
 
             $this->maybeRecordPayment($user, $sub, $by, $payment);
+            $this->notifyChange($user, $sub, 'activated');
             $this->logs->log('subscription.activated', $sub,
                 "Activated for {$user->email}: {$start->toDateString()} → {$end->toDateString()}", $by);
 
@@ -137,6 +141,7 @@ class SubscriptionService
             $sub->update(['end_date' => $newEnd, 'status' => SubscriptionStatus::Active, 'reminder_sent_at' => null]);
 
             $this->maybeRecordPayment($user, $sub, $by, $payment);
+            $this->notifyChange($user, $sub, 'extended');
             $this->logs->log('subscription.extended', $sub, "Extended for {$user->email}: {$old} → {$newEnd->toDateString()}", $by);
 
             return $sub;
@@ -153,6 +158,7 @@ class SubscriptionService
             'status' => SubscriptionStatus::Expired,
             'end_date' => $sub->end_date->gt(today()) ? today() : $sub->end_date,
         ]);
+        $this->notifyChange($user, $sub, 'expired');
         $this->logs->log('subscription.expired', $sub, "Expired manually for {$user->email}", $by);
 
         return $sub;
@@ -200,6 +206,19 @@ class SubscriptionService
             ->where('end_date', '<=', today()->addDays($days)->toDateString().' 23:59:59')
             ->whereNull('reminder_sent_at')
             ->whereHas('user', fn (Builder $q) => $q->where('status', 'active')->ofKind(RoleKind::User));
+    }
+
+    /** E-mail + in-app notification to the user after activate / extend / expire (D-81). Sent after commit. */
+    private function notifyChange(User $user, Subscription $sub, string $action): void
+    {
+        DB::afterCommit(function () use ($user, $sub, $action) {
+            Mail::to($user)->queue(new SubscriptionChangedMail($user, $sub->fresh(), $action));
+            $user->appNotifications()->create([
+                'type' => NotificationType::Subscription,
+                'message' => SubscriptionChangedMail::summary($sub->fresh(), $action),
+                'is_read' => false,
+            ]);
+        });
     }
 
     private function maybeRecordPayment(User $user, Subscription $sub, User $by, ?array $payment): void

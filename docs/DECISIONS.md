@@ -384,3 +384,15 @@ for the entry) vs **Added on** (when it was saved). API responses add a `display
 
 **D-79 (2026-10-06) — Real buttons for row actions** (`<x-action>`: olive primary, white secondary, yellow warning,
 light-blue info, with icons) instead of text links, on every list.
+
+## Mobile start + mail (2026-10-06)
+
+**D-80 (2026-10-06) — Flutter app started** in `mobile/` (Android, iOS, web), app id `com.astrogann.app` (default; owner
+did not specify), name ASTRO GANN, icons from the logo. API base URL lives in ONE place: `lib/config/app_config.dart`
+(override with `--dart-define=API_BASE_URL=...`). Backend CORS allows `http://localhost:*` only when APP_ENV=local,
+otherwise only `CORS_ALLOWED_ORIGINS`.
+
+**D-81 (2026-10-06) — Subscription change e-mails.** Activate / extend / expire (web or API) now queue
+`SubscriptionChangedMail` + an in-app notification of type `subscription`. Local SMTP uses the owner's test Gmail
+account (in git-ignored `.env` only; login verified). Queued mails need the queue running: production cron, locally
+`php artisan schedule:work` (or `php artisan queue:work`).

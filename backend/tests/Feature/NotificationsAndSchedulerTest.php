@@ -178,20 +178,20 @@ class NotificationsAndSchedulerTest extends TestCase
 
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
         Mail::assertQueued(SubscriptionExpiringMail::class, fn ($m) => $m->hasTo($u->email) && $m->daysLeft === 3);
-        Mail::assertQueuedCount(1);
+        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
         $this->assertNotNull($sub->fresh()->reminder_sent_at);
         $this->assertDatabaseHas('user_notifications', ['user_id' => $u->id, 'type' => 'expiry']);
 
         // Second run the same day or the next: nothing new.
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueuedCount(1);
+        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
 
         // Extension resets the flag; when the new end date comes close, a new reminder goes out.
         app(SubscriptionService::class)->extend($u, today()->addDays(2)->addMonth(), User::factory()->superAdmin()->create());
         $this->assertNull($sub->fresh()->reminder_sent_at);
         $this->travelTo(today()->addMonth());
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueuedCount(2);
+        Mail::assertQueued(SubscriptionExpiringMail::class, 2);
     }
 
     public function test_reminder_window_uses_the_setting(): void
@@ -202,7 +202,7 @@ class NotificationsAndSchedulerTest extends TestCase
         Subscription::factory()->endingIn(5)->create();
 
         $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful();
-        Mail::assertQueuedCount(1);
+        Mail::assertQueued(SubscriptionExpiringMail::class, 1);
     }
 
     public function test_mail_renders(): void
