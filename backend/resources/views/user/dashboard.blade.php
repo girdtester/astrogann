@@ -37,7 +37,7 @@
                 @foreach ($visible['entries'] as $entry)
                     <figure class="bg-surface shadow-sm rounded-lg overflow-hidden">
                         <button type="button" class="block w-full" @click="zoom = '{{ $entry->imageUrl() }}'">
-                            <img src="{{ $entry->imageUrl() }}" alt="{{ $current->name }} {{ \App\Support\Fmt::date($entry->entry_date) }} {{ \App\Support\Fmt::time($entry->entry_time) }}"
+                            <img src="{{ $entry->thumbUrl() }}" alt="{{ $current->name }} {{ \App\Support\Fmt::date($entry->entry_date) }} {{ \App\Support\Fmt::time($entry->entry_time) }}"
                                  class="w-full aspect-[5/3] object-cover" loading="lazy">
                         </button>
                         <figcaption class="flex justify-between px-3 py-2 text-sm">

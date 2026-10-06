@@ -15,6 +15,7 @@ class EntryResource extends JsonResource
             'id' => $this->id,
             'category_id' => $this->category_id,
             'image_url' => $this->imageUrl(),
+            'thumb_url' => $this->thumbUrl(),
             'entry_date' => $this->entry_date->toDateString(),
             'entry_time' => $this->timeLabel(),
             'created_at' => $this->created_at?->toIso8601String(),

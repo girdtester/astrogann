@@ -151,6 +151,10 @@ Edit uses **POST** (PHP cannot read multipart bodies on PATCH): same fields as 2
 current one). 200 → entry object. Delete → 200 `data = null`; the image file is removed. 403 without
 `entries.edit` / `entries.delete`, or if the entry is not the caller's and the caller lacks `entries.view_all`.
 
+### 2.7b2 Images (2026-10-06, D-91)
+Entry objects contain `image_url` (full, for zoom) and `thumb_url` (640 px preview for lists/cards; same as
+`image_url` for old entries). Both are absolute URLs built from the server's `APP_URL`.
+
 ### 2.7c Display strings (added 2026-10-06, D-78)
 Entry objects also contain `"display": { "date": "06 Oct 2026", "time": "3:45 PM", "added_on": "06 Oct 2026, 1:45 PM",
 "added_ago": "2 hours ago" }`; notification objects contain `"display": { "date_time": "…", "ago": "…" }`. Show

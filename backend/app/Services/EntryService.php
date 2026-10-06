@@ -6,6 +6,7 @@ use App\Events\EntryCreated;
 use App\Models\Category;
 use App\Models\Entry;
 use App\Models\User;
+use App\Support\EntryImageProcessor;
 use App\Support\Sorting;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,24 +29,28 @@ class EntryService
         private readonly SubscriptionService $subscriptions,
         private readonly ActivityLogService $logs,
         private readonly SettingsService $settings,
+        private readonly EntryImageProcessor $images,
     ) {}
 
     /** Store the image under a random name in public/uploads/entries and create the entry. */
     public function create(User $admin, array $data, UploadedFile $image): Entry
     {
         $category = $this->activeCategory($data['category_id']);
-        $path = $this->storeImage($image);
+        $stored = $this->images->store($image);
+        $path = $stored['image'];
 
         try {
             $entry = DB::transaction(fn () => Entry::create([
                 'category_id' => $category->id,
                 'admin_id' => $admin->id,
                 'image_path' => $path,
+                'thumb_path' => $stored['thumb'],
                 'entry_date' => $data['entry_date'],
                 'entry_time' => $this->time($data['entry_time']),
             ]));
         } catch (Throwable $e) {
             $this->deleteImage($path);
+            $this->deleteImage($stored['thumb']);
             throw $e;
         }
 
@@ -63,7 +68,9 @@ class EntryService
     {
         $category = $this->activeCategory($data['category_id']);
         $oldPath = $entry->image_path;
-        $newPath = $image ? $this->storeImage($image) : null;
+        $oldThumb = $entry->thumb_path;
+        $new = $image ? $this->images->store($image) : null;
+        $newPath = $new['image'] ?? null;
 
         try {
             $entry->update([
@@ -71,16 +78,19 @@ class EntryService
                 'entry_date' => $data['entry_date'],
                 'entry_time' => $this->time($data['entry_time']),
                 'image_path' => $newPath ?? $oldPath,
+                'thumb_path' => $new ? $new['thumb'] : $oldThumb,
             ]);
         } catch (Throwable $e) {
-            if ($newPath) {
-                $this->deleteImage($newPath);
+            if ($new) {
+                $this->deleteImage($new['image']);
+                $this->deleteImage($new['thumb']);
             }
             throw $e;
         }
 
-        if ($newPath) {
+        if ($new) {
             $this->deleteImage($oldPath);
+            $this->deleteImage($oldThumb);
         }
 
         $this->logs->log('entry.updated', $entry,
@@ -93,32 +103,17 @@ class EntryService
     public function delete(Entry $entry, User $by): void
     {
         $description = "Entry #{$entry->id} deleted ({$entry->category?->name} {$entry->entry_date->toDateString()} {$entry->timeLabel()}, added by {$entry->admin?->email})";
-        $path = $entry->image_path;
+        [$path, $thumb] = [$entry->image_path, $entry->thumb_path];
 
         $entry->delete();
         $this->deleteImage($path);
+        $this->deleteImage($thumb);
         $this->logs->log('entry.deleted', null, $description, $by);
     }
 
     private function activeCategory(int|string $id): Category
     {
         return Category::query()->active()->find($id) ?? throw new InvalidArgumentException('Choose an active category.');
-    }
-
-    /** Store under a random name; extension from the sniffed MIME type, never the client file name. */
-    private function storeImage(UploadedFile $image): string
-    {
-        $ext = match ($image->getMimeType()) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-            default => throw new InvalidArgumentException('Unsupported image type.'),
-        };
-        $dir = config('astrogann.entry_upload_dir');
-        $name = Str::random(40).'.'.$ext;
-        Storage::disk('uploads')->putFileAs($dir, $image, $name);
-
-        return 'uploads/'.$dir.'/'.$name;
     }
 
     /** Remove an image file given its stored path ("uploads/entries/x.png"); only inside the uploads disk. */

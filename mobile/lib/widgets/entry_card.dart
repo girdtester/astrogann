@@ -18,7 +18,7 @@ class EntryCard extends StatelessWidget {
             builder: (_) => ImageViewer(entry: entry, title: categoryName),
           )),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            AspectRatio(aspectRatio: 5 / 3, child: EntryImage(url: entry.imageUrl)),
+            AspectRatio(aspectRatio: 5 / 3, child: EntryImage(url: entry.thumbUrl)),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
               child: Row(children: [

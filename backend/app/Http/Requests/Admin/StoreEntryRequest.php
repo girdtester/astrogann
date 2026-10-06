@@ -24,7 +24,7 @@ class StoreEntryRequest extends FormRequest
             'entry_time' => ['required', 'date_format:H:i'],
             'image' => ['required', 'file', 'image', 'mimes:'.implode(',', config('astrogann.entry_image_mimes')),
                 'mimetypes:image/jpeg,image/png,image/webp', 'max:'.config('astrogann.entry_image_max_kb'),
-                'dimensions:max_width=8000,max_height=8000'],
+                'dimensions:max_width=6000,max_height=6000'],
         ];
     }
 

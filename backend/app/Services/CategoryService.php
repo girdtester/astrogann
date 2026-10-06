@@ -62,9 +62,10 @@ class CategoryService
         }
 
         $count = 0;
-        $category->entries()->select(['id', 'image_path'])->chunkById(200, function ($entries) use (&$count) {
+        $category->entries()->select(['id', 'image_path', 'thumb_path'])->chunkById(200, function ($entries) use (&$count) {
             foreach ($entries as $entry) {
                 app(EntryService::class)->deleteImage($entry->image_path);
+                app(EntryService::class)->deleteImage($entry->thumb_path);
             }
             $count += Entry::whereIn('id', $entries->pluck('id'))->delete();
         });

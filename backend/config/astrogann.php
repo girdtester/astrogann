@@ -14,6 +14,13 @@ return [
     'entry_image_mimes' => ['jpg', 'jpeg', 'png', 'webp'],
     'entry_upload_dir' => 'entries',
 
+    // Image processing for uploads (D-91).
+    'images' => [
+        'max_px' => (int) env('IMAGE_MAX_PX', 1920),     // longest side of the stored image
+        'thumb_px' => (int) env('IMAGE_THUMB_PX', 640),  // width of the list / app-card preview
+        'quality' => (int) env('IMAGE_QUALITY', 85),     // JPEG / WebP quality
+    ],
+
     // Push notifications. DECISIONS D-28.
     'push' => [
         'driver' => env('PUSH_DRIVER', 'log'), // log | fcm

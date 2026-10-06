@@ -116,6 +116,7 @@ class Entry {
   const Entry({
     required this.id,
     required this.imageUrl,
+    required this.thumbUrl,
     required this.date,
     required this.time,
     required this.addedAgo,
@@ -123,6 +124,9 @@ class Entry {
 
   final int id;
   final String imageUrl;
+
+  /// Small preview for cards (D-91); full [imageUrl] is used when zooming.
+  final String thumbUrl;
 
   /// Ready-to-show strings from the server (D-78): "06 Oct 2026", "3:45 PM", "2 hours ago".
   final String date;
@@ -134,6 +138,7 @@ class Entry {
     return Entry(
       id: _i(j['id']),
       imageUrl: _s(j['image_url']),
+      thumbUrl: _s(j['thumb_url'], _s(j['image_url'])),
       date: _s(d['date'], _s(j['entry_date'])),
       time: _s(d['time'], _s(j['entry_time'])),
       addedAgo: _s(d['added_ago']),

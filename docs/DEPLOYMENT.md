@@ -143,6 +143,10 @@ Check results in Super Admin → Subscriptions ▾ → Expiry reminders and Repo
   script execution and directory listing.
 - `.env` and the Firebase JSON → 600.
 
+## 7b. Images (D-91)
+After the first deploy (and after copying old uploads) run once: `php artisan astrogann:make-thumbnails`.
+Make sure `APP_URL` is the real https address — every image, link and e-mail URL is built from it.
+
 ## 8. After every deploy
 ```
 php artisan migrate --force

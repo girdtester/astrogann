@@ -56,8 +56,11 @@ class AdminModuleTest extends TestCase
         $entry = Entry::sole();
         $this->assertSame($this->admin->id, $entry->admin_id);
         $this->assertSame('09:30', $entry->timeLabel());
-        $this->assertMatchesRegularExpression('#^uploads/entries/[A-Za-z0-9]{40}\.png$#', $entry->image_path);
+        // Month folder + random name (D-91), plus a thumbnail next to it.
+        $this->assertMatchesRegularExpression('#^uploads/entries/\d{4}/\d{2}/[A-Za-z0-9]{40}\.png$#', $entry->image_path);
         Storage::disk('uploads')->assertExists(substr($entry->image_path, strlen('uploads/')));
+        $this->assertSame(str_replace('.png', '_thumb.png', $entry->image_path), $entry->thumb_path);
+        Storage::disk('uploads')->assertExists(substr($entry->thumb_path, strlen('uploads/')));
         $this->assertStringNotContainsString('chart', $entry->image_path);
         $this->assertDatabaseHas('activity_logs', ['action' => 'entry.created', 'user_id' => $this->admin->id]);
     }
@@ -162,5 +165,33 @@ class AdminModuleTest extends TestCase
 
         $this->get(route('admin.entries.create'))->assertForbidden();
         $this->post(route('admin.entries.store'), $this->payload())->assertForbidden();
+    }
+    public function test_large_photos_are_resized_and_get_a_small_thumbnail(): void
+    {
+        $this->post(route('admin.entries.store'), $this->payload(['image' => UploadedFile::fake()->image('big.jpg', 4000, 3000)]))
+            ->assertRedirect();
+
+        $entry = Entry::sole();
+        [$w, $h] = getimagesize(Storage::disk('uploads')->path(substr($entry->image_path, 8)));
+        [$tw] = getimagesize(Storage::disk('uploads')->path(substr($entry->thumb_path, 8)));
+        $this->assertSame([1920, 1440], [$w, $h]);
+        $this->assertSame(640, $tw);
+        $this->assertStringEndsWith('_thumb.jpg', $entry->thumb_path);
+
+        // API gives both URLs, built from the app URL (never hard-coded).
+        $this->assertStringContainsString('/uploads/entries/', $entry->thumbUrl());
+    }
+
+    public function test_deleting_an_entry_removes_image_and_thumbnail(): void
+    {
+        $this->admin->directPermissions()->sync(\App\Models\Permission::where('key', 'entries.delete')->pluck('id'));
+        $this->admin->flushPermissionCache();
+        $this->post(route('admin.entries.store'), $this->payload());
+        $entry = Entry::sole();
+
+        $this->delete(route('admin.entries.destroy', $entry))->assertRedirect();
+
+        Storage::disk('uploads')->assertMissing(substr($entry->image_path, 8));
+        Storage::disk('uploads')->assertMissing(substr($entry->thumb_path, 8));
     }
 }

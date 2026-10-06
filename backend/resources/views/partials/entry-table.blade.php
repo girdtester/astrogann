@@ -21,7 +21,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="py-2 pr-4">
                         <a href="{{ $entry->imageUrl() }}" target="_blank" rel="noopener">
-                            <img src="{{ $entry->imageUrl() }}" alt="Entry {{ $entry->id }}" class="h-14 w-24 object-cover rounded border" loading="lazy">
+                            <img src="{{ $entry->thumbUrl() }}" alt="Entry {{ $entry->id }}" class="h-14 w-24 object-cover rounded border" loading="lazy">
                         </a>
                     </td>
                     <td class="py-2 pr-4 font-medium text-gray-900">{{ $entry->category->name }}</td>

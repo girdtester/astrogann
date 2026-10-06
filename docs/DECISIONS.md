@@ -457,3 +457,19 @@ failures up to 3 times, and skips users who were deactivated/renewed meanwhile. 
   notifications are unchanged. Push data: `type, category_id, entry_id, click_action` for the app.
 - Each push batch is logged (`push.sent`: title, device count, removed tokens). Tokens Firebase reports as dead are
   cleared. Delivery stays chunked/idempotent (D-57, D-73).
+
+## Dynamic URLs + daily image handling (owner request, 2026-10-06)
+
+**D-90 (2026-10-06) — Nothing hard-coded.** Web links, image URLs, e-mail links and push images are built from
+`APP_URL` (and `ASSET_URL` if set); https is forced automatically when `APP_URL` is https (`URL::forceScheme`). The app
+reads the API address from `--dart-define=API_BASE_URL` (one place, `lib/config/app_config.dart`); a phone release
+build still pointing at localhost shows a clear "no server address" screen. App name, tabs, limits, texts, contacts,
+dates/times and image URLs all come from the API.
+
+**D-91 (2026-10-06) — Daily images kept in good shape.** Uploads go to month folders (`uploads/entries/YYYY/MM/`),
+phone photos are turned upright (EXIF), resized to max 1920 px and compressed (JPEG/WebP quality 85, progressive
+JPEG), and a 640 px thumbnail (`*_thumb.*`, `entries.thumb_path`) is used for lists and app cards (`thumb_url` in the
+API); the full image is used for zoom. GD only; if processing fails the original is kept. Uploads limited to
+6000×6000 px (GD memory on shared hosting). Images cached for a year (`public/uploads/.htaccess`). Edit/delete remove
+image + thumbnail. Backfill: `php artisan astrogann:make-thumbnails`. Settings: `IMAGE_MAX_PX`, `IMAGE_THUMB_PX`,
+`IMAGE_QUALITY`.
