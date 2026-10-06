@@ -8,6 +8,7 @@ use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -34,7 +35,12 @@ class SubscriptionExpiringMail extends Mailable implements ShouldQueue
         $app = app(SettingsService::class)->get('app_name');
         $when = $this->daysLeft === 0 ? 'today' : "in {$this->daysLeft} day".($this->daysLeft === 1 ? '' : 's');
 
-        return new Envelope(subject: "Your {$app} subscription will expire {$when}");
+        $replyTo = app(SettingsService::class)->get('contact_email');
+
+        return new Envelope(
+            subject: "Your {$app} subscription will expire {$when}",
+            replyTo: $replyTo ? [new Address($replyTo, $app)] : [],
+        );
     }
 
     public function content(): Content

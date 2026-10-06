@@ -5,7 +5,7 @@
                 <dt class="text-gray-500">Status</dt>
                 <dd class="mt-1">
                     @if ($subscription['is_active']) <x-badge color="green">Active</x-badge>
-                    @elseif ($subscription['status'] === 'expired') <x-badge color="red">Expired</x-badge>
+                    @elseif ($subscription['status'] === 'expired') <x-badge color="yellow">Expired</x-badge>
                     @else <x-badge>No subscription</x-badge>
                     @endif
                 </dd>

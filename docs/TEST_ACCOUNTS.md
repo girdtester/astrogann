@@ -5,6 +5,8 @@
 
 All passwords: `password`
 
+The app is branded ASTRO GANN (D-61); these `.test` accounts are demo data only.
+
 | Role | Email | State |
 |---|---|---|
 | Super Admin | superadmin@astrogann.test | active |

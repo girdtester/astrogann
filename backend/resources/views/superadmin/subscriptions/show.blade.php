@@ -8,7 +8,7 @@
         <dl class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <div><dt class="text-gray-500">User</dt><dd class="font-medium">{{ $user->email }}</dd></div>
             <div><dt class="text-gray-500">Status</dt><dd>
-                <x-badge :color="$summary['status'] === 'active' ? 'green' : ($summary['status'] === 'none' ? 'gray' : 'red')">{{ $summary['status'] }}</x-badge>
+                <x-badge :color="$summary['status'] === 'active' ? 'green' : ($summary['status'] === 'none' ? 'gray' : 'yellow')">{{ $summary['status'] }}</x-badge>
             </dd></div>
             <div><dt class="text-gray-500">Start</dt><dd>{{ $summary['start_date'] ?? '—' }}</dd></div>
             <div><dt class="text-gray-500">End (inclusive)</dt><dd>{{ $summary['end_date'] ?? '—' }}</dd></div>
@@ -88,7 +88,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($history as $s)
                         <tr><td class="py-1 pr-3">{{ $s->start_date->format('d M Y') }}</td><td class="py-1 pr-3">{{ $s->end_date->format('d M Y') }}</td>
-                            <td class="py-1 pr-3"><x-badge :color="$s->isCurrentlyActive() ? 'green' : 'red'">{{ $s->isCurrentlyActive() ? 'active' : 'expired' }}</x-badge></td>
+                            <td class="py-1 pr-3"><x-badge :color="$s->isCurrentlyActive() ? 'green' : 'yellow'">{{ $s->isCurrentlyActive() ? 'active' : 'expired' }}</x-badge></td>
                             <td class="py-1 text-gray-500">{{ $s->creator?->name ?? '—' }}</td></tr>
                     @empty
                         <tr><td colspan="4" class="py-3 text-gray-500">No subscriptions yet.</td></tr>

@@ -9,7 +9,7 @@
             <x-badge color="green">Subscription active</x-badge>
             <span class="text-gray-600">until {{ \Illuminate\Support\Carbon::parse($subscription['end_date'])->format('d M Y') }} ({{ $subscription['days_left'] }} days left)</span>
         @elseif ($subscription['status'] === 'expired')
-            <x-badge color="red">Subscription expired</x-badge>
+            <x-badge color="yellow">Subscription expired</x-badge>
             <span class="text-gray-600">on {{ \Illuminate\Support\Carbon::parse($subscription['end_date'])->format('d M Y') }}</span>
         @else
             <x-badge>No subscription</x-badge>
@@ -35,7 +35,7 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" x-data="{ zoom: null }">
                 @foreach ($visible['entries'] as $entry)
-                    <figure class="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <figure class="bg-surface shadow-sm rounded-lg overflow-hidden">
                         <button type="button" class="block w-full" @click="zoom = '{{ $entry->imageUrl() }}'">
                             <img src="{{ $entry->imageUrl() }}" alt="{{ $current->name }} {{ $entry->entry_date->format('d M Y') }} {{ $entry->timeLabel() }}"
                                  class="w-full aspect-[5/3] object-cover" loading="lazy">

@@ -1,7 +1,7 @@
 <x-page title="Super Admin Dashboard">
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         @foreach ($counts as $label => $value)
-            <div class="bg-white shadow-sm rounded-lg p-4">
+            <div class="bg-surface shadow-sm rounded-lg p-4">
                 <div class="text-xs uppercase tracking-wide text-gray-500">{{ $label }}</div>
                 <div class="mt-1 text-2xl font-bold text-gray-900">{{ number_format($value) }}</div>
             </div>

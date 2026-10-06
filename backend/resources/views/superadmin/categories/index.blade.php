@@ -17,17 +17,17 @@
                             <td class="py-2 pr-4 font-medium text-gray-900">{{ $category->name }}</td>
                             <td class="py-2 pr-4"><code>{{ $category->code }}</code></td>
                             <td class="py-2 pr-4">{{ $category->entries_count }}</td>
-                            <td class="py-2 pr-4"><x-badge :color="$category->isActive() ? 'green' : 'red'">{{ $category->status->value }}</x-badge></td>
+                            <td class="py-2 pr-4"><x-badge :color="$category->isActive() ? 'green' : 'yellow'">{{ $category->status->value }}</x-badge></td>
                             <td class="py-2 text-right whitespace-nowrap space-x-2">
                                 <a href="{{ route('superadmin.categories.edit', $category) }}" class="text-indigo-600 hover:underline">Edit</a>
                                 <form method="POST" action="{{ route('superadmin.categories.status', $category) }}" class="inline">
                                     @csrf @method('PATCH')
-                                    <button class="{{ $category->isActive() ? 'text-red-600' : 'text-green-700' }} hover:underline">{{ $category->isActive() ? 'Deactivate' : 'Activate' }}</button>
+                                    <button class="{{ $category->isActive() ? 'text-yellow-600' : 'text-green-700' }} hover:underline">{{ $category->isActive() ? 'Deactivate' : 'Activate' }}</button>
                                 </form>
                                 @if ($category->entries_count === 0)
                                     <form method="POST" action="{{ route('superadmin.categories.destroy', $category) }}" class="inline" onsubmit="return confirm('Delete {{ $category->name }}?')">
                                         @csrf @method('DELETE')
-                                        <button class="text-red-600 hover:underline">Delete</button>
+                                        <button class="text-yellow-600 hover:underline">Delete</button>
                                     </form>
                                 @endif
                             </td>

@@ -287,3 +287,25 @@ the flag.
 **D-60 (2026-10-06) — FCM test key.** `tests/Fixtures/fcm-test-private-key.pem` is a throwaway RSA key generated
 only for the FCM driver test (XAMPP's OpenSSL cannot generate keys without an `openssl.cnf`). It is not a real
 credential.
+
+## Branding (owner details, 2026-10-06)
+
+**D-61 (2026-10-06) — Name, theme, logo.** App name **ASTRO GANN** (setting `app_name` + `APP_NAME`). Dark theme
+with olive green (primary), light blue (info/links) and yellow (warnings/attention) — `tailwind.config.js` uses
+"dark-semantic" palettes (low numbers = dark tints, high numbers = bright tones), so existing class names render on
+the dark background. **No red anywhere** (owner rule): the `red` palette is remapped to yellow as a safety net,
+every red class was replaced, demo placeholder images use olive/blue/yellow, the CSS bundle was checked for red
+values. Branded dark error pages (`resources/views/errors`). Logo: original kept in `docs/brand/logo-original.png`;
+`public/images/logo.png` (512), `logo-192.png`, `favicon-64.png`, `favicon-32.png` are cropped to the circle with
+a transparent background. Note: the owner's logo artwork itself contains some red squares — it is used unchanged.
+
+**D-62 (2026-10-06) — Contact details.** `contact_email` = ganndecoder@gmail.com (the owner's professional
+address, "use this for all work"). `contact_phone` and `contact_whatsapp` hold **comma-separated lists**
+(+91 75583 77920, +91 81493 43315 — both for calls and WhatsApp); the web "Show More" shows one Call and one
+WhatsApp button per number and the API returns `contact.phones[]` / `contact.whatsapp_links[]` (plus the original
+strings). The owner's personal e-mail is intentionally not stored anywhere in the project.
+
+**D-63 (2026-10-06) — Mail sender.** `MAIL_FROM_ADDRESS` = ganndecoder@gmail.com locally/in `.env.example`; every
+reminder sets **Reply-To = contact_email**. For production deliverability see DEPLOYMENT.md §5 (a @gmail.com
+From address sent through GoDaddy's servers may land in spam; a mailbox on the own domain with Reply-To Gmail is
+the safer choice).

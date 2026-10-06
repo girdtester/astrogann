@@ -181,7 +181,7 @@ class ApiTest extends TestCase
         $this->apiSignIn($this->trader(false))->getJson("/api/categories/{$this->nifty->id}/entries")->assertOk()
             ->assertJsonCount(3, 'data.entries')
             ->assertJsonPath('data.restricted', true)
-            ->assertJsonPath('data.show_more.email', 'support@astrogann.test');
+            ->assertJsonPath('data.show_more.email', 'ganndecoder@gmail.com');
     }
 
     public function test_entries_of_inactive_or_missing_category_is_404(): void

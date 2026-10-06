@@ -45,6 +45,31 @@ class SettingsService
         Cache::forget(self::CACHE_KEY);
     }
 
+    /**
+     * Comma-separated setting as a clean list, e.g. two phone numbers.
+     *
+     * @return list<string>
+     */
+    public function list(string $key): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', (string) $this->get($key)))));
+    }
+
+    /**
+     * Contact-admin details for "Show More" (web + API), one entry per number.
+     *
+     * @return array{text: ?string, phones: list<array{label: string, tel: string}>, whatsapp: list<array{label: string, url: string}>, email: ?string}
+     */
+    public function contact(): array
+    {
+        return [
+            'text' => $this->get('show_more_text'),
+            'phones' => array_map(fn ($p) => ['label' => $p, 'tel' => preg_replace('/[^\d+]/', '', $p)], $this->list('contact_phone')),
+            'whatsapp' => array_map(fn ($w) => ['label' => $w, 'url' => 'https://wa.me/'.preg_replace('/\D+/', '', $w)], $this->list('contact_whatsapp')),
+            'email' => $this->get('contact_email') ?: null,
+        ];
+    }
+
     public function entriesLimitActive(): int
     {
         return max(1, $this->int('entries_limit_active'));

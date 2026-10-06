@@ -2,4 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ASTRO GANN dark theme base (DECISIONS D-61). Colours come from tailwind.config.js. */
+@layer base {
+    html { color-scheme: dark; }
+    body { @apply bg-gray-100 text-gray-800; }
+    input:not([type='checkbox']):not([type='radio']):not([type='file']), select, textarea {
+        @apply bg-surface-raised text-gray-900 border-gray-300 placeholder-gray-400;
+    }
+    input[type='checkbox'], input[type='radio'] { @apply bg-surface-raised border-gray-400; }
+    a { @apply text-inherit; }
+    table thead { @apply text-gray-500; }
+    code { @apply text-blue-700; }
+    *:focus-visible { @apply ring-offset-gray-100; }
+}
+
 [x-cloak] { display: none !important; }

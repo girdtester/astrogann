@@ -19,7 +19,7 @@
                             <td class="py-2 pr-4">
                                 @if (! $sub) <x-badge>none</x-badge>
                                 @elseif ($sub->isCurrentlyActive()) <x-badge color="green">active</x-badge>
-                                @else <x-badge color="red">expired</x-badge>
+                                @else <x-badge color="yellow">expired</x-badge>
                                 @endif
                                 @unless ($user->isActive()) <x-badge color="yellow">account inactive</x-badge> @endunless
                             </td>

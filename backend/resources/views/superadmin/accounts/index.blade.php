@@ -42,7 +42,7 @@
                                     @elseif ($sub->isCurrentlyActive())
                                         <x-badge color="green">active</x-badge> <span class="text-xs text-gray-500">until {{ $sub->end_date->format('d M Y') }}</span>
                                     @else
-                                        <x-badge color="red">expired</x-badge> <span class="text-xs text-gray-500">{{ $sub->end_date->format('d M Y') }}</span>
+                                        <x-badge color="yellow">expired</x-badge> <span class="text-xs text-gray-500">{{ $sub->end_date->format('d M Y') }}</span>
                                     @endif
                                 </td>
                             @else
@@ -55,7 +55,7 @@
                                 <td class="py-2 pr-4">{{ $account->entries_count }}</td>
                             @endif
                             <td class="py-2 pr-4">
-                                <x-badge :color="$account->isActive() ? 'green' : 'red'">{{ $account->status->value }}</x-badge>
+                                <x-badge :color="$account->isActive() ? 'green' : 'yellow'">{{ $account->status->value }}</x-badge>
                             </td>
                             <td class="py-2 text-right whitespace-nowrap space-x-2">
                                 @if ($isTraders)
@@ -67,7 +67,7 @@
                                 @if ($account->id !== auth()->id())
                                     <form method="POST" action="{{ route($routePrefix.'.status', $account) }}" class="inline">
                                         @csrf @method('PATCH')
-                                        <button class="{{ $account->isActive() ? 'text-red-600' : 'text-green-700' }} hover:underline">
+                                        <button class="{{ $account->isActive() ? 'text-yellow-600' : 'text-green-700' }} hover:underline">
                                             {{ $account->isActive() ? 'Deactivate' : 'Activate' }}
                                         </button>
                                     </form>

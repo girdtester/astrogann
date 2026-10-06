@@ -77,7 +77,7 @@ class UserModuleTest extends TestCase
         $res->assertDontSee(today()->subDays(3)->format('d M Y'));
         $res->assertSee('Show More')
             ->assertSee(config('astrogann.settings_defaults.contact_email'))
-            ->assertSee('wa.me/919000000000', false);
+            ->assertSee('wa.me/917558377920', false)->assertSee('wa.me/918149343315', false)->assertSee('tel:+917558377920', false);
     }
 
     public function test_user_without_any_subscription_is_restricted(): void

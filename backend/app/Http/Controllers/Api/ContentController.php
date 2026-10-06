@@ -43,6 +43,9 @@ class ContentController extends Controller
                 'phone' => $s['contact_phone'] ?: null,
                 'whatsapp' => $s['contact_whatsapp'] ?: null,
                 'email' => $s['contact_email'] ?: null,
+                // One item per number (the owner has two numbers for calls + WhatsApp).
+                'phones' => $this->settings->contact()['phones'],
+                'whatsapp_links' => $this->settings->contact()['whatsapp'],
             ],
             'notice_text' => $s['notice_text'] ?: null,
         ]);
@@ -73,6 +76,8 @@ class ContentController extends Controller
                 'phone' => $s['contact_phone'] ?: null,
                 'whatsapp' => $s['contact_whatsapp'] ?: null,
                 'email' => $s['contact_email'] ?: null,
+                'phones' => $this->settings->contact()['phones'],
+                'whatsapp_links' => $this->settings->contact()['whatsapp'],
             ] : null,
         ]);
     }

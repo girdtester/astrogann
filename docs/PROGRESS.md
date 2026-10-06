@@ -4,13 +4,11 @@ Update at the end of every work session. Newest session on top.
 
 ## Current state
 
-- **Current phase:** Branding (owner request) then Phase 9 — Security and QA
+- **Current phase:** Phase 9 — Security and QA (branding done)
 - **Last finished phase:** Phase 8 — Queues, notifications, email, scheduler (2026-10-06)
 
 ## Next steps
-1. Apply owner branding: name "ASTRO GANN", logo (`logo/logo.png`), dark theme olive green / light blue / yellow,
-   **no red anywhere**, contact ganndecoder@gmail.com, phones 7558377920 & 8149343315 (WhatsApp + call).
-2. Phase 9: security review, full tests, end-to-end walk-through, then **stop and ask the owner before mobile
+1. Phase 9: security review, full tests, end-to-end walk-through, then **stop and ask the owner before mobile
    (Phase 10)** — owner instruction 2026-10-06.
 
 ## Known issues / notes
@@ -20,6 +18,13 @@ Update at the end of every work session. Newest session on top.
 - Image has 7 panels, not 8 (D-06).
 
 ## Session log
+
+### 2026-10-06 — Branding (owner details)
+- ASTRO GANN name, cropped transparent logo + favicons, dark olive/light-blue/yellow theme, no red (D-61);
+  contact e-mail + two phone/WhatsApp numbers with one button each (D-62); Reply-To on mails (D-63); branded
+  error pages; demo images regenerated without red. 111 tests pass. Local settings rows updated.
+- Browser check: login page verified dark with logo; later screenshots timed out (Chrome window likely in the
+  background) — the user page was verified via rendered HTML instead (both numbers, WhatsApp links, e-mail, logo).
 
 ### 2026-10-06 — Phase 8
 - EntryCreated event + listener; jobs NotifyUsersOfNewEntry (chunked, self-continuing) and SendPushToUsers;

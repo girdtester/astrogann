@@ -20,8 +20,8 @@ class SettingsRequest extends FormRequest
             'entries_limit_expired' => ['required', 'integer', 'min:0', 'max:100', 'lte:entries_limit_active'],
             'reminder_days' => ['required', 'integer', 'min:1', 'max:60'],
             'show_more_text' => ['required', 'string', 'max:500'],
-            'contact_phone' => ['nullable', 'string', 'max:30'],
-            'contact_whatsapp' => ['nullable', 'string', 'max:30', 'regex:/^\+?[0-9 ]+$/'],
+            'contact_phone' => ['nullable', 'string', 'max:100', 'regex:/^[0-9+ ,\-]+$/'],
+            'contact_whatsapp' => ['nullable', 'string', 'max:100', 'regex:/^[0-9+ ,]+$/'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'notice_text' => ['nullable', 'string', 'max:1000'],
         ];

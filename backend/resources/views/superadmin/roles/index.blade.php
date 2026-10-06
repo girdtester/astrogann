@@ -46,7 +46,7 @@
                                 @if (! $role->is_system && $role->users_count === 0)
                                     <form method="POST" action="{{ route('superadmin.roles.destroy', $role) }}" class="inline" onsubmit="return confirm('Delete role {{ $role->name }}?')">
                                         @csrf @method('DELETE')
-                                        <button class="text-red-600 hover:underline">Delete</button>
+                                        <button class="text-yellow-600 hover:underline">Delete</button>
                                     </form>
                                 @endif
                             </td>

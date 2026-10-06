@@ -4,3 +4,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# Owner upload folder (copy kept in docs/brand/logo-original.png)
+/logo/

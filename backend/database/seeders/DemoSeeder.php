@@ -66,7 +66,7 @@ class DemoSeeder extends Seeder
             for ($n = 0; $n < self::ENTRIES_PER_CATEGORY; $n++) {
                 $at = Carbon::today()->subDays($n)->setTime(9 + ($n % 6), 15);
                 $file = 'seed-'.strtolower($code).'-'.($n + 1).'.png';
-                PlaceholderImage::make($dir.DIRECTORY_SEPARATOR.$file, [$name, $at->format('d M Y'), $at->format('H:i'), '#'.($n + 1)], $i * 70);
+                PlaceholderImage::make($dir.DIRECTORY_SEPARATOR.$file, [$name, $at->format('d M Y'), $at->format('H:i'), '#'.($n + 1)], [70, 200, 50, 95, 185][$i % 5]);
 
                 Entry::create([
                     'category_id' => $category->id, 'admin_id' => $admin->id,

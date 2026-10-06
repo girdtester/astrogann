@@ -184,7 +184,7 @@ class NotificationsAndSchedulerTest extends TestCase
         $mail = new SubscriptionExpiringMail($u, $sub, 3);
         $mail->assertSeeInHtml('Ravi');
         $mail->assertSeeInHtml('3 days');
-        $mail->assertHasSubject('Your AstroGann subscription will expire in 3 days');
+        $mail->assertHasSubject('Your ASTRO GANN subscription will expire in 3 days');
     }
 
     public function test_daily_expire_command(): void

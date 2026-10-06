@@ -6,7 +6,7 @@
 
     @if ($editing && ! $canManage)
         <x-card>
-            <p class="text-sm text-red-700">You cannot change this account (it is yours, a Super Admin, or it has permissions you do not have).</p>
+            <p class="text-sm text-yellow-700">You cannot change this account (it is yours, a Super Admin, or it has permissions you do not have).</p>
         </x-card>
     @else
         <x-card>

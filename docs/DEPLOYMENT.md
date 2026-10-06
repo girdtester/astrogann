@@ -56,6 +56,15 @@ FCM_CREDENTIALS=/home/<cpaneluser>/astrogann/storage/app/firebase-service-accoun
 ```
 Generate `APP_KEY` locally (`php artisan key:generate --show`) and paste it.
 
+**E-mail sender (D-63).** Two working options on GoDaddy:
+1. *Recommended:* create a mailbox on your own domain in cPanel (e.g. `no-reply@your-domain`), use its SMTP
+   details above and set `MAIL_FROM_ADDRESS=no-reply@your-domain`. Replies still go to ganndecoder@gmail.com
+   (Reply-To is set automatically from the "Contact e-mail" setting).
+2. Send through Gmail: `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_SCHEME=null` (STARTTLS),
+   `MAIL_USERNAME=ganndecoder@gmail.com`, `MAIL_PASSWORD=<16-char Google App Password>` (needs 2-step
+   verification on the Google account). Many GoDaddy shared plans block outgoing SMTP to external servers —
+   if mails do not arrive, use option 1.
+
 ## 6. Cron (the only background process)
 cPanel → *Cron Jobs* → every minute (`* * * * *`):
 ```

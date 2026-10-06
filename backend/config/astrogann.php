@@ -26,14 +26,14 @@ return [
 
     // Defaults for the settings table. Keys marked public are served by GET /api/settings.
     'settings_defaults' => [
-        'app_name' => 'AstroGann',
+        'app_name' => 'ASTRO GANN',
         'entries_limit_active' => '7',
         'entries_limit_expired' => '3',
         'reminder_days' => '3',
         'show_more_text' => 'Your subscription is not active. Contact the admin to renew and see all the latest entries.',
-        'contact_phone' => '+91 90000 00000',
-        'contact_whatsapp' => '+919000000000',
-        'contact_email' => 'support@astrogann.test',
+        'contact_phone' => '+91 75583 77920, +91 81493 43315',
+        'contact_whatsapp' => '+917558377920, +918149343315',
+        'contact_email' => 'ganndecoder@gmail.com',
         'notice_text' => '',
     ],
 
