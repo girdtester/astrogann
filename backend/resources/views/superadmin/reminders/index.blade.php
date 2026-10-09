@@ -37,6 +37,7 @@
             @csrf
             <div class="sm:w-80"><x-field name="email" type="email" label="Send a test e-mail now to" :value="auth()->user()->email" required /></div>
             <div><x-primary-button>Send test e-mail</x-primary-button></div>
+            <div><a href="{{ route('superadmin.diagnostics.mail') }}" target="_blank" class="text-sm font-semibold text-blue-700 underline">Full mail check (ports + settings)</a></div>
         </form>
         <p class="mt-3 text-xs text-gray-500">
             Test the expiry e-mail today: set a test user's subscription to end in {{ app(\App\Services\SettingsService::class)->reminderDays() }} days →

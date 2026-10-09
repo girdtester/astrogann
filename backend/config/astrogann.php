@@ -43,6 +43,9 @@ return [
     // Secret for the URL cron https://your-domain/cron/run/{CRON_TOKEN} (D-86). At least 32 characters; empty = disabled.
     'cron_token' => env('CRON_TOKEN'),
 
+    // When the expiry-reminder list is collected: "18:00" (daily, default) or "every_minute" for testing (D-99).
+    'reminder_collect_at' => env('REMINDER_COLLECT_AT', '18:00'),
+
     // Users per chunk when fanning out notifications (keeps shared-hosting runs short).
     'notification_chunk' => (int) env('NOTIFICATION_CHUNK', 200),
 

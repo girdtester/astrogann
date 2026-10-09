@@ -21,7 +21,11 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3 --sleep=
 // Spec 3.4 daily jobs.
 Schedule::command('astrogann:expire-subscriptions')->dailyAt('00:05')->withoutOverlapping();
 // Expiry reminders (D-88): 1) save the list once a day at 18:00, 2) send it one by one every minute.
-Schedule::command('astrogann:collect-expiry-reminders')->dailyAt('18:00')->withoutOverlapping();
+// Collect once a day (default 18:00). For testing set REMINDER_COLLECT_AT=every_minute in .env (D-99) —
+// safe: each user is saved only once per expiry date.
+$collectAt = (string) config('astrogann.reminder_collect_at');
+$collect = Schedule::command('astrogann:collect-expiry-reminders')->withoutOverlapping();
+$collectAt === 'every_minute' ? $collect->everyMinute() : $collect->dailyAt($collectAt ?: '18:00');
 Schedule::command('astrogann:send-expiry-reminders')->everyMinute()->withoutOverlapping(10);
 
 // Housekeeping.

@@ -509,3 +509,13 @@ plus queued / failed job counts, the mail server in use, and a "Send test e-mail
 shows the exact SMTP error. Owner can test the 3-day e-mail any time: subscription ends in 3 days → Collect now → Send
 pending now. Live cron: `/usr/local/bin/php /home/ra1yc62g0jdm/public_html/astrogann25.com/artisan schedule:run` every
 1–5 min (all fixed times are on 5-minute marks).
+
+**D-98 (2026-10-12) — Live mail problems never show an error page; mail check link.** GoDaddy shared hosting blocks
+outside SMTP (live: `smtp.gmail.com:587` timed out → forgot-password 500). Forgot password now logs the error and shows
+the neutral message; SMTP timeout 15 s (`MAIL_TIMEOUT`); optional `MAIL_REPLY_TO_ADDRESS`. Mail check:
+`/diagnostics/mail/{CRON_TOKEN}` (or Super Admin → `/superadmin/diagnostics/mail`) prints the mail settings, which SMTP
+hosts/ports the server can reach, and with `?to=…[&via=sendmail|localhost]` sends a test and shows the exact error.
+Recommended on GoDaddy: `MAIL_MAILER=sendmail`, `MAIL_FROM_ADDRESS=noreply@<domain>`, `MAIL_REPLY_TO_ADDRESS=ganndecoder@gmail.com`.
+
+**D-99 (2026-10-12) — Reminder collection time is configurable.** `REMINDER_COLLECT_AT` = `18:00` (default) or
+`every_minute` for live testing; safe because each subscription period is claimed once.

@@ -45,7 +45,7 @@ return [
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => (int) env('MAIL_TIMEOUT', 15), // D-98: fail fast instead of hanging the page
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
@@ -114,5 +114,11 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
+
+    // D-98: when sending from the hosting mailbox (e.g. noreply@astrogann25.com), replies still go to Gmail.
+    'reply_to' => env('MAIL_REPLY_TO_ADDRESS') ? [
+        'address' => env('MAIL_REPLY_TO_ADDRESS'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+    ] : null,
 
 ];

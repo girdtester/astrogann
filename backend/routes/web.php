@@ -15,6 +15,10 @@ Route::get('/', fn () => auth()->check()
 Route::get('/cron/run/{token}', \App\Http\Controllers\CronController::class)
     ->where('token', '[A-Za-z0-9]+')->middleware('throttle:20,1')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class)->name('cron.run');
 
+// Mail check for the live server (D-98): settings, reachable SMTP ports, optional test e-mail. Same secret as the cron link.
+Route::get('/diagnostics/mail/{token}', [\App\Http\Controllers\MailDiagnosticsController::class, 'withToken'])
+    ->where('token', '[A-Za-z0-9]+')->middleware('throttle:10,1')->name('diagnostics.mail.token');
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn () => redirect()->route(auth()->user()->homeRoute()))->name('dashboard');
 
@@ -48,6 +52,8 @@ Route::middleware('auth')->group(function () {
             Route::post('reminders/send', [SuperAdmin\ExpiryReminderController::class, 'send'])->name('reminders.send');
             Route::post('reminders/retry', [SuperAdmin\ExpiryReminderController::class, 'retry'])->name('reminders.retry');
             Route::post('reminders/test-mail', [SuperAdmin\ExpiryReminderController::class, 'testMail'])->name('reminders.test-mail');
+            Route::get('diagnostics/mail', [\App\Http\Controllers\MailDiagnosticsController::class, 'report'])
+                ->middleware(['role:superadmin', 'throttle:10,1'])->name('diagnostics.mail');
         });
 
         Route::middleware('can:'.P::CATEGORIES_MANAGE)->group(function () {
