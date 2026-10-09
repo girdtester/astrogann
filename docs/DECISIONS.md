@@ -538,3 +538,10 @@ ones are resized to 2560 px (was 1920) at quality 90 (was 85). `IMAGE_MAX_PX` / 
 **D-102 (2026-10-12) — Show / hide password on the website.** Every password box (login, sign up, reset, confirm,
 profile, Super Admin create/edit accounts) gets an eye button via the shared `x-text-input` component; the app already
 had it. No change to how forms submit.
+
+**D-103 (2026-10-12) — App points to the live server.** `AppConfig.apiBaseUrl` default = `http://astrogann25.com/api`
+(local testing: `--dart-define=API_BASE_URL=http://localhost:8000/api`). https://astrogann25.com currently has an
+untrusted certificate, so plain http is allowed **only for astrogann25.com** (Android
+`res/xml/network_security_config.xml`, iOS ATS exception); everything else stays https-only. Added the missing
+`INTERNET` permission to the release manifest (debug builds had it; an installed APK could not connect without it).
+When SSL works (cPanel → SSL/TLS Status → Run AutoSSL), switch the default to https and remove both exceptions.

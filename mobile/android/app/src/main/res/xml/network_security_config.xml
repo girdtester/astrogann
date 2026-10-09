@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Plain http is allowed ONLY for the ASTRO GANN server (no valid SSL certificate yet); everything else must use https.
+  When https://astrogann25.com works, delete the domain-config block and switch AppConfig.apiBaseUrl to https.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">astrogann25.com</domain>
+    </domain-config>
+</network-security-config>

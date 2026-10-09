@@ -129,3 +129,8 @@ class FirebasePushService implements PushService {
   immediate check when the app is reopened. Category tab switches and bottom tabs always ask the server.
 - Not subscribed + tap a new-entry notification → category opens with the "contact admin to subscribe" sheet.
 - Expiry notice ("expires in 3 days") arrives in Notifications with the reminder e-mail.
+
+## Live build (D-103, 2026-10-12)
+- `flutter build apk --release` → uses the live server `http://astrogann25.com/api` by default (no flag needed).
+- Local testing in Chrome: `flutter run -d chrome --web-port 5555 --dart-define=API_BASE_URL=http://localhost:8000/api`.
+- http is allowed only for astrogann25.com until the site has a valid SSL certificate; then change to https.
