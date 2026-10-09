@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 
-/// Entries as a table: Sr. No | Date | Time | Image (D-101). Tap the image for the full HD picture (pinch to zoom).
+/// Entries as a table: Sr. No | Date | Time | Image (D-101). Small eye icon on the preview; tap for the full HD picture.
 class EntryTable extends StatelessWidget {
   const EntryTable({super.key, required this.entries, required this.categoryName});
   final List<Entry> entries;
@@ -67,9 +67,9 @@ class EntryTable extends StatelessWidget {
                           right: 4,
                           bottom: 4,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            padding: const EdgeInsets.all(3),
                             decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
-                            child: const Text('HD', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                            child: const Icon(Icons.visibility_outlined, size: 14, color: Colors.white),
                           ),
                         ),
                       ]),
