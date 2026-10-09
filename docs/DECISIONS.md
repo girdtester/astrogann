@@ -502,3 +502,10 @@ does not poll at all in the background and checks immediately on resume. Each ch
 `last_seen_at` on sessions and Sanctum `last_used_at` are written at most every 5 min (custom `PersonalAccessToken`).
 Estimate: 1 lakh registered ≈ 5–10k open at once ≈ 50–200 light requests/s at peak — check the host's CPU/entry-process
 limits; raise the setting to 30–60 if needed. Phones get instant delivery once Firebase push (B-01) is on.
+
+**D-97 (2026-10-12) — Live system check on Super Admin → Expiry reminders.** A scheduler heartbeat (every minute,
+cache key `astrogann.cron_last_run`) shows whether the cPanel cron really runs ("running ✓" if it ran in the last 10 min);
+plus queued / failed job counts, the mail server in use, and a "Send test e-mail" button that sends synchronously and
+shows the exact SMTP error. Owner can test the 3-day e-mail any time: subscription ends in 3 days → Collect now → Send
+pending now. Live cron: `/usr/local/bin/php /home/ra1yc62g0jdm/public_html/astrogann25.com/artisan schedule:run` every
+1–5 min (all fixed times are on 5-minute marks).

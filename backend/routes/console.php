@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -8,6 +9,10 @@ use Illuminate\Support\Facades\Schedule;
  */
 
 // Database queue worker without a daemon: drain the queue each minute, stop when empty or after 50 s.
+// Heartbeat: proves on the live site that the cPanel cron is really running (Super Admin → Expiry reminders, D-97).
+Schedule::call(fn () => Cache::forever('astrogann.cron_last_run', now()->toIso8601String()))
+    ->everyMinute()
+    ->name('cron-heartbeat');
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3 --sleep=1')
     ->everyMinute()
     ->withoutOverlapping(5)

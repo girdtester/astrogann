@@ -369,4 +369,24 @@ class NotificationsAndSchedulerTest extends TestCase
         $this->get(route('superadmin.reminders.index', ['status' => 'sent']))->assertOk()->assertSee('Soon Expiring');
         Mail::assertSent(SubscriptionExpiringMail::class, 1);
     }
+
+    public function test_live_system_check_shows_cron_heartbeat_and_sends_a_test_email(): void
+    {
+        $this->signIn(User::factory()->superAdmin()->create());
+        $this->get(route('superadmin.reminders.index'))->assertOk()->assertSee('Cron: NOT running')->assertSee('never');
+
+        // One scheduler run (what cPanel cron does) records the heartbeat.
+        $this->artisan('schedule:run')->assertSuccessful();
+        $this->get(route('superadmin.reminders.index'))->assertOk()->assertSee('Cron: running ✓');
+
+        Mail::fake();
+        $this->post(route('superadmin.reminders.test-mail'), ['email' => 'owner@example.test'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'owner@example.test'));
+        $this->post(route('superadmin.reminders.test-mail'), ['email' => 'not-an-email'])->assertSessionHasErrors('email');
+
+        // A failing mail server shows the exact reason instead of an error page.
+        Mail::shouldReceive('raw')->andThrow(new \RuntimeException('Authentication failed: bad app password'));
+        $this->post(route('superadmin.reminders.test-mail'), ['email' => 'owner@example.test'])
+            ->assertSessionHas('error', fn ($m) => str_contains($m, 'bad app password'));
+    }
 }

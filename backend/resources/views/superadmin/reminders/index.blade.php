@@ -8,6 +8,42 @@
         @endif
     </x-slot>
 
+    {{-- Live check (D-97) --}}
+    <x-card title="System check (live)" class="mb-6">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 text-sm">
+            <div class="rounded-lg border p-3 {{ $health['cron_ok'] ? 'border-olive-200 bg-olive-50' : 'border-yellow-300 bg-yellow-50' }}">
+                <div class="font-semibold {{ $health['cron_ok'] ? 'text-olive-800' : 'text-yellow-800' }}">
+                    Cron: {{ $health['cron_ok'] ? 'running ✓' : 'NOT running' }}
+                </div>
+                <div class="text-gray-600">
+                    Last run: {{ $health['cron_last_run'] ? \App\Support\Fmt::dateTime($health['cron_last_run']).' ('.$health['cron_last_run']->diffForHumans().')' : 'never' }}
+                </div>
+                @unless ($health['cron_ok'])
+                    <div class="mt-1 text-xs text-gray-600">Check cPanel → Cron Jobs: <code>…/artisan schedule:run</code> every 1–5 minutes.</div>
+                @endunless
+            </div>
+            <div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                <div class="font-semibold text-blue-800">Queue</div>
+                <div class="text-gray-600">{{ number_format($health['queued']) }} job(s) waiting · {{ number_format($health['failed_jobs']) }} failed</div>
+                <div class="mt-1 text-xs text-gray-600">Waiting jobs are sent by the next cron run.</div>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div class="font-semibold text-gray-800">E-mail</div>
+                <div class="text-gray-600">{{ $health['mailer'] }}{{ $health['mail_host'] ? ' · '.$health['mail_host'] : '' }}</div>
+                <div class="text-gray-600">From: {{ $health['mail_from'] }}</div>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('superadmin.reminders.test-mail') }}" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            @csrf
+            <div class="sm:w-80"><x-field name="email" type="email" label="Send a test e-mail now to" :value="auth()->user()->email" required /></div>
+            <div><x-primary-button>Send test e-mail</x-primary-button></div>
+        </form>
+        <p class="mt-3 text-xs text-gray-500">
+            Test the expiry e-mail today: set a test user's subscription to end in {{ app(\App\Services\SettingsService::class)->reminderDays() }} days →
+            <strong>Collect now</strong> → <strong>Send pending now</strong> (or wait for the next cron run).
+        </p>
+    </x-card>
+
     <x-card>
         <p class="mb-4 text-sm text-gray-600">
             Every day at <strong>6:00 PM</strong> the system saves all users whose subscription expires within

@@ -7,3 +7,7 @@ Thumbs.db
 
 # Owner upload folder (copy kept in docs/brand/logo-original.png)
 /logo/
+
+# Local zip archives (not part of the project)
+/backend/*.zip
+/deploy/

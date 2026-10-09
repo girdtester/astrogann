@@ -8,6 +8,12 @@ use App\Services\ExpiryReminderService;
 use App\Support\Sorting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Throwable;
 use Illuminate\View\View;
 
 /**
@@ -37,6 +43,7 @@ class ExpiryReminderController extends Controller
             'sorting' => $sorting,
             'filters' => $filters,
             'counts' => ExpiryReminder::query()->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
+            'health' => $this->health(),
         ]);
     }
 
@@ -52,6 +59,40 @@ class ExpiryReminderController extends Controller
         $r = $this->reminders->sendPending();
 
         return back()->with('success', "Sent {$r['sent']} e-mail(s) now".($r['failed'] ? ", {$r['failed']} failed (see the list)" : '').'. The cron sends the rest automatically.');
+    }
+
+    /** Live check (D-97): is the cron running, is anything stuck, which mail server is used. */
+    private function health(): array
+    {
+        $last = Cache::get('astrogann.cron_last_run');
+
+        return [
+            'cron_last_run' => $last ? Carbon::parse($last) : null,
+            'cron_ok' => $last && Carbon::parse($last)->gt(now()->subMinutes(10)),
+            'queued' => DB::table('jobs')->count(),
+            'failed_jobs' => DB::table('failed_jobs')->count(),
+            'mailer' => config('mail.default'),
+            'mail_host' => config('mail.mailers.'.config('mail.default').'.host'),
+            'mail_from' => config('mail.from.address'),
+        ];
+    }
+
+    /** Send one test e-mail right now (not queued) and show the exact error if it fails (D-97). */
+    public function testMail(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['email' => ['required', 'email', 'max:190']]);
+
+        try {
+            Mail::raw(
+                'This is a test e-mail from '.config('app.name').' ('.config('app.url').') sent at '.now()->format('d M Y, h:i A')
+                .".\n\nIf you can read this, e-mail sending works.",
+                fn ($m) => $m->to($data['email'])->subject(config('app.name').' — test e-mail')
+            );
+        } catch (Throwable $e) {
+            return back()->withInput()->with('error', 'Test e-mail failed: '.Str::limit($e->getMessage(), 300));
+        }
+
+        return back()->with('success', "Test e-mail sent to {$data['email']}. Check the inbox (and Spam).");
     }
 
     public function retry(): RedirectResponse

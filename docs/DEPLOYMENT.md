@@ -273,3 +273,12 @@ Check it works: cPanel → Cron Jobs → set an e-mail for cron output temporari
 
 #### 8. After each deploy
 `php artisan config:cache && php artisan route:cache && php artisan view:cache` (or via one-off cron).
+
+## 6c. Check the cron and e-mail on the live site (D-97) — added 2026-10-12
+Super Admin → **Expiry reminders** → card **System check (live)**:
+- **Cron: running ✓** + last run time (proves `schedule:run` works). "NOT running" → check the cPanel cron path/PHP.
+- **Queue**: jobs waiting / failed. **E-mail**: which mail server and From address are used.
+- **Send test e-mail** → sends immediately and shows the exact error (wrong app password, port, …).
+- Test the 3-day e-mail without waiting for 6 PM: give a test user (your own e-mail) a subscription ending in
+  3 days → **Collect now** → **Send pending now** (or wait for the next cron run) → row shows **sent**.
+After uploading new code: one-off cron `php …/artisan migrate --force` and `php …/artisan optimize:clear`, then delete it.

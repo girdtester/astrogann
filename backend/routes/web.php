@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
             Route::post('reminders/collect', [SuperAdmin\ExpiryReminderController::class, 'collect'])->name('reminders.collect');
             Route::post('reminders/send', [SuperAdmin\ExpiryReminderController::class, 'send'])->name('reminders.send');
             Route::post('reminders/retry', [SuperAdmin\ExpiryReminderController::class, 'retry'])->name('reminders.retry');
+            Route::post('reminders/test-mail', [SuperAdmin\ExpiryReminderController::class, 'testMail'])->name('reminders.test-mail');
         });
 
         Route::middleware('can:'.P::CATEGORIES_MANAGE)->group(function () {
