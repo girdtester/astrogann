@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\NotificationType;
+use App\Models\Announcement;
 use App\Models\Entry;
 use App\Models\User;
 use App\Models\UserNotification;
@@ -16,7 +17,7 @@ class NotificationService
 {
     public function list(User $user, int $perPage = 20): LengthAwarePaginator
     {
-        return $user->appNotifications()->with('category')->latest('id')->paginate($perPage);
+        return $user->appNotifications()->with(['category', 'announcement:id,title'])->latest('id')->paginate($perPage);
     }
 
     public function unreadCount(User $user): int
@@ -71,6 +72,37 @@ class NotificationService
             'entry_id' => $entry->id,
             'type' => NotificationType::NewEntry->value,
             'message' => $message,
+            'is_read' => false,
+            'created_at' => $now,
+        ], $userIds));
+
+        return $userIds;
+    }
+
+    /**
+     * Store one announcement for these users (D-100). Returns the ids that were newly notified.
+     *
+     * @param  list<int>  $userIds
+     * @return list<int>
+     */
+    public function storeAnnouncementFor(Announcement $announcement, array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+        $already = UserNotification::query()->where('announcement_id', $announcement->id)->whereIn('user_id', $userIds)
+            ->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $userIds = array_values(array_diff($userIds, $already));
+        if ($userIds === []) {
+            return [];
+        }
+        $now = now();
+
+        UserNotification::insertOrIgnore(array_map(fn (int $id) => [
+            'user_id' => $id,
+            'announcement_id' => $announcement->id,
+            'type' => NotificationType::Announcement->value,
+            'message' => $announcement->message,
             'is_read' => false,
             'created_at' => $now,
         ], $userIds));

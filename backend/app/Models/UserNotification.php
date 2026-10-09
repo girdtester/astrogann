@@ -18,7 +18,7 @@ class UserNotification extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['user_id', 'category_id', 'entry_id', 'type', 'message', 'is_read'];
+    protected $fillable = ['user_id', 'category_id', 'entry_id', 'announcement_id', 'type', 'message', 'is_read'];
 
     protected function casts(): array
     {
@@ -41,5 +41,20 @@ class UserNotification extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function announcement(): BelongsTo
+    {
+        return $this->belongsTo(Announcement::class);
+    }
+
+    /** Heading shown above the message (web, app, toast): announcement title, category name or a type label. */
+    public function title(): string
+    {
+        return match ($this->type) {
+            NotificationType::Announcement => $this->announcement?->title ?? 'Announcement',
+            NotificationType::Expiry, NotificationType::Subscription => 'Subscription',
+            default => $this->category?->name ?? 'Notification',
+        };
     }
 }

@@ -131,3 +131,17 @@ Indexes: `(user_id, is_read)`, `category_id`.
 
 Disk `uploads` (config/filesystems.php): root `public_path('uploads')`, URL `APP_URL/uploads`. `entries.image_path` is
 relative to `public/` (e.g. `uploads/entries/x.png`) so `asset($path)` yields the URL.
+
+## announcements (D-100, 2026-10-12)
+| column | type | notes |
+|---|---|---|
+| id | bigint | |
+| title | varchar(100) | |
+| message | varchar(500) | |
+| audience | varchar(20) | all / active / inactive |
+| recipients | int | users notified so far |
+| created_by | FK users, null on delete | |
+| created_at / updated_at | timestamp | |
+
+`user_notifications.announcement_id` — nullable FK → announcements, **cascade on delete**; unique (user_id, announcement_id).
+`user_notifications.type` may now be `announcement`.

@@ -75,6 +75,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('settings/push', [SuperAdmin\PushSettingsController::class, 'remove'])->name('settings.push.remove');
         });
 
+        Route::middleware('can:'.P::ANNOUNCEMENTS_SEND)->group(function () {
+            Route::get('announcements', [SuperAdmin\AnnouncementController::class, 'index'])->name('announcements.index');
+            Route::post('announcements', [SuperAdmin\AnnouncementController::class, 'store'])->middleware('throttle:10,1')->name('announcements.store');
+            Route::delete('announcements/{announcement}', [SuperAdmin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        });
         Route::resource('roles', SuperAdmin\RoleController::class)->except('show')->middleware('can:'.P::ROLES_MANAGE);
     });
 

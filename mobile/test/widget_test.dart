@@ -112,10 +112,12 @@ class FakeApi {
           case 'notifications':
             return _ok({
               'items': [
+                {'id': 2, 'type': 'announcement', 'title': 'Market holiday', 'message': 'Markets are closed on Friday.',
+                 'category_id': null, 'category_name': null, 'is_read': false, 'display': {'date_time': '09 Oct 2026, 4:00 PM', 'ago': 'just now'}},
                 {'id': 1, 'type': 'new_entry', 'message': subscribed ? 'New entry added in Nifty 50. Check latest update now!' : 'New entry added in Nifty 50. Renew your subscription to see all the latest updates.',
                  'category_id': 1, 'category_name': 'Nifty 50', 'is_read': false, 'display': {'date_time': '09 Oct 2026, 3:30 PM', 'ago': '1 minute ago'}},
               ],
-              'meta': {'current_page': 1, 'last_page': 1, 'per_page': 20, 'total': 1},
+              'meta': {'current_page': 1, 'last_page': 1, 'per_page': 20, 'total': 2},
               'unread_count': 2,
             });
           case 'notifications/1/read':
@@ -290,5 +292,22 @@ void main() {
 
     expect(find.byKey(const Key('subscribe-sheet')), findsNothing);
     expect(find.text('01 Oct 2026'), findsOneWidget);
+  });
+
+  testWidgets('announcement from the Super Admin shows its title and message (D-100)', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await _login(tester);
+
+    await tester.tap(find.text('Notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text('Market holiday'), findsOneWidget);
+    expect(find.text('Markets are closed on Friday.'), findsOneWidget);
+    expect(find.byIcon(Icons.campaign_outlined), findsOneWidget);
+
+    // Tapping it just marks it read (no category to open).
+    await tester.tap(find.text('Markets are closed on Friday.'));
+    await tester.pumpAndSettle();
+    expect(find.text('Market holiday'), findsOneWidget);
   });
 }

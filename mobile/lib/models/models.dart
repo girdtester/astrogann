@@ -192,6 +192,7 @@ class AppNotification {
     required this.message,
     this.categoryId,
     this.categoryName,
+    this.title,
     required this.isRead,
     required this.when,
     required this.ago,
@@ -199,8 +200,13 @@ class AppNotification {
 
   final int id;
 
-  /// new_entry | expiry
+  /// new_entry | expiry | subscription | announcement
   final String type;
+
+  /// Heading from the server: announcement title, category name or "Subscription" (D-100).
+  final String? title;
+
+  bool get isAnnouncement => type == 'announcement';
   final String message;
   final int? categoryId;
   final String? categoryName;
@@ -214,6 +220,7 @@ class AppNotification {
     message: message,
     categoryId: categoryId,
     categoryName: categoryName,
+    title: title,
     isRead: isRead ?? this.isRead,
     when: when,
     ago: ago,
@@ -227,6 +234,7 @@ class AppNotification {
       message: _s(j['message']),
       categoryId: j['category_id'] == null ? null : _i(j['category_id']),
       categoryName: j['category_name'] as String?,
+      title: j['title'] as String?,
       isRead: j['is_read'] == true,
       when: _s(d['date_time']),
       ago: _s(d['ago']),

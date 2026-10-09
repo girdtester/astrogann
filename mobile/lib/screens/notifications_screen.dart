@@ -73,6 +73,7 @@ class _Tile extends StatelessWidget {
   IconData get _icon => switch (item.type) {
         'new_entry' => Icons.insert_chart_outlined,
         'subscription' => Icons.workspace_premium_outlined,
+        'announcement' => Icons.campaign_outlined,
         _ => Icons.event_outlined,
       };
 
@@ -93,6 +94,10 @@ class _Tile extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (item.isAnnouncement && (item.title ?? '').isNotEmpty) ...[
+                    Text(item.title!, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.oliveDark)),
+                    const SizedBox(height: 2),
+                  ],
                   Text(item.message,
                       style: TextStyle(fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w700, color: AppColors.text)),
                   const SizedBox(height: 4),

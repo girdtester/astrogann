@@ -13,7 +13,8 @@ class NotificationResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'type' => $this->type->value, // new_entry | expiry
+            'type' => $this->type->value, // new_entry | expiry | subscription | announcement
+            'title' => $this->title(),     // D-100: announcement title, category name or "Subscription"
             'message' => $this->message,
             'category_id' => $this->category_id,
             'category_name' => $this->category?->name,

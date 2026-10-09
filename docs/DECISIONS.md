@@ -519,3 +519,12 @@ Recommended on GoDaddy: `MAIL_MAILER=sendmail`, `MAIL_FROM_ADDRESS=noreply@<doma
 
 **D-99 (2026-10-12) — Reminder collection time is configurable.** `REMINDER_COLLECT_AT` = `18:00` (default) or
 `every_minute` for live testing; safe because each subscription period is claimed once.
+
+**D-100 (2026-10-12) — Announcements from the Super Admin.** Super Admin → Announcements: title (100) + message (500) +
+audience (all / active subscribers / not active). Stored in `announcements`; each user's copy is a normal
+`user_notifications` row (type `announcement`, `announcement_id`, unique per user), so it uses the same Notifications
+page, unread badge, live check / pop-up, app list and push as automatic notifications. Fan-out job
+`NotifyUsersOfAnnouncement` (first chunk right after the request, then the queue; 1000 users per chunk). Deleting an
+announcement removes it from every user (FK cascade). Permission `announcements.send` (Super Admin always; can be given
+to a staff role). API notifications now include `title`. Also: the System check card on Expiry reminders is hidden
+(owner request); the mail-check link stays.

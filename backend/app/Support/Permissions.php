@@ -39,6 +39,8 @@ final class Permissions
 
     public const ROLES_MANAGE = 'roles.manage';
 
+    public const ANNOUNCEMENTS_SEND = 'announcements.send';
+
     /** @return array<string, array{group: string, label: string, description: string}> */
     public static function catalog(): array
     {
@@ -71,6 +73,8 @@ final class Permissions
                 'description' => 'Change entry limits, reminder days, contact details and app texts.'],
             self::ROLES_MANAGE => ['group' => 'System', 'label' => 'Manage roles & permissions',
                 'description' => 'Create staff roles and choose their permissions.'],
+            self::ANNOUNCEMENTS_SEND => ['group' => 'Notifications', 'label' => 'Send announcements',
+                'description' => 'Write an announcement that appears in the Notifications of all users (website + app, push when enabled); delete it again.'],
         ];
     }
 

@@ -269,3 +269,7 @@ This file is the contract for the Flutter app. Base URL: `{APP_URL}/api` (local 
 | 14 | POST | /api/admin/subscription | superadmin | `user_id, action (activate|extend|expire), start_date?, end_date?, payment{amount,payment_date,transaction_ref,status}?` |
 
 Request/response examples are added per endpoint in Phase 7.
+
+### Notifications — `title` and announcements (D-100, 2026-10-12)
+Each item of `GET /api/notifications` now has `title` (announcement title, category name or "Subscription").
+`type` can be `announcement` (written by the Super Admin): `category_id` is null; show title + message; tapping only marks it read.

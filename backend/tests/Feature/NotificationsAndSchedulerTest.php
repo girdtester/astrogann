@@ -373,11 +373,12 @@ class NotificationsAndSchedulerTest extends TestCase
     public function test_live_system_check_shows_cron_heartbeat_and_sends_a_test_email(): void
     {
         $this->signIn(User::factory()->superAdmin()->create());
-        $this->get(route('superadmin.reminders.index'))->assertOk()->assertSee('Cron: NOT running')->assertSee('never');
+        $this->assertNull(\Illuminate\Support\Facades\Cache::get('astrogann.cron_last_run'));
 
-        // One scheduler run (what cPanel cron does) records the heartbeat.
+        // One scheduler run (what cPanel cron does) records the heartbeat (shown by the mail-check link; card hidden).
         $this->artisan('schedule:run')->assertSuccessful();
-        $this->get(route('superadmin.reminders.index'))->assertOk()->assertSee('Cron: running ✓');
+        $this->assertNotNull(\Illuminate\Support\Facades\Cache::get('astrogann.cron_last_run'));
+        $this->get(route('superadmin.reminders.index'))->assertOk()->assertDontSee('System check');
 
         Mail::fake();
         $this->post(route('superadmin.reminders.test-mail'), ['email' => 'owner@example.test'])

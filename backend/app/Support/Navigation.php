@@ -67,6 +67,7 @@ class Navigation
                         ? self::link('Categories', 'superadmin.categories.index', 'superadmin.categories.*', Permissions::CATEGORIES_MANAGE)
                         : self::link('Categories', 'admin.categories.index', 'admin.categories.*', Permissions::CATEGORIES_VIEW),
                 ]),
+                self::link('Announcements', 'superadmin.announcements.index', 'superadmin.announcements.*', Permissions::ANNOUNCEMENTS_SEND),
                 self::link('Reports / Logs', 'superadmin.logs.index', 'superadmin.logs.*', Permissions::LOGS_VIEW),
                 self::link('Settings', 'superadmin.settings.edit', 'superadmin.settings.*', Permissions::SETTINGS_MANAGE),
             ];

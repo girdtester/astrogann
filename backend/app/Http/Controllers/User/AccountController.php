@@ -44,7 +44,7 @@ class AccountController extends Controller
         $user = $request->user();
         $after = max(0, (int) $request->query('after'));
 
-        $new = $user->appNotifications()->with('category:id,name,code,status')->where('id', '>', $after)->latest('id')->limit(5)->get();
+        $new = $user->appNotifications()->with(['category:id,name,code,status', 'announcement:id,title'])->where('id', '>', $after)->latest('id')->limit(5)->get();
         // Nothing new (the usual case) → 2 small indexed queries only (D-96).
         $subscribed = $new->isEmpty() || $this->subscriptions->isActiveFor($user);
 
@@ -53,11 +53,11 @@ class AccountController extends Controller
             'last_id' => (int) ($new->first()?->id ?? $after),
             'items' => $new->reverse()->values()->map(fn ($n) => [
                 'id' => $n->id,
-                'title' => $n->category?->name ?? 'Subscription',
+                'title' => $n->title(),
                 'message' => $n->message,
-                'url' => $n->category?->isActive()
+                'url' => $n->announcement_id ? route('user.notifications.index') : ($n->category?->isActive()
                     ? route('user.dashboard', ['tab' => $n->category->tabKey()] + ($subscribed ? [] : ['subscribe' => 1]))
-                    : ($n->category_id ? route('user.notifications.index') : route('user.subscription')),
+                    : ($n->category_id ? route('user.notifications.index') : route('user.subscription'))),
             ]),
         ]);
     }
@@ -79,6 +79,8 @@ class AccountController extends Controller
         $subscribed = $this->subscriptions->isActiveFor($request->user());
 
         return match (true) {
+            // Announcement: the full text is already on the Notifications page (D-100).
+            $notification->announcement_id !== null => redirect()->route('user.notifications.index'),
             (bool) $notification->category?->isActive() && ! $subscribed => redirect()
                 ->route('user.dashboard', ['tab' => $notification->category->tabKey(), 'subscribe' => 1])
                 ->with('status', 'Subscribe to see all the latest updates — contact the admin below.'),
