@@ -545,3 +545,13 @@ untrusted certificate, so plain http is allowed **only for astrogann25.com** (An
 `res/xml/network_security_config.xml`, iOS ATS exception); everything else stays https-only. Added the missing
 `INTERNET` permission to the release manifest (debug builds had it; an installed APK could not connect without it).
 When SSL works (cPanel → SSL/TLS Status → Run AutoSSL), switch the default to https and remove both exceptions.
+
+**D-104 (2026-10-12) — Firebase push switched on (B-01, Android).** Owner supplied `google-services.json` (project
+`astrogann-65298`, package `com.astrogann.app`) → `mobile/android/app/` (git-ignored) and the service-account key →
+uploaded via Super Admin → Settings (stored in `storage/app/private/firebase/`, git-ignored). App: `firebase_core` +
+`firebase_messaging`, `FirebasePushService` on Android (web/iOS keep `NoPushService` until the iOS plist + APNs key
+exist), POST_NOTIFICATIONS permission, Google services Gradle plugin; tapping a push opens the category tab (new
+entry) or Notifications (announcement / expiry). Server fix: the first chunk of a fan-out runs as a Laravel *sync* job,
+so `$this->job` is set — pushes were being queued (up to 1 min delay); now they are sent immediately after the request.
+Verified locally: key accepted by Google, validate-only message accepted (HTTP 200), entry + announcement pushes sent
+within seconds, invalid tokens removed. App default URL back to localhost for testing (switch to live before the APK).

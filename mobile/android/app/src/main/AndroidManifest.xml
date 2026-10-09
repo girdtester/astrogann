@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Needed for the installed (release) app to reach the API. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Android 13+: allowed to show push notifications (asked once at first start) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="ASTRO GANN"
         android:name="${applicationName}"

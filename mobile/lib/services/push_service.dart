@@ -3,6 +3,13 @@
 /// Until the Firebase files (google-services.json / GoogleService-Info.plist) are added, and always when running
 /// in Chrome, the app uses [NoPushService]: everything works, there is just no push — users still see new entries
 /// and the in-app notification list/badge.
+/// Where a tapped notification should take the user: a category tab, or (null) the Notifications tab.
+/// A new object each time, so tapping the same notification twice still reacts.
+class PushTarget {
+  PushTarget(this.categoryId);
+  final int? categoryId;
+}
+
 abstract class PushService {
   /// Prepare push (permissions, listeners). Safe to call more than once.
   Future<void> init({required void Function(String? categoryId) onOpenFromPush});

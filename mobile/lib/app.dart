@@ -30,6 +30,7 @@ class _AstroGannAppState extends State<AstroGannApp> with WidgetsBindingObserver
   late final PushService _push = widget.push ?? NoPushService();
   late final AuthController _auth = AuthController(api: _api, tokens: _api.tokens, push: _push);
   late final SettingsController _settings = SettingsController(_api);
+  final ValueNotifier<PushTarget?> _pushTarget = ValueNotifier(null);
   late final NotificationsController _notifications = NotificationsController(
     _api,
     baseInterval: () => _settings.settings == null
@@ -44,7 +45,10 @@ class _AstroGannAppState extends State<AstroGannApp> with WidgetsBindingObserver
     _auth.addListener(_onAuthChanged);
     _settings.load();
     _auth.restore();
-    _push.init(onOpenFromPush: (_) {});
+    _push.init(onOpenFromPush: (categoryId) {
+      _pushTarget.value = PushTarget(int.tryParse(categoryId ?? ''));
+      if (_auth.status == AuthStatus.loggedIn) _notifications.refresh(silent: true);
+    });
   }
 
   void _onAuthChanged() {
@@ -71,6 +75,7 @@ class _AstroGannAppState extends State<AstroGannApp> with WidgetsBindingObserver
     WidgetsBinding.instance.removeObserver(this);
     _auth.removeListener(_onAuthChanged);
     _notifications.dispose();
+    _pushTarget.dispose();
     super.dispose();
   }
 
@@ -80,6 +85,7 @@ class _AstroGannAppState extends State<AstroGannApp> with WidgetsBindingObserver
     auth: _auth,
     settings: _settings,
     notifications: _notifications,
+    pushTarget: _pushTarget,
     child: ListenableBuilder(
       listenable: Listenable.merge([_auth, _settings]),
       builder: (context, _) => MaterialApp(

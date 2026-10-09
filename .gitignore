@@ -11,3 +11,7 @@ Thumbs.db
 # Local zip archives (not part of the project)
 /backend/*.zip
 /deploy/
+
+# Firebase config (keys) — keep out of git (D-104)
+/mobile/android/app/google-services.json
+/mobile/ios/Runner/GoogleService-Info.plist

@@ -10,6 +10,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
 
@@ -64,8 +65,8 @@ class NotifyUsersOfAnnouncement implements ShouldQueue
             $announcement->increment('recipients', count($new));
             $push = new SendPushToUsers($new, $announcement->title, $announcement->message,
                 ['type' => 'announcement', 'announcement_id' => (string) $announcement->id]);
-            // Right after the request (first chunk): push now; on the queue: queue it.
-            $this->job ? dispatch($push) : dispatch_sync($push);
+            // Right after the request (first chunk, a "sync" job): push now (D-104); on the database queue: queue it.
+            ($this->job !== null && ! $this->job instanceof SyncJob) ? dispatch($push) : dispatch_sync($push);
         }
 
         if (count($userIds) === $chunk) {

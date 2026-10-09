@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../models/models.dart';
+import '../services/push_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand.dart';
 import '../widgets/show_more_card.dart';
@@ -23,8 +24,41 @@ class _HomeShellState extends State<HomeShell> {
   /// Set by the notifications screen to jump to a category tab.
   final ValueNotifier<int?> _openCategory = ValueNotifier(null);
 
+  ValueNotifier<PushTarget?>? _pushTarget;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final target = AppScope.of(context).pushTarget;
+    if (!identical(target, _pushTarget)) {
+      _pushTarget?.removeListener(_onPush);
+      _pushTarget = target..addListener(_onPush);
+      // Opened from a notification before this screen existed (cold start + login restore).
+      if (target.value != null) WidgetsBinding.instance.addPostFrameCallback((_) => _onPush());
+    }
+  }
+
+  /// Tapped phone notification (D-104): new entry → its category tab; anything else → Notifications.
+  void _onPush() {
+    final t = _pushTarget?.value;
+    if (t == null || !mounted) return;
+    _pushTarget!.value = null;
+    final scope = AppScope.of(context);
+    if (t.categoryId != null) {
+      _openCategory.value = t.categoryId;
+      setState(() => _index = 0);
+      if (!(scope.auth.subscription?.isActive ?? false)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _showSubscribeSheet());
+      }
+    } else {
+      setState(() => _index = 2);
+      scope.notifications.refresh(silent: true);
+    }
+  }
+
   @override
   void dispose() {
+    _pushTarget?.removeListener(_onPush);
     _openCategory.dispose();
     super.dispose();
   }

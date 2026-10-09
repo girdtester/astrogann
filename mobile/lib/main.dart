@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'app.dart';
 import 'config/app_config.dart';
+import 'services/firebase_push_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -15,7 +16,10 @@ void main() {
     return;
   }
 
-  runApp(const AstroGannApp());
+  // Phone push on Android (google-services.json, D-104). Chrome and iPhone (until its Firebase file is added) run
+  // without push — everything else works the same.
+  final push = !kIsWeb && defaultTargetPlatform == TargetPlatform.android ? FirebasePushService() : null;
+  runApp(AstroGannApp(push: push));
 }
 
 class _MisconfiguredApp extends StatelessWidget {

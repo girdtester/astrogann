@@ -11,6 +11,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -80,13 +81,20 @@ class NotifyUsersOfNewEntry implements ShouldQueue
             $pushes[] = new SendPushToUsers($newInactive, $entry->category->name, NotificationService::renewMessage($entry), $data + ['renew' => '1']);
         }
         foreach ($pushes as $push) {
-            // Running right after the admin's request (first chunk)? Push immediately; on the queue, queue it.
-            $this->job ? dispatch($push) : dispatch_sync($push);
+            // Running right after the admin's request (first chunk, a "sync" job)? Push immediately (D-104);
+            // a later chunk on the database queue queues it.
+            $this->onRealQueue() ? dispatch($push) : dispatch_sync($push);
         }
 
         if (count($userIds) === $chunk) {
             self::dispatch($this->entryId, (int) end($userIds));
         }
+    }
+
+    /** True when this run came from the database queue (cron), false right after the admin's request. */
+    private function onRealQueue(): bool
+    {
+        return $this->job !== null && ! $this->job instanceof SyncJob;
     }
 
     public function failed(Throwable $e): void

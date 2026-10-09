@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'core/api_client.dart';
+import 'services/push_service.dart';
 import 'state/auth_controller.dart';
 import 'state/notifications_controller.dart';
 import 'state/settings_controller.dart';
@@ -13,6 +14,7 @@ class AppScope extends InheritedWidget {
     required this.auth,
     required this.settings,
     required this.notifications,
+    required this.pushTarget,
     required super.child,
   });
 
@@ -20,6 +22,9 @@ class AppScope extends InheritedWidget {
   final AuthController auth;
   final SettingsController settings;
   final NotificationsController notifications;
+
+  /// Set when the user taps a phone notification (D-104); HomeShell opens the right tab.
+  final ValueNotifier<PushTarget?> pushTarget;
 
   static AppScope of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppScope>();

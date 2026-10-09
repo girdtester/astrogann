@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:astrogann_app/app.dart';
 import 'package:astrogann_app/core/api_client.dart';
 import 'package:astrogann_app/core/token_storage.dart';
+import 'package:astrogann_app/services/push_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -138,7 +139,8 @@ Future<void> _login(WidgetTester tester, {String password = 'password'}) async {
 void main() {
   late FakeApi fake;
 
-  Widget app() => AstroGannApp(api: ApiClient(tokens: TokenStorage(), client: fake.client, baseUrl: 'http://test/api'));
+  Widget app({PushService? push}) =>
+      AstroGannApp(api: ApiClient(tokens: TokenStorage(), client: fake.client, baseUrl: 'http://test/api'), push: push);
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -334,4 +336,36 @@ void main() {
     expect((full.image as NetworkImage).url, 'http://localhost/x1.png');
     expect(find.textContaining('Nifty 50 · 01 Oct 2026, 9:15 AM'), findsOneWidget);
   });
+
+  testWidgets('tapping a phone notification opens the category tab or Notifications (D-104)', (tester) async {
+    final push = _FakePush();
+    await tester.pumpWidget(app(push: push));
+    await tester.pumpAndSettle();
+    await _login(tester);
+
+    // Announcement / expiry (no category) → Notifications tab.
+    push.tap(null);
+    await tester.pumpAndSettle();
+    expect(find.text('Market holiday'), findsOneWidget);
+
+    // New entry in category 1 → back on the entries table of that category.
+    push.tap('1');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('entry-table')), findsOneWidget);
+  });
+}
+
+class _FakePush implements PushService {
+  void Function(String? categoryId)? _open;
+
+  void tap(String? categoryId) => _open?.call(categoryId);
+
+  @override
+  Future<void> init({required void Function(String? categoryId) onOpenFromPush}) async => _open = onOpenFromPush;
+
+  @override
+  Future<String?> token() async => 'test-token';
+
+  @override
+  void onTokenRefresh(void Function(String token) callback) {}
 }

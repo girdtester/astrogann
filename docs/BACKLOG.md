@@ -5,7 +5,7 @@ steps, test, then move it to **Done** with the date. Never delete items.
 
 ---
 
-## B-01 Push notifications on phones — WAITING FOR OWNER (added 2026-10-06)
+## B-01 Push notifications on phones — IN PROGRESS (Android files received 2026-10-12, D-104; server verified with Google; phone test pending)
 
 **Status:** backend ready and tested (D-89). App code prepared behind `PushService` (`mobile/lib/services/push_service.dart`,
 currently `NoPushService`). Users already get in-app notifications + badge; only the phone banner/sound is missing.
