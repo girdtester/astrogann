@@ -534,3 +534,7 @@ app, same layout) see a table **Sr. No | Date | Time | Image**; the image cell s
 label and opens the full image (web: full-screen viewer + "Open full size"; app: full-screen, pinch-zoom up to 8×).
 HD quality: an upload that is already ≤ 2560 px and upright is now stored byte-for-byte (no re-compression); larger
 ones are resized to 2560 px (was 1920) at quality 90 (was 85). `IMAGE_MAX_PX` / `IMAGE_QUALITY` still override.
+
+**D-102 (2026-10-12) — Show / hide password on the website.** Every password box (login, sign up, reset, confirm,
+profile, Super Admin create/edit accounts) gets an eye button via the shared `x-text-input` component; the app already
+had it. No change to how forms submit.
