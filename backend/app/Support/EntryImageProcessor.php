@@ -37,12 +37,15 @@ class EntryImageProcessor
         $thumbRel = "{$dir}/{$name}_thumb.{$ext}";
 
         try {
-            $img = $this->load($file->getRealPath(), $ext);
-            if ($ext === 'jpg') {
-                $img = $this->orient($img, $file->getRealPath());
+            $original = $this->load($file->getRealPath(), $ext);
+            $img = $ext === 'jpg' ? $this->orient($original, $file->getRealPath()) : $original;
+            $main = $this->fit($img, (int) config('astrogann.images.max_px', 2560));
+            if ($main === $original) {
+                // Already a good size and the right way up: keep the uploaded file byte-for-byte (full HD, no re-compression, D-101).
+                $disk->putFileAs($dir, $file, "{$name}.{$ext}");
+            } else {
+                $this->save($main, $disk->path($mainRel), $ext);
             }
-            $main = $this->fit($img, (int) config('astrogann.images.max_px', 1920));
-            $this->save($main, $disk->path($mainRel), $ext);
             $thumb = $this->fit($main, (int) config('astrogann.images.thumb_px', 640), widthOnly: true);
             $this->save($thumb, $disk->path($thumbRel), $ext);
 
@@ -120,7 +123,7 @@ class EntryImageProcessor
 
     private function save(GdImage $img, string $absolute, string $ext): void
     {
-        $quality = (int) config('astrogann.images.quality', 85);
+        $quality = (int) config('astrogann.images.quality', 90);
         $ok = match ($ext) {
             'jpg' => (function () use ($img, $absolute, $quality) {
                 imageinterlace($img, true); // progressive JPEG: shows quickly on slow mobile data

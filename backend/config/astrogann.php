@@ -16,9 +16,9 @@ return [
 
     // Image processing for uploads (D-91).
     'images' => [
-        'max_px' => (int) env('IMAGE_MAX_PX', 1920),     // longest side of the stored image
+        'max_px' => (int) env('IMAGE_MAX_PX', 2560),     // longest side of the stored image (D-101: sharper zoom)
         'thumb_px' => (int) env('IMAGE_THUMB_PX', 640),  // width of the list / app-card preview
-        'quality' => (int) env('IMAGE_QUALITY', 85),     // JPEG / WebP quality
+        'quality' => (int) env('IMAGE_QUALITY', 90),     // JPEG / WebP quality (only when resized)
     ],
 
     // Push notifications. DECISIONS D-28.

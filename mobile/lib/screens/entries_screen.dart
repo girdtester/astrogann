@@ -210,11 +210,10 @@ class _CategoryTabState extends State<_CategoryTab> with AutomaticKeepAliveClien
               height: 260,
               child: EmptyView(icon: Icons.insert_chart_outlined, title: 'No entries in ${widget.category.name} yet'),
             )
-          else
-            for (final e in page.entries) ...[
-              EntryCard(entry: e, categoryName: widget.category.name),
-              const SizedBox(height: 14),
-            ],
+          else ...[
+            EntryTable(entries: page.entries, categoryName: widget.category.name),
+            const SizedBox(height: 14),
+          ],
           if (page.restricted) ...[
             const SizedBox(height: 4),
             ShowMoreCard(showMore: page.showMore ?? (settings != null ? ShowMore.fromSettings(settings) : const ShowMore(text: '', phones: [], whatsapp: []))),

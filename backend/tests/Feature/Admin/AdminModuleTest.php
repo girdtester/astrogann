@@ -174,12 +174,25 @@ class AdminModuleTest extends TestCase
         $entry = Entry::sole();
         [$w, $h] = getimagesize(Storage::disk('uploads')->path(substr($entry->image_path, 8)));
         [$tw] = getimagesize(Storage::disk('uploads')->path(substr($entry->thumb_path, 8)));
-        $this->assertSame([1920, 1440], [$w, $h]);
+        $this->assertSame([2560, 1920], [$w, $h]); // D-101: up to 2560 px for sharp zoom
         $this->assertSame(640, $tw);
         $this->assertStringEndsWith('_thumb.jpg', $entry->thumb_path);
 
         // API gives both URLs, built from the app URL (never hard-coded).
         $this->assertStringContainsString('/uploads/entries/', $entry->thumbUrl());
+    }
+
+    public function test_normal_size_image_is_stored_exactly_as_uploaded_for_full_hd(): void
+    {
+        $file = UploadedFile::fake()->image('chart.png', 1600, 900);
+        $original = md5_file($file->getRealPath());
+        $this->post(route('admin.entries.store'), $this->payload(['image' => $file]))->assertRedirect();
+
+        $entry = Entry::sole();
+        // Same bytes as uploaded: no re-compression (D-101); the list still gets a small preview.
+        $this->assertSame($original, md5_file(Storage::disk('uploads')->path(substr($entry->image_path, 8))));
+        [$tw] = getimagesize(Storage::disk('uploads')->path(substr($entry->thumb_path, 8)));
+        $this->assertSame(640, $tw);
     }
 
     public function test_deleting_an_entry_removes_image_and_thumbnail(): void

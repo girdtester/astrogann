@@ -3,35 +3,81 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 
-/// One entry: image, market date and time (spec 3.9). Tap to zoom.
-class EntryCard extends StatelessWidget {
-  const EntryCard({super.key, required this.entry, required this.categoryName});
-  final Entry entry;
+/// Entries as a table: Sr. No | Date | Time | Image (D-101). Tap the image for the full HD picture (pinch to zoom).
+class EntryTable extends StatelessWidget {
+  const EntryTable({super.key, required this.entries, required this.categoryName});
+  final List<Entry> entries;
   final String categoryName;
+
+  static const _head = TextStyle(fontWeight: FontWeight.w800, color: AppColors.oliveDark, fontSize: 13);
+
+  void _open(BuildContext context, Entry e) => Navigator.of(context).push(MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => ImageViewer(entry: e, title: categoryName),
+      ));
 
   @override
   Widget build(BuildContext context) => Card(
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-            fullscreenDialog: true,
-            builder: (_) => ImageViewer(entry: entry, title: categoryName),
-          )),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            AspectRatio(aspectRatio: 5 / 3, child: EntryImage(url: entry.thumbUrl)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-              child: Row(children: [
-                const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.olive),
-                const SizedBox(width: 6),
-                Text(entry.date, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.text)),
-                const Spacer(),
-                const Icon(Icons.schedule_rounded, size: 16, color: AppColors.blue),
-                const SizedBox(width: 6),
-                Text(entry.time, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
-              ]),
+        child: Table(
+          key: const Key('entry-table'),
+          columnWidths: const {
+            0: FixedColumnWidth(52),
+            1: FlexColumnWidth(1.25),
+            2: FlexColumnWidth(1),
+            3: FixedColumnWidth(118),
+          },
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          border: const TableBorder(horizontalInside: BorderSide(color: Color(0xFFE5E7EB))),
+          children: [
+            const TableRow(
+              decoration: BoxDecoration(color: AppColors.oliveTint),
+              children: [
+                Padding(padding: EdgeInsets.fromLTRB(12, 10, 4, 10), child: Text('Sr.', style: _head)),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 10), child: Text('Date', style: _head)),
+                Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 10), child: Text('Time', style: _head)),
+                Padding(padding: EdgeInsets.fromLTRB(6, 10, 12, 10), child: Text('Image', style: _head)),
+              ],
             ),
-          ]),
+            for (var i = 0; i < entries.length; i++)
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+                  child: Text('${i + 1}', style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Text(entries[i].date, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.text)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Text(entries[i].time, style: const TextStyle(color: AppColors.text)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 8, 12, 8),
+                  child: InkWell(
+                    key: Key('entry-image-${entries[i].id}'),
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _open(context, entries[i]),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(children: [
+                        SizedBox(width: 100, height: 62, child: EntryImage(url: entries[i].thumbUrl)),
+                        Positioned(
+                          right: 4,
+                          bottom: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
+                            child: const Text('HD', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ),
+                ),
+              ]),
+          ],
         ),
       );
 }
@@ -72,8 +118,10 @@ class ImageViewer extends StatelessWidget {
           titleTextStyle: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
           title: Text('$title · ${entry.date}, ${entry.time}'),
         ),
+        // Full HD image (never the thumbnail); pinch / double-tap area to zoom up to 8×.
         body: InteractiveViewer(
-          maxScale: 5,
+          minScale: 1,
+          maxScale: 8,
           child: Center(child: EntryImage(url: entry.imageUrl, fit: BoxFit.contain)),
         ),
       );

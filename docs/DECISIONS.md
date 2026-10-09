@@ -528,3 +528,9 @@ page, unread badge, live check / pop-up, app list and push as automatic notifica
 announcement removes it from every user (FK cascade). Permission `announcements.send` (Super Admin always; can be given
 to a staff role). API notifications now include `title`. Also: the System check card on Expiry reminders is hidden
 (owner request); the mail-check link stays.
+
+**D-101 (2026-10-12) — Entries as a table + full HD image.** Client request: under the category tabs, users (web and
+app, same layout) see a table **Sr. No | Date | Time | Image**; the image cell shows the small preview with an "HD"
+label and opens the full image (web: full-screen viewer + "Open full size"; app: full-screen, pinch-zoom up to 8×).
+HD quality: an upload that is already ≤ 2560 px and upright is now stored byte-for-byte (no re-compression); larger
+ones are resized to 2560 px (was 1920) at quality 90 (was 85). `IMAGE_MAX_PX` / `IMAGE_QUALITY` still override.

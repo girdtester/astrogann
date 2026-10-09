@@ -31,6 +31,7 @@ class FakeApi {
         'id': i,
         'category_id': 1,
         'image_url': 'http://localhost/x$i.png',
+        'thumb_url': 'http://localhost/x${i}_thumb.png',
         'entry_date': '2026-10-0$i',
         'entry_time': '09:15',
         'display': {'date': '0$i Oct 2026', 'time': '9:15 AM', 'added_on': '', 'added_ago': '1 hour ago'},
@@ -309,5 +310,28 @@ void main() {
     await tester.tap(find.text('Markets are closed on Friday.'));
     await tester.pumpAndSettle();
     expect(find.text('Market holiday'), findsOneWidget);
+  });
+
+  testWidgets('entries are a table (Sr. No, Date, Time, Image) and the image opens in full HD (D-101)', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await _login(tester);
+
+    expect(find.byKey(const Key('entry-table')), findsOneWidget);
+    for (final h in ['Sr.', 'Date', 'Time', 'Image']) {
+      expect(find.text(h), findsOneWidget);
+    }
+    expect(find.text('1'), findsWidgets); // serial numbers
+    expect(find.text('7'), findsWidgets);
+
+    // The table shows the small preview; tapping opens the full-size image, not the thumbnail.
+    final thumbs = tester.widgetList<Image>(find.byType(Image)).map((i) => i.image).whereType<NetworkImage>().map((n) => n.url).toList();
+    expect(thumbs, contains('http://localhost/x1_thumb.png'));
+    await tester.tap(find.byKey(const Key('entry-image-1')));
+    await tester.pumpAndSettle();
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+    final full = tester.widget<Image>(find.descendant(of: find.byType(InteractiveViewer), matching: find.byType(Image)));
+    expect((full.image as NetworkImage).url, 'http://localhost/x1.png');
+    expect(find.textContaining('Nifty 50 · 01 Oct 2026, 9:15 AM'), findsOneWidget);
   });
 }
