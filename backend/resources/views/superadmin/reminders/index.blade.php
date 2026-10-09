@@ -8,7 +8,7 @@
         @endif
     </x-slot>
 
-    {{-- Live check (D-97) --}}
+    {{-- System check card (D-97) hidden on the owner's request; use the mail-check link instead.
     <x-card title="System check (live)" class="mb-6">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 text-sm">
             <div class="rounded-lg border p-3 {{ $health['cron_ok'] ? 'border-olive-200 bg-olive-50' : 'border-yellow-300 bg-yellow-50' }}">
@@ -44,6 +44,7 @@
             <strong>Collect now</strong> → <strong>Send pending now</strong> (or wait for the next cron run).
         </p>
     </x-card>
+    --}}
 
     <x-card>
         <p class="mb-4 text-sm text-gray-600">
