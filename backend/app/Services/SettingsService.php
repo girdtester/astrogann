@@ -85,6 +85,12 @@ class SettingsService
         return max(0, $this->int('entries_limit_expired'));
     }
 
+    /** Seconds between live checks on open website pages / the app (D-95). */
+    public function liveCheckSeconds(): int
+    {
+        return min(120, max(10, $this->int('live_check_seconds') ?: 20));
+    }
+
     public function reminderDays(): int
     {
         return max(1, $this->int('reminder_days'));

@@ -45,6 +45,8 @@ class AccountController extends Controller
         $after = max(0, (int) $request->query('after'));
 
         $new = $user->appNotifications()->with('category:id,name,code,status')->where('id', '>', $after)->latest('id')->limit(5)->get();
+        // Nothing new (the usual case) → 2 small indexed queries only (D-96).
+        $subscribed = $new->isEmpty() || $this->subscriptions->isActiveFor($user);
 
         return response()->json([
             'unread_count' => $this->notifications->unreadCount($user),
@@ -53,7 +55,9 @@ class AccountController extends Controller
                 'id' => $n->id,
                 'title' => $n->category?->name ?? 'Subscription',
                 'message' => $n->message,
-                'url' => $n->category?->isActive() ? route('user.dashboard', ['tab' => $n->category->tabKey()]) : route('user.notifications.index'),
+                'url' => $n->category?->isActive()
+                    ? route('user.dashboard', ['tab' => $n->category->tabKey()] + ($subscribed ? [] : ['subscribe' => 1]))
+                    : ($n->category_id ? route('user.notifications.index') : route('user.subscription')),
             ]),
         ]);
     }
@@ -71,7 +75,13 @@ class AccountController extends Controller
         $this->notifications->markRead($request->user(), $notification->id);
 
         // Go to the category tab only if it is still active (D-76); otherwise stay on the list.
+        // Not subscribed? Open the tab with the "contact admin to subscribe" panel already open (D-94).
+        $subscribed = $this->subscriptions->isActiveFor($request->user());
+
         return match (true) {
+            (bool) $notification->category?->isActive() && ! $subscribed => redirect()
+                ->route('user.dashboard', ['tab' => $notification->category->tabKey(), 'subscribe' => 1])
+                ->with('status', 'Subscribe to see all the latest updates — contact the admin below.'),
             (bool) $notification->category?->isActive() => redirect()->route('user.dashboard', ['tab' => $notification->category->tabKey()]),
             $notification->category_id !== null => redirect()->route('user.notifications.index')->with('status', 'That category is not available any more.'),
             default => redirect()->route('user.subscription'),

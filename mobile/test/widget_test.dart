@@ -110,7 +110,16 @@ class FakeApi {
                     },
             });
           case 'notifications':
-            return _ok({'items': [], 'meta': {'current_page': 1, 'last_page': 1, 'per_page': 20, 'total': 0}, 'unread_count': 2});
+            return _ok({
+              'items': [
+                {'id': 1, 'type': 'new_entry', 'message': subscribed ? 'New entry added in Nifty 50. Check latest update now!' : 'New entry added in Nifty 50. Renew your subscription to see all the latest updates.',
+                 'category_id': 1, 'category_name': 'Nifty 50', 'is_read': false, 'display': {'date_time': '09 Oct 2026, 3:30 PM', 'ago': '1 minute ago'}},
+              ],
+              'meta': {'current_page': 1, 'last_page': 1, 'per_page': 20, 'total': 1},
+              'unread_count': 2,
+            });
+          case 'notifications/1/read':
+            return _ok({'unread_count': 1});
         }
         return _err(404, 'Not found.', {'code': 'not_found'});
       });
@@ -252,5 +261,34 @@ void main() {
 
     expect(find.byKey(const Key('logout-reason')), findsOneWidget);
     expect(find.textContaining('another device'), findsOneWidget);
+  });
+  testWidgets('not subscribed: tapping a new-entry notification asks to contact the admin (D-94)', (tester) async {
+    fake.subscribed = false;
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await _login(tester);
+
+    await tester.tap(find.text('Notifications'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Renew your subscription'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('subscribe-sheet')), findsOneWidget);
+    expect(find.text('Subscribe to see all the latest updates'), findsOneWidget);
+    expect(find.textContaining('Call +91 75583 77920'), findsWidgets);
+  });
+
+  testWidgets('subscribed: tapping a new-entry notification just opens the category', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await _login(tester);
+
+    await tester.tap(find.text('Notifications'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Check latest update'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('subscribe-sheet')), findsNothing);
+    expect(find.text('01 Oct 2026'), findsOneWidget);
   });
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
@@ -7,11 +8,21 @@ import '../core/api_client.dart';
 import '../core/api_exception.dart';
 import '../models/models.dart';
 
-/// In-app notifications + unread badge (spec 3.7). Polls while the app is open and logged in.
+/// In-app notifications + unread badge (spec 3.7). Checks the server while the app is open and logged in.
+///
+/// Adaptive live check (D-96), sized for 1 lakh users: starts at the server's `live_check_seconds`,
+/// doubles while nothing changes (max 2 min), resets on a new notification or any tap ([bump]),
+/// adds ±20% jitter, and stops completely while the app is in the background ([pause]/[resume]).
 class NotificationsController extends ChangeNotifier {
-  NotificationsController(this.api);
+  NotificationsController(this.api, {Duration Function()? baseInterval})
+    : _base = baseInterval ?? (() => AppConfig.notificationPollInterval);
 
   final ApiClient api;
+  final Duration Function() _base;
+  static const _max = Duration(minutes: 2);
+  final _rnd = Random();
+  Duration? _delay;
+  bool _running = false;
 
   final List<AppNotification> items = [];
   int unread = 0;
@@ -25,12 +36,50 @@ class NotificationsController extends ChangeNotifier {
   bool get hasMore => _page < _lastPage;
 
   void startPolling() {
-    _timer?.cancel();
+    _running = true;
+    _delay = _base();
     refresh(silent: true);
-    _timer = Timer.periodic(AppConfig.notificationPollInterval, (_) => refresh(silent: true));
+    _schedule();
+  }
+
+  /// App went to the background: no checks at all (saves battery and server load).
+  void pause() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  /// Back in the app: check now (also detects "logged in elsewhere"), then fast again.
+  void resume() {
+    if (!_running) return;
+    _delay = _base();
+    refresh(silent: true);
+    _schedule();
+  }
+
+  /// The user did something: go back to the fast interval.
+  void bump() {
+    if (!_running) return;
+    final base = _base();
+    if (_delay != base) {
+      _delay = base;
+      _schedule();
+    }
+  }
+
+  void _schedule() {
+    _timer?.cancel();
+    final ms = (_delay ?? _base()).inMilliseconds * (0.8 + _rnd.nextDouble() * 0.4);
+    _timer = Timer(Duration(milliseconds: ms.round()), () async {
+      final changed = await refresh(silent: true);
+      if (!_running) return;
+      final next = (_delay ?? _base()) * 2;
+      _delay = changed ? _base() : (next > _max ? _max : next);
+      _schedule();
+    });
   }
 
   void stopPolling() {
+    _running = false;
     _timer?.cancel();
     _timer = null;
     items.clear();
@@ -40,7 +89,11 @@ class NotificationsController extends ChangeNotifier {
   }
 
   /// Reload page 1. [silent] = background refresh (no spinner, errors ignored).
-  Future<void> refresh({bool silent = false}) async {
+  /// Returns true when something changed (new notification or different unread count).
+  Future<bool> refresh({bool silent = false}) async {
+    final beforeTop = items.isEmpty ? null : items.first.id;
+    final beforeUnread = unread;
+    var changed = false;
     if (!silent) {
       loading = true;
       error = null;
@@ -52,12 +105,14 @@ class NotificationsController extends ChangeNotifier {
         ..clear()
         ..addAll(_parse(data));
       _readMeta(data);
+      changed = unread != beforeUnread || (items.isEmpty ? null : items.first.id) != beforeTop;
     } on ApiException catch (e) {
       if (!silent) error = e;
     } finally {
       loading = false;
       notifyListeners();
     }
+    return changed;
   }
 
   Future<void> loadMore() async {
@@ -104,8 +159,9 @@ class NotificationsController extends ChangeNotifier {
     }
   }
 
-  List<AppNotification> _parse(Map<String, dynamic> data) =>
-      [for (final n in (data['items'] as List? ?? const [])) AppNotification.fromJson(n as Map<String, dynamic>)];
+  List<AppNotification> _parse(Map<String, dynamic> data) => [
+    for (final n in (data['items'] as List? ?? const [])) AppNotification.fromJson(n as Map<String, dynamic>),
+  ];
 
   void _readMeta(Map<String, dynamic> data) {
     final meta = (data['meta'] as Map?) ?? const {};

@@ -51,6 +51,7 @@ class ContentController extends Controller
             ],
             'notice_text' => $s['notice_text'] ?: null,
             'allow_registration' => $this->settings->bool('allow_registration'),
+            'live_check_seconds' => $this->settings->liveCheckSeconds(),
         ]);
     }
 

@@ -183,11 +183,12 @@ class SuperAdminModuleTest extends TestCase
     {
         $this->put(route('superadmin.settings.update'), [
             'app_name' => 'AstroGann Pro', 'entries_limit_active' => 10, 'entries_limit_expired' => 2, 'reminder_days' => 5,
-            'show_more_text' => 'Call us', 'contact_phone' => '+91 1', 'contact_whatsapp' => '+911', 'contact_email' => 'a@b.test', 'notice_text' => '',
+            'show_more_text' => 'Call us', 'contact_phone' => '+91 1', 'contact_whatsapp' => '+911', 'contact_email' => 'a@b.test', 'notice_text' => '', 'live_check_seconds' => 30,
         ])->assertRedirect(route('superadmin.settings.edit'));
 
         $settings = app(SettingsService::class);
         $this->assertSame(10, $settings->entriesLimitActive());
+        $this->assertSame(30, $settings->liveCheckSeconds());
         $this->assertSame(2, $settings->entriesLimitExpired());
         $this->assertSame('AstroGann Pro', $settings->get('app_name'));
     }

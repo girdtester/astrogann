@@ -57,14 +57,15 @@ return [
         'contact_whatsapp' => '+917558377920, +918149343315',
         'contact_email' => 'ganndecoder@gmail.com',
         'notice_text' => '',
-        'allow_registration' => '1', // D-85: users can sign up themselves (web + app)
-        'notify_expired_users' => '1',
-        'push_enabled' => '0',       // D-89: switched on automatically when the Firebase key is uploaded
-        'push_expired_users' => '1', // D-89: expired / unsubscribed users also get a push ("renew" text) // D-73: expired / unsubscribed users get a "renew" notification (no push)
+        'allow_registration' => '1',   // D-85: users can sign up themselves (web + app)
+        'live_check_seconds' => '20',  // D-95/D-96: base interval of the adaptive live check (backs off to 120 s when idle)
+        'notify_expired_users' => '1', // D-73: expired / unsubscribed users get a "renew" in-app notification
+        'push_enabled' => '0',         // D-89: switched on automatically when the Firebase key is uploaded
+        'push_expired_users' => '1',   // D-89: expired / unsubscribed users also get a push ("renew" text)
     ],
 
     'public_settings' => [
         'app_name', 'entries_limit_active', 'entries_limit_expired', 'reminder_days',
-        'show_more_text', 'contact_phone', 'contact_whatsapp', 'contact_email', 'notice_text', 'allow_registration',
+        'show_more_text', 'contact_phone', 'contact_whatsapp', 'contact_email', 'notice_text', 'allow_registration', 'live_check_seconds',
     ],
 ];

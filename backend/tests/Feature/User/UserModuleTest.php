@@ -176,4 +176,32 @@ class UserModuleTest extends TestCase
         app(SettingsService::class)->update(['notice_text' => 'Market closed on Friday']);
         $this->signIn($this->trader(true))->get('/user')->assertSee('Market closed on Friday');
     }
+    public function test_new_entry_notifies_active_and_inactive_users_at_the_same_time_and_inactive_tap_asks_to_subscribe(): void
+    {
+        config(['queue.default' => 'sync']);
+        $active = $this->trader(true);
+        $expired = $this->trader(false);
+        $entry = Entry::factory()->create(['category_id' => $this->nifty->id, 'entry_date' => today()->toDateString()]);
+
+        \App\Events\EntryCreated::dispatch($entry->load('category'));
+        $this->app->terminate();
+
+        $a = $active->appNotifications()->sole();
+        $e = $expired->appNotifications()->sole();
+        $this->assertStringContainsString('Check latest update', $a->message);
+        $this->assertStringContainsString('Renew your subscription', $e->message);
+        $this->assertEquals($a->created_at, $e->created_at); // same moment, same job
+
+        // Active: tap opens the tab normally.
+        $this->signIn($active)->post(route('user.notifications.read', $a->id))
+            ->assertRedirect(route('user.dashboard', ['tab' => $this->nifty->tabKey()]));
+
+        // Not active: tap opens the tab with the contact-admin panel open and highlighted.
+        $this->flushSession();
+        $this->signIn($expired)->post(route('user.notifications.read', $e->id))
+            ->assertRedirect(route('user.dashboard', ['tab' => $this->nifty->tabKey(), 'subscribe' => 1]))
+            ->assertSessionHas('status', fn ($m) => str_contains($m, 'Subscribe'));
+        $this->get(route('user.dashboard', ['tab' => $this->nifty->tabKey(), 'subscribe' => 1]))
+            ->assertOk()->assertSee('id="subscribe"', false)->assertSee('ring-yellow-300', false)->assertSee('Show More');
+    }
 }

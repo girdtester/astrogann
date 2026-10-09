@@ -18,13 +18,14 @@ class ExpiryReminder extends Model
 
     public const MAX_ATTEMPTS = 3;
 
-    protected $fillable = ['subscription_id', 'user_id', 'end_date', 'days_left', 'status', 'attempts', 'last_error', 'sent_at'];
+    protected $fillable = ['subscription_id', 'user_id', 'end_date', 'days_left', 'status', 'attempts', 'last_error', 'sent_at', 'notified_at'];
 
     protected function casts(): array
     {
         return [
             'end_date' => 'date',
             'sent_at' => 'datetime',
+            'notified_at' => 'datetime',
             'attempts' => 'integer',
             'days_left' => 'integer',
         ];

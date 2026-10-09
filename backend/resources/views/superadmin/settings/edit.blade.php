@@ -18,6 +18,8 @@
                 <x-field name="entries_limit_active" label="Entries shown — active subscription" type="number" min="1" :value="$settings['entries_limit_active']" required />
                 <x-field name="entries_limit_expired" label="Entries shown — expired / no subscription" type="number" min="0" :value="$settings['entries_limit_expired']" required />
                 <x-field name="reminder_days" label="Expiry reminder e-mail (days before)" type="number" min="1" :value="$settings['reminder_days']" required />
+                <x-field name="live_check_seconds" label="Live check every (seconds)" type="number" min="10" max="120" :value="$settings['live_check_seconds'] ?? 20" required
+                    help="Starting interval for open website/app screens to show new notifications and log out a replaced login. It slows down automatically to 2 minutes when nothing changes and speeds up on any tap. 20 suits shared hosting; with many thousands online use 30–60 (phones get instant push once Firebase is set up)." />
             </div>
             <label class="mt-4 flex items-start gap-2 text-sm">
                 <input type="hidden" name="notify_expired_users" value="0">

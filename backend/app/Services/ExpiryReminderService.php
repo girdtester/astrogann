@@ -85,15 +85,22 @@ class ExpiryReminderService
                 continue;
             }
 
-            try {
-                $daysLeft = max(0, (int) today()->diffInDays($row->end_date, false));
-                Mail::to($row->user->email)->send(new SubscriptionExpiringMail($row->user, $row->subscription, $daysLeft));
+            $daysLeft = max(0, (int) today()->diffInDays($row->end_date, false));
 
+            // In-app notice (Notifications tab) + push at the same moment as the e-mail — once, even if the e-mail
+            // itself has to be retried later (D-95).
+            if ($row->notified_at === null) {
                 DB::transaction(function () use ($row, $daysLeft) {
-                    $row->update(['status' => ExpiryReminder::SENT, 'sent_at' => now(), 'attempts' => $row->attempts + 1, 'last_error' => null]);
                     $this->notifications->storeExpiryReminder($row->user, $this->message($daysLeft, $row));
+                    $row->update(['notified_at' => now()]);
                 });
                 SendPushToUsers::dispatch([$row->user_id], 'Subscription expiring', $this->message($daysLeft, $row), ['type' => 'expiry']);
+            }
+
+            try {
+                Mail::to($row->user->email)->send(new SubscriptionExpiringMail($row->user, $row->subscription, $daysLeft));
+
+                $row->update(['status' => ExpiryReminder::SENT, 'sent_at' => now(), 'attempts' => $row->attempts + 1, 'last_error' => null]);
                 $this->logs->log('subscription.reminder_sent', $row->subscription, "Expiry e-mail sent to {$row->user->email} ({$daysLeft} days left)", $row->user);
                 $result['sent']++;
             } catch (Throwable $e) {

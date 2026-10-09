@@ -483,3 +483,22 @@ website's poll. Bottom tabs (Subscription / Notifications), pull to refresh and 
 **D-93 (2026-10-06) — No Node.js in production.** Owner's hosting is PHP-only. Vite/Tailwind/flatpickr are build-time
 only; compiled assets in `backend/public/build/` are committed (D-30) and served as static files. Verified by
 removing `node_modules` and loading the site. Server never runs npm.
+
+**D-94 (2026-10-09) — New entry notifies everyone at once; not-subscribed users are asked to subscribe.** One fan-out
+job notifies active users ("Check latest update now!") and expired / never-subscribed users ("Renew your subscription…")
+at the same moment. Tapping it as a non-subscriber opens that category with the contact-admin panel open and highlighted
+(web: `?subscribe=1`; app: bottom sheet with call / WhatsApp / e-mail).
+
+**D-95 (2026-10-09) — Expiry notice in the Notifications tab together with the 3-day e-mail.** When the 6 PM list is
+processed, each user gets the in-app "Your subscription expires in N days" notice (and push, once Firebase is on) at the
+same time as the e-mail — once, tracked by `expiry_reminders.notified_at`, even if the e-mail is retried. Tapping it opens
+the Subscription page. New setting "Live check every (seconds)" (`live_check_seconds`, public) sets how fast open
+screens see new notifications and a replaced login.
+
+**D-96 (2026-10-09) — Live check built for 1 lakh users on shared hosting.** No websockets on GoDaddy, so open screens
+poll — but adaptively: base interval from the setting (default 20 s, min 10), doubles while nothing changes up to 2 min,
+back to base on any tap/click/new notification, ±20 % jitter so browsers never sync up; hidden web tabs ≥ 2 min; the app
+does not poll at all in the background and checks immediately on resume. Each check is 2–3 small indexed queries;
+`last_seen_at` on sessions and Sanctum `last_used_at` are written at most every 5 min (custom `PersonalAccessToken`).
+Estimate: 1 lakh registered ≈ 5–10k open at once ≈ 50–200 light requests/s at peak — check the host's CPU/entry-process
+limits; raise the setting to 30–60 if needed. Phones get instant delivery once Firebase push (B-01) is on.

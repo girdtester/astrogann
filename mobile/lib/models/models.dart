@@ -24,6 +24,7 @@ class AppSettings {
     required this.email,
     required this.noticeText,
     this.allowRegistration = true,
+    this.liveCheckSeconds = 20,
   });
 
   final String appName;
@@ -39,6 +40,9 @@ class AppSettings {
   /// Super Admin setting: show "Create an account" (D-85).
   final bool allowRegistration;
 
+  /// Base interval of the live check for new notifications / replaced login (D-95, Super Admin setting).
+  final int liveCheckSeconds;
+
   factory AppSettings.fromJson(Map<String, dynamic> j) {
     final c = (j['contact'] as Map?) ?? const {};
     return AppSettings(
@@ -52,6 +56,7 @@ class AppSettings {
       email: c['email'] as String?,
       noticeText: (j['notice_text'] as String?)?.trim().isEmpty ?? true ? null : j['notice_text'] as String,
       allowRegistration: j['allow_registration'] != false,
+      liveCheckSeconds: _i(j['live_check_seconds'], 20).clamp(10, 120),
     );
   }
 }
@@ -66,11 +71,11 @@ class UserProfile {
   final String roleKind;
 
   factory UserProfile.fromJson(Map<String, dynamic> j) => UserProfile(
-        id: _i(j['id']),
-        name: _s(j['name']),
-        email: _s(j['email']),
-        roleKind: _s((j['role'] as Map?)?['kind']),
-      );
+    id: _i(j['id']),
+    name: _s(j['name']),
+    email: _s(j['email']),
+    roleKind: _s((j['role'] as Map?)?['kind']),
+  );
 }
 
 class SubscriptionInfo {
@@ -92,13 +97,13 @@ class SubscriptionInfo {
   final int entriesLimit;
 
   factory SubscriptionInfo.fromJson(Map<String, dynamic> j) => SubscriptionInfo(
-        status: _s(j['status'], 'none'),
-        isActive: j['is_active'] == true,
-        startDate: DateTime.tryParse(_s(j['start_date'])),
-        endDate: DateTime.tryParse(_s(j['end_date'])),
-        daysLeft: _i(j['days_left']),
-        entriesLimit: _i(j['entries_limit']),
-      );
+    status: _s(j['status'], 'none'),
+    isActive: j['is_active'] == true,
+    startDate: DateTime.tryParse(_s(j['start_date'])),
+    endDate: DateTime.tryParse(_s(j['end_date'])),
+    daysLeft: _i(j['days_left']),
+    entriesLimit: _i(j['entries_limit']),
+  );
 }
 
 class Category {
@@ -154,11 +159,11 @@ class ShowMore {
   final String? email;
 
   factory ShowMore.fromJson(Map<String, dynamic> j) => ShowMore(
-        text: _s(j['text']),
-        phones: [for (final p in (j['phones'] as List? ?? const [])) ContactLink(_s(p['label']), _s(p['tel']))],
-        whatsapp: [for (final w in (j['whatsapp_links'] as List? ?? const [])) ContactLink(_s(w['label']), _s(w['url']))],
-        email: j['email'] as String?,
-      );
+    text: _s(j['text']),
+    phones: [for (final p in (j['phones'] as List? ?? const [])) ContactLink(_s(p['label']), _s(p['tel']))],
+    whatsapp: [for (final w in (j['whatsapp_links'] as List? ?? const [])) ContactLink(_s(w['label']), _s(w['url']))],
+    email: j['email'] as String?,
+  );
 
   factory ShowMore.fromSettings(AppSettings s) =>
       ShowMore(text: s.showMoreText, phones: s.phones, whatsapp: s.whatsapp, email: s.email);
@@ -173,11 +178,11 @@ class EntriesPage {
   final ShowMore? showMore;
 
   factory EntriesPage.fromJson(Map<String, dynamic> j) => EntriesPage(
-        restricted: j['restricted'] == true,
-        limit: _i(j['limit']),
-        entries: [for (final e in (j['entries'] as List? ?? const [])) Entry.fromJson(e as Map<String, dynamic>)],
-        showMore: j['show_more'] is Map ? ShowMore.fromJson(j['show_more'] as Map<String, dynamic>) : null,
-      );
+    restricted: j['restricted'] == true,
+    limit: _i(j['limit']),
+    entries: [for (final e in (j['entries'] as List? ?? const [])) Entry.fromJson(e as Map<String, dynamic>)],
+    showMore: j['show_more'] is Map ? ShowMore.fromJson(j['show_more'] as Map<String, dynamic>) : null,
+  );
 }
 
 class AppNotification {
@@ -204,15 +209,15 @@ class AppNotification {
   final String ago;
 
   AppNotification copyWith({bool? isRead}) => AppNotification(
-        id: id,
-        type: type,
-        message: message,
-        categoryId: categoryId,
-        categoryName: categoryName,
-        isRead: isRead ?? this.isRead,
-        when: when,
-        ago: ago,
-      );
+    id: id,
+    type: type,
+    message: message,
+    categoryId: categoryId,
+    categoryName: categoryName,
+    isRead: isRead ?? this.isRead,
+    when: when,
+    ago: ago,
+  );
 
   factory AppNotification.fromJson(Map<String, dynamic> j) {
     final d = (j['display'] as Map?) ?? const {};

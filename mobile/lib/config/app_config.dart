@@ -17,7 +17,7 @@ class AppConfig {
 
   /// How often the unread-notification badge is refreshed while the app is open.
   /// Also detects "logged in on another device" while the app is just open (same as the website, D-92).
-  static const Duration notificationPollInterval = Duration(seconds: 30);
+  static const Duration notificationPollInterval = Duration(seconds: 20); // fallback until /settings loads (D-96)
 
   /// Network timeout for API calls.
   static const Duration requestTimeout = Duration(seconds: 20);

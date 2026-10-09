@@ -217,6 +217,27 @@ class NotificationsAndSchedulerTest extends TestCase
         Mail::assertSent(SubscriptionExpiringMail::class, 2);
     }
 
+    public function test_expiry_notice_shows_in_notifications_tab_once_even_when_the_email_fails(): void
+    {
+        Queue::fake([SendPushToUsers::class]);
+        Mail::shouldReceive('to')->andThrow(new \RuntimeException('SMTP down'));
+        $u = User::factory()->create();
+        Subscription::factory()->endingIn(3)->create(['user_id' => $u->id]);
+
+        $this->artisan('astrogann:collect-expiry-reminders')->assertSuccessful();
+        $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful(); // e-mail fails → retried later
+        $this->artisan('astrogann:send-expiry-reminders')->assertSuccessful(); // retry fails again
+
+        // The in-app notice appeared on the first run and was not repeated by the retry (D-95).
+        $notice = $u->appNotifications()->where('type', 'expiry')->sole();
+        $this->assertStringContainsString('3 days', $notice->message);
+        Queue::assertPushed(SendPushToUsers::class, 1);
+        $this->assertDatabaseHas('expiry_reminders', ['user_id' => $u->id, 'status' => 'pending', 'attempts' => 2]);
+
+        // Web poll links an expiry notice to the subscription page.
+        $this->signIn($u)->getJson(route('user.notifications.poll'))
+            ->assertOk()->assertJsonPath('items.0.url', route('user.subscription'));
+    }
     public function test_reminder_window_uses_the_setting(): void
     {
         Mail::fake();

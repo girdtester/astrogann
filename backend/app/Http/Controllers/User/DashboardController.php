@@ -41,6 +41,8 @@ class DashboardController extends Controller
             'tabs' => $tabs,
             'current' => $current,
             'visible' => $current ? $this->entries->visibleFor($user, $current) : null,
+            // Came from a new-entry notification without a subscription → open "contact admin" (D-94).
+            'openSubscribe' => $request->boolean('subscribe'),
             'subscription' => $this->subscriptions->summary($user),
             'settings' => $this->settings->public(),
         ]);

@@ -26,6 +26,7 @@ class SettingsRequest extends FormRequest
             'notice_text' => ['nullable', 'string', 'max:1000'],
             'notify_expired_users' => ['nullable', 'boolean'],
             'allow_registration' => ['nullable', 'boolean'],
+            'live_check_seconds' => ['required', 'integer', 'min:10', 'max:120'],
         ];
     }
 }

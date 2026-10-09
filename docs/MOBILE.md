@@ -122,3 +122,10 @@ class FirebasePushService implements PushService {
 
 ## 8. Tests
 `cd mobile && flutter analyze && flutter test` (5 widget tests, fake API — no server needed).
+
+## Live check (D-94…D-96)
+- New notifications + "logged in on another device" are checked every `live_check_seconds` (Super Admin setting,
+  default 20 s), slowing to 2 min when nothing changes, fast again on any tap; no checks in the background, an
+  immediate check when the app is reopened. Category tab switches and bottom tabs always ask the server.
+- Not subscribed + tap a new-entry notification → category opens with the "contact admin to subscribe" sheet.
+- Expiry notice ("expires in 3 days") arrives in Notifications with the reminder e-mail.

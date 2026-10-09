@@ -35,6 +35,7 @@
             @if (auth()->user()?->isTrader())
                 {{-- Live notifications (D-73): app.js polls this URL and shows toasts + updates the unread badge. --}}
                 <div id="notify-root" data-poll-url="{{ route('user.notifications.poll') }}"
+                     data-interval="{{ app(\App\Services\SettingsService::class)->liveCheckSeconds() }}"
                      data-unread="{{ app(\App\Services\NotificationService::class)->unreadCount(auth()->user()) }}"
                      data-last-id="{{ (int) auth()->user()->appNotifications()->max('id') }}"
                      x-data class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2">

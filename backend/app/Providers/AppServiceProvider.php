@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Fewer DB writes per API call at scale (D-96).
+        Sanctum::usePersonalAccessTokenModel(\App\Models\PersonalAccessToken::class);
+
         // Every link, image and e-mail URL follows APP_URL; https when the live site uses it (D-90).
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');

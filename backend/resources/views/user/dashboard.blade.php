@@ -55,7 +55,7 @@
         @endif
 
         @if ($visible['restricted'])
-            @include('partials.show-more', ['settings' => $settings])
+            @include('partials.show-more', ['settings' => $settings, 'open' => $openSubscribe ?? false, 'highlight' => $openSubscribe ?? false])
         @endif
     @endif
 </x-page>
