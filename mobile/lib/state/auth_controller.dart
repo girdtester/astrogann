@@ -14,6 +14,31 @@ class AuthController extends ChangeNotifier {
   AuthController({required this.api, required this.tokens, required this.push}) {
     // Server says the session ended (logged in elsewhere / deactivated / revoked) → log out with its message.
     api.onSessionEnded = (e) => _endLocally(e.message);
+    // Firebase gave the phone a new token → tell the server (once, for the whole app life).
+    push.onTokenRefresh((t) {
+      if (status == AuthStatus.loggedIn) _sendPushToken(t);
+    });
+  }
+
+  DateTime? _pushSyncedAt;
+
+  /// Re-register this phone for push (D-105): on app start, after login and when the app comes back (at most every
+  /// 30 min). If the server ever dropped the token, simply opening the app fixes it — no new login needed.
+  Future<void> syncPushToken({bool force = false}) async {
+    if (status != AuthStatus.loggedIn) return;
+    final now = DateTime.now();
+    if (!force && _pushSyncedAt != null && now.difference(_pushSyncedAt!) < const Duration(minutes: 30)) return;
+    final t = await push.token();
+    if (t != null) await _sendPushToken(t);
+  }
+
+  Future<void> _sendPushToken(String token) async {
+    try {
+      await api.post('update-fcm-token', body: {'fcm_token': token});
+      _pushSyncedAt = DateTime.now();
+    } catch (_) {
+      // offline: next app start / resume tries again
+    }
   }
 
   final ApiClient api;
@@ -41,6 +66,7 @@ class AuthController extends ChangeNotifier {
         return;
       }
       _set(AuthStatus.loggedIn);
+      syncPushToken(force: true);
     } on ApiException catch (e) {
       if (e.isNetwork) {
         // Offline at start-up: keep the token, screens show retry states.
@@ -75,7 +101,7 @@ class AuthController extends ChangeNotifier {
     _apply(data);
     logoutReason = null;
     _set(AuthStatus.loggedIn);
-    push.onTokenRefresh((t) => api.post('update-fcm-token', body: {'fcm_token': t}).catchError((_) => null));
+    _pushSyncedAt = DateTime.now();
   }
 
   /// Self sign-up (D-85): creates a user/trader without subscription and logs straight in.

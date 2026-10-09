@@ -555,3 +555,10 @@ entry) or Notifications (announcement / expiry). Server fix: the first chunk of 
 so `$this->job` is set — pushes were being queued (up to 1 min delay); now they are sent immediately after the request.
 Verified locally: key accepted by Google, validate-only message accepted (HTTP 200), entry + announcement pushes sent
 within seconds, invalid tokens removed. App default URL back to localhost for testing (switch to live before the APK).
+
+**D-105 (2026-10-12) — Push token fixes after the first live phone test.** (1) The FCM message sent an empty
+`apns.fcm_options: []` for pushes without an image (test push, announcements, expiry) → Google answered INVALID_ARGUMENT
+(confirmed with validate-only) and the server wrongly deleted the phone token. Now omitted when empty; a token is removed
+only for UNREGISTERED / NOT_FOUND or an INVALID_ARGUMENT about the registration token; other errors are shown ("Firebase
+did not accept the message: …"). (2) App: waits for Firebase set-up before reading the token at login, and re-sends
+the token on app start and when the app comes back (max every 30 min) — a cleared token heals by reopening the app.

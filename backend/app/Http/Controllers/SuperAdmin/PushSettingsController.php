@@ -84,7 +84,10 @@ class PushSettingsController extends Controller
         if ($invalid !== []) {
             UserSession::where('fcm_token', $token)->update(['fcm_token' => null]);
 
-            return back()->withInput()->with('error', 'Firebase says this phone\'s token is no longer valid (app removed or reinstalled). It was cleared; the user should log in again.');
+            return back()->withInput()->with('error', 'Firebase says this phone\'s token is no longer valid (app removed or reinstalled). It was cleared; the user just needs to open the app again (it re-registers by itself).');
+        }
+        if ($driver->lastError !== null) {
+            return back()->withInput()->with('error', 'Firebase did not accept the message: '.$driver->lastError);
         }
 
         return back()->with('success', "Test push sent to {$user->email}'s phone.");

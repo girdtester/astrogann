@@ -39,6 +39,11 @@ class FcmPushService implements PushService
         $data = array_map('strval', $data);
 
         $notification = array_filter(['title' => $title, 'body' => $body, 'image' => $image]);
+        // Never send empty objects: an empty "fcm_options": [] makes Google reject the whole message (D-105).
+        $apns = ['payload' => ['aps' => ['sound' => 'default', 'mutable-content' => 1]]];
+        if ($image) {
+            $apns['fcm_options'] = ['image' => $image];
+        }
         $accessToken = $this->accessToken();
         $url = "https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send";
         $invalid = [];
@@ -51,10 +56,7 @@ class FcmPushService implements PushService
                         'notification' => $notification,
                         'data' => $data + ['click_action' => 'FLUTTER_NOTIFICATION_CLICK'],
                         'android' => ['priority' => 'high', 'notification' => ['sound' => 'default']],
-                        'apns' => [
-                            'payload' => ['aps' => ['sound' => 'default', 'mutable-content' => 1]],
-                            'fcm_options' => array_filter(['image' => $image]),
-                        ],
+                        'apns' => $apns,
                     ],
                 ]),
                 $batch,
@@ -69,16 +71,35 @@ class FcmPushService implements PushService
                 if ($response->successful()) {
                     continue;
                 }
-                $status = $response->json('error.status');
-                if (in_array($status, ['UNREGISTERED', 'NOT_FOUND', 'INVALID_ARGUMENT'], true) || $response->status() === 404) {
+                if (self::isDeadToken($response)) {
                     $invalid[] = (string) $token;
                 } else {
-                    Log::warning('[push:fcm] send failed', ['status' => $response->status(), 'error' => $response->json('error.message')]);
+                    $this->lastError = (string) ($response->json('error.message') ?? 'HTTP '.$response->status());
+                    Log::warning('[push:fcm] send failed', ['status' => $response->status(), 'error' => $this->lastError]);
                 }
             }
         }
 
         return $invalid;
+    }
+
+    /** Google's message for the last failure that was NOT a dead token (shown by "Send test push"). */
+    public ?string $lastError = null;
+
+    /**
+     * Only "this phone is gone" answers remove a token (D-105): UNREGISTERED / NOT_FOUND, or INVALID_ARGUMENT that
+     * is about the registration token itself. Other INVALID_ARGUMENT errors are about the message, not the phone.
+     */
+    public static function isDeadToken(Response $response): bool
+    {
+        $status = (string) $response->json('error.status');
+        $codes = array_column((array) $response->json('error.details', []), 'errorCode');
+        if (in_array($status, ['UNREGISTERED', 'NOT_FOUND'], true) || in_array('UNREGISTERED', $codes, true)) {
+            return true;
+        }
+
+        return $status === 'INVALID_ARGUMENT'
+            && str_contains(strtolower((string) $response->json('error.message')), 'registration token');
     }
 
     /** Super Admin "Check connection": proves Google accepts the uploaded key (no message is sent). */

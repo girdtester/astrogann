@@ -65,6 +65,7 @@ class _AstroGannAppState extends State<AstroGannApp> with WidgetsBindingObserver
     if (_auth.status != AuthStatus.loggedIn) return;
     if (state == AppLifecycleState.resumed) {
       _notifications.resume();
+      _auth.syncPushToken();
     } else if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
       _notifications.pause();
     }

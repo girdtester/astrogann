@@ -13,6 +13,7 @@ import 'push_service.dart';
 /// closed. While the app is open, the in-app live check updates the badge and list (no duplicate banner).
 class FirebasePushService implements PushService {
   bool _ready = false;
+  final Completer<void> _initDone = Completer<void>();
   final List<void Function(String token)> _refreshListeners = [];
 
   @override
@@ -40,11 +41,17 @@ class FirebasePushService implements PushService {
     } catch (e) {
       // Firebase not configured on this platform or Play services missing: carry on without push.
       debugPrint('Push disabled: $e');
+    } finally {
+      if (!_initDone.isCompleted) _initDone.complete();
     }
   }
 
   @override
   Future<String?> token() async {
+    // Login can happen while the "Allow notifications?" question is still open: wait for set-up (D-105).
+    try {
+      await _initDone.future.timeout(const Duration(seconds: 30));
+    } catch (_) {}
     if (!_ready) return null;
     try {
       return await FirebaseMessaging.instance.getToken().timeout(const Duration(seconds: 10));

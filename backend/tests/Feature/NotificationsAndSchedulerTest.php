@@ -306,6 +306,36 @@ class NotificationsAndSchedulerTest extends TestCase
             && $r['message']['data']['category_id'] === '1');
         @unlink($path);
     }
+    public function test_fcm_message_is_valid_without_image_and_only_dead_tokens_are_removed(): void
+    {
+        $pem = file_get_contents(base_path('tests/Fixtures/fcm-test-private-key.pem'));
+        $path = tempnam(sys_get_temp_dir(), 'sa');
+        file_put_contents($path, json_encode(['client_email' => 'x@proj.iam.gserviceaccount.com', 'private_key' => $pem]));
+
+        Http::fake([
+            'oauth2.googleapis.com/*' => Http::response(['access_token' => 'ya29.test', 'expires_in' => 3600]),
+            'fcm.googleapis.com/*' => fn ($request) => match ($request['message']['token']) {
+                'gone' => Http::response(['error' => ['status' => 'NOT_FOUND', 'message' => 'Requested entity was not found.',
+                    'details' => [['errorCode' => 'UNREGISTERED']]]], 404),
+                'garbage' => Http::response(['error' => ['status' => 'INVALID_ARGUMENT',
+                    'message' => 'The registration token is not a valid FCM registration token']], 400),
+                'payload' => Http::response(['error' => ['status' => 'INVALID_ARGUMENT',
+                    'message' => 'Invalid JSON payload received.']], 400),
+                default => Http::response(['name' => 'projects/p/messages/1']),
+            },
+        ]);
+
+        $fcm = new FcmPushService('proj', $path);
+        $invalid = $fcm->send(['ok', 'gone', 'garbage', 'payload'], 'ASTRO GANN test', 'Body', ['type' => 'test']);
+
+        // D-105: a message problem never deletes a good phone token.
+        $this->assertEqualsCanonicalizing(['gone', 'garbage'], $invalid);
+        $this->assertSame('Invalid JSON payload received.', $fcm->lastError);
+        // No image → no empty apns.fcm_options (Google rejects "fcm_options": []).
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'messages:send') && ! array_key_exists('fcm_options', $r['message']['apns']));
+        @unlink($path);
+    }
+
     public function test_subscription_emails_go_one_by_one_at_a_safe_pace(): void
     {
         Mail::fake();
