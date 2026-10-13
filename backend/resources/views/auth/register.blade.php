@@ -1,6 +1,6 @@
 <x-guest-layout>
     <h1 class="mb-1 text-lg font-semibold text-gray-900">Create your account</h1>
-    <p class="mb-5 text-sm text-gray-600">Free sign-up. You will see the latest entries right away; contact the admin to subscribe for full access.</p>
+    <p class="mb-5 text-sm text-gray-600">Free sign-up. You will see a few older entries right away; contact the admin to subscribe for full access.</p>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4">
         @csrf

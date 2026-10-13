@@ -61,7 +61,7 @@ class ContentController extends Controller
         return ApiResponse::success(CategoryResource::collection($this->categories->activeTabs()));
     }
 
-    /** GET /api/categories/{id}/entries — latest 7 or 3 depending on the subscription (spec 3.4). */
+    /** GET /api/categories/{id}/entries — latest 7, or the oldest 3 of those 7 without a subscription (spec 3.4, D-106). */
     public function entries(Request $request, Category $category): JsonResponse
     {
         abort_unless($category->isActive(), 404);

@@ -130,8 +130,8 @@ class EntryService
     }
 
     /**
-     * Entries a user/trader may see in a category: latest N where N comes from the subscription rule.
-     * The limit is applied in the query.
+     * Entries a user/trader may see in a category, newest first. Subscribers: the latest N (7). Non-subscribers:
+     * the oldest M (3) of those same latest N, never the newest ones (D-106). The limit is applied in the query.
      *
      * @return array{entries: Collection<int, Entry>, limit: int, restricted: bool}
      */
@@ -139,9 +139,13 @@ class EntryService
     {
         // Staff are not subscribers: they see what an active subscriber sees.
         $active = ! $user->isTrader() || $this->subscriptions->isActiveFor($user, $category);
-        $limit = $active ? $this->settings->entriesLimitActive() : $this->settings->entriesLimitExpired();
+        $window = $this->settings->entriesLimitActive();
+        $limit = $active ? $window : min($window, $this->settings->entriesLimitExpired());
 
-        $entries = $category->entries()->latestFirst()->limit($limit)->get();
+        $entries = $category->entries()->latestFirst()->limit($window)->get();
+        if (! $active) {
+            $entries = $limit > 0 ? $entries->slice(-$limit)->values() : $entries->take(0);
+        }
 
         return ['entries' => $entries, 'limit' => $limit, 'restricted' => ! $active];
     }

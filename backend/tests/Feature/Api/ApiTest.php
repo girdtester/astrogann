@@ -181,7 +181,9 @@ class ApiTest extends TestCase
         $this->apiSignIn($this->trader(false))->getJson("/api/categories/{$this->nifty->id}/entries")->assertOk()
             ->assertJsonCount(3, 'data.entries')
             ->assertJsonPath('data.restricted', true)
-            ->assertJsonPath('data.show_more.email', 'ganndecoder@gmail.com');
+            ->assertJsonPath('data.show_more.email', 'ganndecoder@gmail.com')
+            // D-106: the oldest 3 of the latest 7, newest first — never the newest entries.
+            ->assertJsonPath('data.entries.*.entry_date', array_map(fn ($d) => today()->subDays($d)->toDateString(), [4, 5, 6]));
     }
 
     public function test_entries_of_inactive_or_missing_category_is_404(): void

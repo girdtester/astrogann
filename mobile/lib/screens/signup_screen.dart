@@ -71,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Form(
                 key: _form,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text('Free sign-up. You will see the latest $limit entries in each category right away. '
+                  Text('Free sign-up. You will see $limit older entries in each category right away. '
                       'Contact the admin to subscribe for full access.',
                       style: const TextStyle(color: AppColors.muted)),
                   const SizedBox(height: 16),

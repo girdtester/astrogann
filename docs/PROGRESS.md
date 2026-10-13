@@ -25,6 +25,12 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-13 — Non-subscribers see the oldest 3 of the latest 7 (D-106)
+- `EntryService::visibleFor` (used by the website `User\DashboardController` and the app API `ContentController`):
+  without an active subscription → the oldest 3 of the latest 7 entries, newest first; new entries stay hidden.
+- Texts on web + app: "latest 3 entries" → "3 older entries … subscribe to see the latest ones".
+- Tests: 165 backend, 13 app — all pass. Upload: `app/Services/EntryService.php` + the changed views/controllers.
+
 ### 2026-10-06 — Push ready on the backend (D-89)
 - Super Admin Settings card: upload Firebase key (validated, private storage), on/off, push to expired users switch,
   Check connection, Send test push, Remove key. New entries push to all users (active with image, others "renew").

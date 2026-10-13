@@ -16,7 +16,7 @@
         <x-card title="Access rules">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <x-field name="entries_limit_active" label="Entries shown — active subscription" type="number" min="1" :value="$settings['entries_limit_active']" required />
-                <x-field name="entries_limit_expired" label="Entries shown — expired / no subscription" type="number" min="0" :value="$settings['entries_limit_expired']" required />
+                <x-field name="entries_limit_expired" label="Entries shown — expired / no subscription (oldest of the active ones)" type="number" min="0" :value="$settings['entries_limit_expired']" required />
                 <x-field name="reminder_days" label="Expiry reminder e-mail (days before)" type="number" min="1" :value="$settings['reminder_days']" required />
                 <x-field name="live_check_seconds" label="Live check every (seconds)" type="number" min="10" max="120" :value="$settings['live_check_seconds'] ?? 20" required
                     help="Starting interval for open website/app screens to show new notifications and log out a replaced login. It slows down automatically to 2 minutes when nothing changes and speeds up on any tap. 20 suits shared hosting; with many thousands online use 30–60 (phones get instant push once Firebase is set up)." />
@@ -32,7 +32,7 @@
             <label class="flex items-start gap-2 text-sm">
                 <input type="hidden" name="allow_registration" value="0">
                 <input type="checkbox" name="allow_registration" value="1" class="mt-0.5 rounded border-gray-300 text-olive-600" @checked(old('allow_registration', $settings['allow_registration'] ?? '1') === '1')>
-                <span>Allow people to create their own user account on the website and in the app. New accounts have no subscription: they see the latest {{ $settings['entries_limit_expired'] }} entries and "Show More" until you activate a subscription.</span>
+                <span>Allow people to create their own user account on the website and in the app. New accounts have no subscription: they see the oldest {{ $settings['entries_limit_expired'] }} of the latest {{ $settings['entries_limit_active'] }} entries (never the newest) and "Show More" until you activate a subscription.</span>
             </label>
         </x-card>
         <x-card title="&quot;Show More&quot; / contact admin">

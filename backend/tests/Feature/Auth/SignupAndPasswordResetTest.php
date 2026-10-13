@@ -50,8 +50,9 @@ class SignupAndPasswordResetTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['action' => 'user.registered', 'user_id' => $user->id]);
 
         $this->get('/user')->assertOk()->assertSee('Show More')
-            ->assertSee(today()->subDays(2)->format('d M Y'))
-            ->assertDontSee(today()->subDays(3)->format('d M Y'));
+            ->assertSee(today()->subDays(6)->format('d M Y'))
+            ->assertDontSee(today()->subDays(3)->format('d M Y'))
+            ->assertDontSee(today()->subDays(7)->format('d M Y'));
     }
 
     public function test_api_signup_returns_token_and_no_subscription(): void

@@ -15,7 +15,11 @@
             <div><dt class="text-gray-500">Days left</dt><dd class="mt-1 font-medium">{{ $subscription['is_active'] ? $subscription['days_left'] : '—' }}</dd></div>
         </dl>
         <p class="mt-4 text-sm text-gray-600">
-            You can see the latest <strong>{{ $subscription['entries_limit'] }}</strong> entries in each category.
+            @if ($subscription['is_active'])
+                You can see the latest <strong>{{ $subscription['entries_limit'] }}</strong> entries in each category.
+            @else
+                You can see <strong>{{ $subscription['entries_limit'] }}</strong> older entries in each category; subscribe to see the latest ones.
+            @endif
             @if ($subscription['is_active'])
                 You also receive push notifications for new entries and an e-mail {{ $settings['reminder_days'] }} days before expiry.
             @endif

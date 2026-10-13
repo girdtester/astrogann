@@ -562,3 +562,11 @@ within seconds, invalid tokens removed. App default URL back to localhost for te
 only for UNREGISTERED / NOT_FOUND or an INVALID_ARGUMENT about the registration token; other errors are shown ("Firebase
 did not accept the message: …"). (2) App: waits for Firebase set-up before reading the token at login, and re-sends
 the token on app start and when the app comes back (max every 30 min) — a cleared token heals by reopening the app.
+
+**D-106 (2026-10-13) — Non-subscribers see the oldest 3 of the latest 7, not the newest 3.** Client request: users
+without an active subscription must never see the newly added entries. Rule (`EntryService::visibleFor`, one query of
+the latest `entries_limit_active` rows, then the last `entries_limit_expired` of them): with entries E1…E10 (E10 newest)
+a subscriber sees E10…E4, a non-subscriber sees E6, E5, E4 (newest first). When E11 is added, the non-subscriber sees
+E7, E6, E5 — the 4 newest are always hidden; they still get the new-entry notification (tap → contact admin, D-94).
+Same rule on web and app (both use the service). Texts changed from "latest 3 entries" to "3 older entries".
+Supersedes the non-subscriber part of spec 3.4 ("latest 3").

@@ -13,7 +13,7 @@ use Illuminate\View\View;
 
 /**
  * Tab-based entries screen (spec 3.9). Tabs = active categories in sort order, straight from the DB.
- * Entries per tab = latest 7 (active) or 3 (expired), limited in the query by EntryService.
+ * Entries per tab = latest 7 (active) or the oldest 3 of those 7 (expired, D-106), limited in the query by EntryService.
  */
 class DashboardController extends Controller
 {

@@ -85,7 +85,7 @@ class _HomeShellState extends State<HomeShell> {
               ),
               const SizedBox(height: 6),
               Text(
-                'You can see the latest ${settings.entriesLimitExpired} entries. Contact the admin to get full access.',
+                'You can see ${settings.entriesLimitExpired} older entries. Contact the admin to see the latest ones.',
                 style: const TextStyle(color: AppColors.muted),
               ),
               const SizedBox(height: 16),

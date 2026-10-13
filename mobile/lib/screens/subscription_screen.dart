@@ -73,8 +73,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     _Row(label: 'Days left', value: active ? '${info!.daysLeft}' : '—'),
                     const Divider(height: 28),
                     Text(
-                      'You can see the latest ${info?.entriesLimit ?? settings?.entriesLimitExpired ?? 3} entries in each category.'
-                      '${active ? ' You get a notification for every new entry and an e-mail ${settings?.reminderDays ?? 3} days before expiry.' : ''}',
+                      active
+                          ? 'You can see the latest ${info!.entriesLimit} entries in each category. You get a notification '
+                                'for every new entry and an e-mail ${settings?.reminderDays ?? 3} days before expiry.'
+                          // Oldest 3 of the latest 7, never the newest (D-106).
+                          : 'You can see ${info?.entriesLimit ?? settings?.entriesLimitExpired ?? 3} older entries in each '
+                                'category; subscribe to see the latest ones.',
                       style: const TextStyle(color: AppColors.muted),
                     ),
                   ]),

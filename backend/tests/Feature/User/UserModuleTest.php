@@ -69,12 +69,15 @@ class UserModuleTest extends TestCase
         $res->assertDontSee('Show More');
     }
 
-    public function test_expired_subscription_sees_latest_three_and_show_more_with_contacts(): void
+    public function test_expired_subscription_sees_oldest_three_of_latest_seven_and_show_more_with_contacts(): void
     {
         $res = $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())->assertOk();
 
-        $res->assertSeeInOrder($this->dates(3));
-        $res->assertDontSee(today()->subDays(3)->format('d M Y'));
+        // D-106: days 4, 5, 6 (newest first); the 4 newest and anything older than the 7 stay hidden.
+        $res->assertSeeInOrder(array_slice($this->dates(7), 4));
+        foreach ([0, 1, 2, 3, 7] as $day) {
+            $res->assertDontSee(today()->subDays($day)->format('d M Y'));
+        }
         $res->assertSee('Show More')
             ->assertSee(config('astrogann.settings_defaults.contact_email'))
             ->assertSee('wa.me/917558377920', false)->assertSee('wa.me/918149343315', false)->assertSee('tel:+917558377920', false);
@@ -83,7 +86,7 @@ class UserModuleTest extends TestCase
     public function test_user_without_any_subscription_is_restricted(): void
     {
         $res = $this->signIn(User::factory()->create())->get('/user?tab='.$this->nifty->tabKey());
-        $res->assertSee('Show More')->assertDontSee(today()->subDays(3)->format('d M Y'));
+        $res->assertSee('Show More')->assertSee(today()->subDays(4)->format('d M Y'))->assertDontSee(today()->subDays(3)->format('d M Y'));
     }
 
     public function test_limits_come_from_settings(): void
@@ -95,9 +98,12 @@ class UserModuleTest extends TestCase
             ->assertDontSee(today()->subDays(2)->format('d M Y'));
 
         $this->flushSession();
+        // Oldest 1 of the latest 2 (D-106).
         $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())
             ->assertSee('Pay to unlock')
-            ->assertDontSee(today()->subDays(1)->format('d M Y'));
+            ->assertSee(today()->subDays(1)->format('d M Y'))
+            ->assertDontSee(today()->format('d M Y'))
+            ->assertDontSee(today()->subDays(2)->format('d M Y'));
     }
 
     public function test_renaming_and_reordering_a_category_changes_tabs_without_code(): void

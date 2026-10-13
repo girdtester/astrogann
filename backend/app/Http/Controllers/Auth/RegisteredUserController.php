@@ -33,6 +33,6 @@ class RegisteredUserController extends Controller
         $sessions->startWeb($user, $request);
 
         return redirect()->route('user.dashboard')
-            ->with('success', 'Welcome! Your account is ready. You can see the latest entries — contact the admin to subscribe for full access.');
+            ->with('success', 'Welcome! Your account is ready. You can see a few older entries — contact the admin to subscribe for full access.');
     }
 }
