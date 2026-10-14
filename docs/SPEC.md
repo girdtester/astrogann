@@ -53,7 +53,7 @@ etc.) and subscribed users/traders view the latest entries on web and, later, on
 - Login (web / mobile)
 - View active categories
 - See latest 7 entries if subscription is active
-- See latest 3 entries if subscription is expired *(superseded 2026-10-13, D-106: the oldest 3 of the latest 7)*
+- See latest 3 entries if subscription is expired *(superseded 2026-10-13, D-106/D-107: the 5th–7th of the latest 7 as on the expiry date)*
 - "Show More" button (contact admin for full access / payment)
 - Receive push notifications for new entries
 - Receive email 3 days before subscription expires
@@ -75,7 +75,7 @@ etc.) and subscribed users/traders view the latest entries on web and, later, on
 
 - On every entries request, check the user's subscription status (D-22: active = `status=active` and `end_date >= today`).
 - Active: latest 7 entries of the selected category, push notifications, expiry e-mail, no restrictions.
-- Not active: latest 3 entries *(superseded 2026-10-13, D-106: the oldest 3 of the latest 7, newest first)* of the selected category, "Show More" button (contact admin and make payment). After
+- Not active: latest 3 entries *(superseded 2026-10-13, D-106/D-107: the 5th–7th of the latest 7 as on the expiry date, newest first)* of the selected category, "Show More" button (contact admin and make payment). After
   Super Admin activates/extends, restrictions are removed and push is enabled again.
 - Expiry email: daily job finds subscriptions expiring in N (=3, setting) days and emails "Subscription will expire
   in 3 days". Never twice for the same subscription period (D-16 `reminder_sent_at`). The user keeps normal access

@@ -31,14 +31,15 @@ class ApiTest extends TestCase
         $this->nifty = Category::factory()->create(['name' => 'Nifty 50', 'sort_order' => 1]);
         for ($i = 0; $i < 10; $i++) {
             Entry::factory()->create(['category_id' => $this->nifty->id, 'admin_id' => $this->admin->id,
-                'entry_date' => today()->subDays($i)->toDateString(), 'entry_time' => '09:15:00']);
+                'entry_date' => today()->subDays($i)->toDateString(), 'entry_time' => '09:15:00',
+                'created_at' => today()->subDays($i)->setTime(9, 15)]);
         }
     }
 
     private function trader(bool $active = true): User
     {
         $u = User::factory()->create();
-        $active ? Subscription::factory()->create(['user_id' => $u->id]) : Subscription::factory()->expired()->create(['user_id' => $u->id]);
+        $active ? Subscription::factory()->create(['user_id' => $u->id]) : Subscription::factory()->expired()->create(['user_id' => $u->id, 'end_date' => today()->subDays(2)->toDateString()]);
 
         return $u;
     }
@@ -182,8 +183,8 @@ class ApiTest extends TestCase
             ->assertJsonCount(3, 'data.entries')
             ->assertJsonPath('data.restricted', true)
             ->assertJsonPath('data.show_more.email', 'ganndecoder@gmail.com')
-            // D-106: the oldest 3 of the latest 7, newest first — never the newest entries.
-            ->assertJsonPath('data.entries.*.entry_date', array_map(fn ($d) => today()->subDays($d)->toDateString(), [4, 5, 6]));
+            // D-106/D-107: expired 2 days ago → the 5th–7th of the latest 7 on that day (days 2–8), newest first.
+            ->assertJsonPath('data.entries.*.entry_date', array_map(fn ($d) => today()->subDays($d)->toDateString(), [6, 7, 8]));
     }
 
     public function test_entries_of_inactive_or_missing_category_is_404(): void

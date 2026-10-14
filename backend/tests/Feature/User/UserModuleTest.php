@@ -33,6 +33,7 @@ class UserModuleTest extends TestCase
             Entry::factory()->create([
                 'category_id' => $this->nifty->id, 'admin_id' => $admin->id,
                 'entry_date' => today()->subDays($i)->toDateString(), 'entry_time' => '10:00:00',
+                'created_at' => today()->subDays($i)->setTime(10, 0), // added on its own day
             ]);
         }
     }
@@ -42,7 +43,7 @@ class UserModuleTest extends TestCase
         $user = User::factory()->create();
         $active
             ? Subscription::factory()->create(['user_id' => $user->id])
-            : Subscription::factory()->expired()->create(['user_id' => $user->id]);
+            : Subscription::factory()->expired()->create(['user_id' => $user->id, 'end_date' => today()->subDays(2)->toDateString()]);
 
         return $user;
     }
@@ -73,9 +74,10 @@ class UserModuleTest extends TestCase
     {
         $res = $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())->assertOk();
 
-        // D-106: days 4, 5, 6 (newest first); the 4 newest and anything older than the 7 stay hidden.
-        $res->assertSeeInOrder(array_slice($this->dates(7), 4));
-        foreach ([0, 1, 2, 3, 7] as $day) {
+        // Expired 2 days ago (D-107): the latest 7 on that day were days 2–8 → shows the 5th–7th = days 6, 7, 8.
+        $res->assertSeeInOrder(array_map(fn ($d) => today()->subDays($d)->format('d M Y'), [6, 7, 8]));
+        // (day 2 is the expiry date itself, shown in the subscription bar)
+        foreach ([0, 1, 3, 4, 5, 9] as $day) {
             $res->assertDontSee(today()->subDays($day)->format('d M Y'));
         }
         $res->assertSee('Show More')
@@ -89,6 +91,22 @@ class UserModuleTest extends TestCase
         $res->assertSee('Show More')->assertSee(today()->subDays(4)->format('d M Y'))->assertDontSee(today()->subDays(3)->format('d M Y'));
     }
 
+    public function test_expired_user_list_is_frozen_at_expiry_new_entries_never_show(): void
+    {
+        $user = $this->trader(false);
+        $ids = fn () => app(\App\Services\EntryService::class)->visibleFor($user, $this->nifty)['entries']->pluck('entry_date')
+            ->map(fn ($d) => $d->toDateString())->all();
+        $before = $ids();
+        $this->assertSame(array_map(fn ($d) => today()->subDays($d)->toDateString(), [6, 7, 8]), $before);
+
+        Entry::factory()->create(['category_id' => $this->nifty->id, 'entry_date' => today()->toDateString(), 'entry_time' => '15:00:00']);
+        $this->assertSame($before, $ids(), 'A new entry after expiry must not change what the expired user sees (D-107).');
+
+        // Never subscribed: the 5th–7th of today's latest 7, so it moves with new entries.
+        $never = User::factory()->create();
+        $this->assertCount(3, app(\App\Services\EntryService::class)->visibleFor($never, $this->nifty)['entries']);
+    }
+
     public function test_limits_come_from_settings(): void
     {
         app(SettingsService::class)->update(['entries_limit_active' => '2', 'entries_limit_expired' => '1', 'show_more_text' => 'Pay to unlock']);
@@ -98,12 +116,12 @@ class UserModuleTest extends TestCase
             ->assertDontSee(today()->subDays(2)->format('d M Y'));
 
         $this->flushSession();
-        // Oldest 1 of the latest 2 (D-106).
+        // Oldest 1 of the latest 2 on the expiry day (days 2, 3) → day 3 (D-106, D-107).
         $this->signIn($this->trader(false))->get('/user?tab='.$this->nifty->tabKey())
             ->assertSee('Pay to unlock')
-            ->assertSee(today()->subDays(1)->format('d M Y'))
-            ->assertDontSee(today()->format('d M Y'))
-            ->assertDontSee(today()->subDays(2)->format('d M Y'));
+            ->assertSee(today()->subDays(3)->format('d M Y'))
+            ->assertDontSee(today()->subDays(1)->format('d M Y'))
+            ->assertDontSee(today()->subDays(4)->format('d M Y'));
     }
 
     public function test_renaming_and_reordering_a_category_changes_tabs_without_code(): void

@@ -131,18 +131,26 @@ class EntryService
 
     /**
      * Entries a user/trader may see in a category, newest first. Subscribers: the latest N (7). Non-subscribers:
-     * the oldest M (3) of those same latest N, never the newest ones (D-106). The limit is applied in the query.
+     * the oldest M (3) of those N — the 5th, 6th and 7th (D-106). After a subscription expired, the N are the latest
+     * as on the expiry date, so entries added after expiry never show (D-107). Never subscribed: the latest N today.
+     * The limit is applied in the query.
      *
      * @return array{entries: Collection<int, Entry>, limit: int, restricted: bool}
      */
     public function visibleFor(User $user, Category $category): array
     {
         // Staff are not subscribers: they see what an active subscriber sees.
-        $active = ! $user->isTrader() || $this->subscriptions->isActiveFor($user, $category);
+        $sub = $user->isTrader() ? $this->subscriptions->current($user) : null;
+        $active = ! $user->isTrader() || (bool) $sub?->isCurrentlyActive();
         $window = $this->settings->entriesLimitActive();
         $limit = $active ? $window : min($window, $this->settings->entriesLimitExpired());
 
-        $entries = $category->entries()->latestFirst()->limit($window)->get();
+        // Frozen at the end of the expiry day (end_date is inclusive, D-22).
+        $cutoff = ! $active && $sub ? $sub->end_date->copy()->endOfDay() : null;
+
+        $entries = $category->entries()
+            ->when($cutoff, fn ($q) => $q->where('entry_date', '<=', $cutoff)->where('created_at', '<=', $cutoff))
+            ->latestFirst()->limit($window)->get();
         if (! $active) {
             $entries = $limit > 0 ? $entries->slice(-$limit)->values() : $entries->take(0);
         }

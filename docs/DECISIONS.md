@@ -570,3 +570,11 @@ a subscriber sees E10…E4, a non-subscriber sees E6, E5, E4 (newest first). Whe
 E7, E6, E5 — the 4 newest are always hidden; they still get the new-entry notification (tap → contact admin, D-94).
 Same rule on web and app (both use the service). Texts changed from "latest 3 entries" to "3 older entries".
 Supersedes the non-subscriber part of spec 3.4 ("latest 3").
+
+**D-107 (2026-10-14) — Expired users: the 3 entries are frozen at the expiry date (client's final rule).** Refines
+D-106. For a user whose subscription **expired**, the "latest 7" are counted as on the expiry day (end of
+`end_date`, which is inclusive): only entries added (`created_at`) and dated (`entry_date`) up to then. They see the
+5th, 6th and 7th of those, newest first; entries added after expiry never appear (they still get the notification).
+Example: expired 6 Oct; latest 7 on 6 Oct = E7…E1 → sees E3, E2, E1, also after E8, E9… are added. **Never
+subscribed** users have no expiry date: the 5th–7th of today's latest 7 (moves with new entries). Renewing restores
+the latest 7. Server only (`EntryService::visibleFor`) — web and app both use it; no app or database change.

@@ -25,6 +25,11 @@ Update at the end of every work session. Newest session on top.
 
 ## Session log
 
+### 2026-10-14 — Expired users: 5th–7th of the latest 7 as on the expiry date (D-107)
+- `EntryService::visibleFor`: expired subscription → list frozen at the expiry date; new entries never show. Never
+  subscribed → 5th–7th of today's latest 7. Web + app use the same service; app needs no new build.
+- Verified on local data via the app API (expired 6 Oct → entries 3, 4, 5; the 13 Oct entry hidden). 166 tests pass.
+
 ### 2026-10-13 — Non-subscribers see the oldest 3 of the latest 7 (D-106)
 - `EntryService::visibleFor` (used by the website `User\DashboardController` and the app API `ContentController`):
   without an active subscription → the oldest 3 of the latest 7 entries, newest first; new entries stay hidden.

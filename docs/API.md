@@ -48,7 +48,7 @@ Base URL: `{APP_URL}/api` — local `http://localhost:8000/api`.
 | 3 | GET | /api/auth/me | any logged in | Current account + subscription |
 | 4 | GET | /api/settings | public | App config (names, limits, contact details) |
 | 5 | GET | /api/categories | any logged in | Active categories in tab order |
-| 6 | GET | /api/categories/{id}/entries | any logged in | Latest 7 entries; without a subscription the oldest 3 of those 7 (D-106) |
+| 6 | GET | /api/categories/{id}/entries | any logged in | Latest 7 entries; without a subscription the 5th–7th of those 7, as on the expiry date (D-106, D-107) |
 | 7 | POST | /api/entries | permission `entries.create` (Admin) | Add entry |
 | 8 | GET | /api/notifications | any logged in | Notifications + unread count |
 | 9 | POST | /api/notifications/{id}/read | any logged in | Mark one read |
